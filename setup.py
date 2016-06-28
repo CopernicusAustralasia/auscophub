@@ -8,7 +8,7 @@ import glob
 from distutils.core import setup
 
 setup(name='auscophub',
-      version='1.0',
+      version='0.1',
       author='Neil Flood', 
       author_email='neil.flood@dsiti.qld.gov.au',
       url='http://bitbucket.org/neilflood/auscophub',
