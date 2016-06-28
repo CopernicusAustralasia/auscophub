@@ -15,7 +15,7 @@ def makeRelativeOutputDir(metainfo):
     """
     gridSquareDir = makeGridSquareDir(metainfo)
     yearMonthDir = makeYearMonthDir(metainfo)
-    outDir = os.path.join(gridSquareDir, yearMonthDir)
+    outDir = os.path.join(yearMonthDir, gridSquareDir)
     return outDir
     
 
