@@ -31,9 +31,9 @@ def getCmdargs():
     p.add_argument("zipfile", nargs="*", help="Name of SAFE zipfile to process")
     p.add_argument("--zipfilelist", help=("Text file with list of zipfiles to process "+
         "(one per line). Use this option to process a large number of files"))
-    p.add_argument("--storagetopdir", default="'.'", 
+    p.add_argument("--storagetopdir", default=".", 
         help=("Top level directory under which all storage subdirectories will be created "+
-            "(default=%(default)s)"))
+            "(default='%(default)s')"))
     p.add_argument("--verbose", default=False, action="store_true",
         help="Print messages about exactly what is happening")
     p.add_argument("--dummy", default=False, action="store_true",
