@@ -80,40 +80,40 @@ def makeYearMonthDir(metainfo):
     return dirName
 
 
-def checkFinalDir(cmdargs, finalOutputDir):
+def checkFinalDir(finalOutputDir, dummy, verbose):
     """
     Check that the final output dir exists, and has write permission. If it does not exist,
     then create it
     """
     exists = os.path.exists(finalOutputDir)
     if not exists:
-        if cmdargs.dummy:
+        if dummy:
             print("Would make dir", finalOutputDir)
         else:
-            if cmdargs.verbose:
+            if verbose:
                 print("Creating dir", finalOutputDir)
             os.makedirs(finalOutputDir, 0775)   # Should the permissions come from the command line?
 
-    if not cmdargs.dummy:
+    if not dummy:
         writeable = os.access(finalOutputDir, os.W_OK)
         if not writeable:
             raise AusCopDirStructError("Output directory {} is not writeable".format(finalOutputDir))
 
 
-def moveZipfile(cmdargs, zipfilename, finalOutputDir):
+def moveZipfile(zipfilename, finalOutputDir, dummy, verbose, makeCopy):
     """
     Move the given zipfile to the final output directory
     """
     finalFile = os.path.join(finalOutputDir, os.path.basename(zipfilename))
-    if cmdargs.dummy:
+    if dummy:
         print("Would move to", finalFile)
     else:
-        if cmdargs.copy:
-            if cmdargs.verbose:
+        if makeCopy:
+            if verbose:
                 print("Copy to", finalFile)
             shutil.copyfile(zipfilename, finalFile)
         else:
-            if cmdargs.verbose:
+            if verbose:
                 print("Move to", finalFile)
             os.rename(zipfilename, finalFile)
 

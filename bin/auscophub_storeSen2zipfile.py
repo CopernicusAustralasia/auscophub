@@ -69,9 +69,10 @@ def mainRoutine():
             
             relativeOutputDir = dirstruct.makeRelativeOutputDir(metainfo)
             finalOutputDir = os.path.join(cmdargs.storagetopdir, relativeOutputDir)
-            dirstruct.checkFinalDir(cmdargs, finalOutputDir)
+            dirstruct.checkFinalDir(finalOutputDir, cmdargs.dummy, cmdargs.verbose)
             
-            dirstruct.moveZipfile(cmdargs, zipfilename, finalOutputDir)
+            dirstruct.moveZipfile(zipfilename, finalOutputDir, cmdargs.dummy, cmdargs.verbose, 
+                cmdargs.copy)
             createXml(cmdargs, zipfilename, finalOutputDir, metainfo)
             createPreviewImg(cmdargs, zipfilename, finalOutputDir, metainfo)
 
