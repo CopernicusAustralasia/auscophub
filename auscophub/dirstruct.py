@@ -94,7 +94,7 @@ def checkFinalDir(cmdargs, finalOutputDir):
     if not cmdargs.dummy:
         writeable = os.access(finalOutputDir, os.W_OK)
         if not writeable:
-            raise MoveSen2ZipfileError("Output directory {} is not writeable".format(finalOutputDir))
+            raise AusCopDirStructError("Output directory {} is not writeable".format(finalOutputDir))
 
 
 def moveZipfile(cmdargs, zipfilename, finalOutputDir):
@@ -115,5 +115,5 @@ def moveZipfile(cmdargs, zipfilename, finalOutputDir):
             os.rename(zipfilename, finalFile)
 
 
-class MoveSen2ZipfileError(Exception): pass
+class AusCopDirStructError(Exception): pass
 
