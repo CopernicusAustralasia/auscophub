@@ -8,6 +8,17 @@ from __future__ import print_function, division
 import os
 import shutil
 
+
+def makeRelativeOutputDir(metainfo):
+    """
+    Make the output directory string for the given zipfile metadata object. 
+    """
+    gridSquareDir = makeGridSquareDir(metainfo)
+    yearMonthDir = makeYearMonthDir(metainfo)
+    outDir = os.path.join(gridSquareDir, yearMonthDir)
+    return outDir
+    
+
 def makeGridSquareDir(metainfo):
     """
     Make the grid square directory name, from the centroid location
@@ -67,14 +78,6 @@ def makeYearMonthDir(metainfo):
     
     dirName = os.path.join("{:04}".format(year), "{:04}-{:02}".format(year, month))
     return dirName
-
-
-def makeOutputDir(cmdargs, yearMonthDir, gridSquareDir):
-    """
-    Make the final output directory name, including the prefix directory
-    """
-    outdir = os.path.join(cmdargs.storagetopdir, yearMonthDir, gridSquareDir)
-    return outdir
 
 
 def checkFinalDir(cmdargs, finalOutputDir):

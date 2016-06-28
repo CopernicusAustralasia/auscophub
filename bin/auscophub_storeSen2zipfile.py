@@ -67,10 +67,8 @@ def mainRoutine():
         if ok:
             metainfo = sen2meta.Sen2ZipfileMeta(zipfilename=zipfilename)
             
-            gridSquareDir = dirstruct.makeGridSquareDir(metainfo)
-            yearMonthDir = dirstruct.makeYearMonthDir(metainfo)
-            
-            finalOutputDir = dirstruct.makeOutputDir(cmdargs, yearMonthDir, gridSquareDir)
+            relativeOutputDir = dirstruct.makeRelativeOutputDir(metainfo)
+            finalOutputDir = os.path.join(cmdargs.storagetopdir, relativeOutputDir)
             dirstruct.checkFinalDir(cmdargs, finalOutputDir)
             
             dirstruct.moveZipfile(cmdargs, zipfilename, finalOutputDir)
