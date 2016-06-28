@@ -232,6 +232,7 @@ class Sen2ZipfileMeta(object):
         Take either the name of a zipfile, an XML file, or an XML string, and construct
         the object from the metadata
         """
+        self.previewImgBin = None
         if xmlStr is None:
             if xmlfilename is not None:
                 xmlStr = open(xmlfilename).read()
@@ -247,6 +248,15 @@ class Sen2ZipfileMeta(object):
                 mf = zf.open(fullmetafilename)
                 xmlStr = mf.read()
                 del mf
+                
+                # Read in the raw content of the preview image png file, and stash on the object
+                previewFilename = bn.replace('PRD', 'BWI') + ".png"
+                previewFullFilename = safeDirName + previewFilename
+                pf = zf.open(previewFullFilename)
+                self.previewImgBin = pf.read()
+                del pf
+        
+        self.zipfileMetaXML = xmlStr
         
         doc = minidom.parseString(xmlStr)
         
