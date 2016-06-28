@@ -1,0 +1,9 @@
+syntax: glob
+*.pyc
+*.o
+*~
+*.png
+*.img
+*.zip
+*.jp2
+
