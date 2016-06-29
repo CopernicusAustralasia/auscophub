@@ -7,6 +7,7 @@ from __future__ import print_function, division
 
 import os
 import shutil
+import tempfile
 
 
 def makeRelativeOutputDir(metainfo, gridCellSize):
@@ -192,6 +193,33 @@ def createSentinel2Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose):
         f.write("</AUSCOPHUB_SAFE_FILEDESCRIPTION>\n")
         f.close()
 
+
+def createPreviewImg(zipfilename, finalOutputDir, metainfo, dummy, verbose):
+    """
+    Create the preview image, in the final output directory
+    """
+    pngFilename = os.path.basename(zipfilename).replace('.zip', '.png')
+    finalPngFile = os.path.join(finalOutputDir, pngFilename)
+    
+    if dummy:
+        print("Would make", finalPngFile)
+    elif metainfo.previewImgBin is None:
+        print("No preview image provided in", zipfilename)
+    else:
+        if verbose:
+            print("Creating", finalPngFile)
+        (fd, tmpImg) = tempfile.mkstemp(prefix='tmpCopHub_', suffix='.png', dir=finalOutputDir)
+        os.close(fd)
+        
+        open(tmpImg, 'w').write(metainfo.previewImgBin)
+        cmd = "gdal_translate -q -of PNG -outsize 30% 30% {} {}".format(tmpImg, finalPngFile)
+        if verbose:
+            print(cmd)
+        os.system(cmd)
+        
+        if os.path.exists(tmpImg):
+            os.remove(tmpImg)
+    
 
 class AusCopDirStructError(Exception): pass
 

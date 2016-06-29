@@ -15,7 +15,6 @@ from __future__ import print_function, division
 import sys
 import os
 import argparse
-import tempfile
 
 from auscophub import sen2meta
 from auscophub import dirstruct
@@ -78,35 +77,9 @@ def mainRoutine():
                 cmdargs.copy)
             dirstruct.createSentinel2Xml(zipfilename, finalOutputDir, metainfo, 
                 cmdargs.dummy, cmdargs.verbose)
-            createPreviewImg(cmdargs, zipfilename, finalOutputDir, metainfo)
+            dirstruct.createPreviewImg(zipfilename, finalOutputDir, metainfo, 
+                cmdargs.dummy, cmdargs.verbose)
 
-
-def createPreviewImg(cmdargs, zipfilename, finalOutputDir, metainfo):
-    """
-    Create the preview image, in the final output directory
-    """
-    pngFilename = os.path.basename(zipfilename).replace('.zip', '.png')
-    finalPngFile = os.path.join(finalOutputDir, pngFilename)
-    
-    if cmdargs.dummy:
-        print("Would make", finalPngFile)
-    elif metainfo.previewImgBin is None:
-        print("No preview image provided in", zipfilename)
-    else:
-        if cmdargs.verbose:
-            print("Creating", finalPngFile)
-        (fd, tmpImg) = tempfile.mkstemp(prefix='tmpCopHub_', suffix='.png', dir=finalOutputDir)
-        os.close(fd)
-        
-        open(tmpImg, 'w').write(metainfo.previewImgBin)
-        cmd = "gdal_translate -q -of PNG -outsize 30% 30% {} {}".format(tmpImg, finalPngFile)
-        if cmdargs.verbose:
-            print(cmd)
-        os.system(cmd)
-        
-        if os.path.exists(tmpImg):
-            os.remove(tmpImg)
-    
 
 if __name__ == "__main__":
     mainRoutine()
