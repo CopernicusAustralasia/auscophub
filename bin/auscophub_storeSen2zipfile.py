@@ -20,6 +20,9 @@ import tempfile
 from auscophub import sen2meta
 from auscophub import dirstruct
 
+# Size of lat/long grid cells in which we store the files (in degrees)
+GRIDCELLSIZE = 5
+
 def getCmdargs():
     """
     Get commandline arguments
@@ -67,7 +70,7 @@ def mainRoutine():
         if ok:
             metainfo = sen2meta.Sen2ZipfileMeta(zipfilename=zipfilename)
             
-            relativeOutputDir = dirstruct.makeRelativeOutputDir(metainfo)
+            relativeOutputDir = dirstruct.makeRelativeOutputDir(metainfo, GRIDCELLSIZE)
             finalOutputDir = os.path.join(cmdargs.storagetopdir, relativeOutputDir)
             dirstruct.checkFinalDir(finalOutputDir, cmdargs.dummy, cmdargs.verbose)
             
