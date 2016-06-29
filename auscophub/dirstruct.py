@@ -9,22 +9,24 @@ import os
 import shutil
 
 
-def makeRelativeOutputDir(metainfo):
+def makeRelativeOutputDir(metainfo, gridCellSize):
     """
-    Make the output directory string for the given zipfile metadata object. 
+    Make the output directory string for the given zipfile metadata object. The
+    gridCellSize parameter is in degrees. 
+    
     """
-    gridSquareDir = makeGridSquareDir(metainfo)
+    gridSquareDir = makeGridSquareDir(metainfo, gridCellSize)
     yearMonthDir = makeYearMonthDir(metainfo)
     outDir = os.path.join(yearMonthDir, gridSquareDir)
     return outDir
     
 
-def makeGridSquareDir(metainfo):
+def makeGridSquareDir(metainfo, gridCellSize):
     """
-    Make the grid square directory name, from the centroid location
+    Make the grid square directory name, from the centroid location. Divides up
+    into lat/long grid cells of the given size (given in degrees). Returns a
+    string of the resulting subdirectory name
     """
-    gridCellSize = 5
-
     (longitude, latitude) = tuple(metainfo.centroidXY)
     i = int(latitude / gridCellSize)
     j = int(longitude / gridCellSize)
