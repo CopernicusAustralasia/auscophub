@@ -252,9 +252,10 @@ class Sen2ZipfileMeta(object):
                 # Read in the raw content of the preview image png file, and stash on the object
                 previewFilename = bn.replace('PRD', 'BWI') + ".png"
                 previewFullFilename = safeDirName + previewFilename
-                pf = zf.open(previewFullFilename)
-                self.previewImgBin = pf.read()
-                del pf
+                if previewFullFilename in filenames:
+                    pf = zf.open(previewFullFilename)
+                    self.previewImgBin = pf.read()
+                    del pf
         
         self.zipfileMetaXML = xmlStr
         
