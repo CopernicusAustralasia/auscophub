@@ -8,7 +8,9 @@ For moving one file, normal usage would be something like
     auscophub_storeSen2zipfile.py --storagetopdir /some/directory S2A_OPER_PRD_MSIL1C_PDMC_20160407T190635_R116_V20160406T001844_20160406T002213.zip
 This would move the given zipfile into a directory structure under /some/directory, with
 directory levels for year/year-month/gridCellName/
-where the grid cell name is a readable label for a 5 degree lat/long grid cell. 
+where the grid cell name is a readable label for a 5 degree lat/long grid cell. In this particular 
+case, it would be
+    /some/directory/2016/2016-04/20S145E-25S150E/
 
 The input zipfile name can include its full path. 
 
@@ -16,4 +18,8 @@ It can also be used to move a large list of zipfile. These are placed in a text 
 zipfile per line, and this text file name is given to the --zipfilelist option, e.g.
     auscophub_storeSen2zipfile.py --storagetopdir /some/directory --zipfilelist ziplist.txt
 
-
+Note the options for testing:
+    --dummy         Do nothing, just report
+    --verbose       Report what is happening, as it happens
+    --copy          Instead of moving the zipfile, copy it to its final location, 
+                    leaving the original untouched
