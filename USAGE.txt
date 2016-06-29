@@ -1,0 +1,19 @@
+Current the only main program is auscophub_storeSen2zipfile.py. It is used to move
+one or more SAFE-format zipfiles into their final home, and create associated
+XML and PNG files. 
+
+It takes a --help option, to give full commandline help. 
+
+For moving one file, normal usage would be something like
+    auscophub_storeSen2zipfile.py --storagetopdir /some/directory S2A_OPER_PRD_MSIL1C_PDMC_20160407T190635_R116_V20160406T001844_20160406T002213.zip
+This would move the given zipfile into a directory structure under /some/directory, with
+directory levels for year/year-month/gridCellName/
+where the grid cell name is a readable label for a 5 degree lat/long grid cell. 
+
+The input zipfile name can include its full path. 
+
+It can also be used to move a large list of zipfile. These are placed in a text file, one 
+zipfile per line, and this text file name is given to the --zipfilelist option, e.g.
+    auscophub_storeSen2zipfile.py --storagetopdir /some/directory --zipfilelist ziplist.txt
+
+
