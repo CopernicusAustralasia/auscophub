@@ -125,9 +125,9 @@ def moveZipfile(zipfilename, finalOutputDir, dummy, verbose, makeCopy):
 
 def createSentinel1Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose):
     """
-    Create the XML file in the final output directory. This is a locally-designed XML
-    file intended to include just the sort of information users would need in order
-    to select zipfiles for download. 
+    Create the XML file in the final output directory, for Sentinel-1 zipfiles. 
+    This is a locally-designed XML file intended to include only the sort of 
+    information users would need in order to select zipfiles for download. 
     
     """
     xmlFilename = os.path.basename(zipfilename).replace('.zip', '.xml')
@@ -157,9 +157,9 @@ def createSentinel1Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose):
 
 def createSentinel2Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose):
     """
-    Create the XML file in the final output directory. This is a locally-designed XML
-    file intended to include just the sort of information users would need in order
-    to select zipfiles for download. 
+    Create the XML file in the final output directory, for Sentinel-2 zipfiles. 
+    This is a locally-designed XML file intended to include only the sort of 
+    information users would need in order to select zipfiles for download. 
     
     """
     xmlFilename = os.path.basename(zipfilename).replace('.zip', '.xml')
