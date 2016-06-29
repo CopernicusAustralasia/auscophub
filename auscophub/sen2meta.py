@@ -261,15 +261,17 @@ class Sen2ZipfileMeta(object):
                 
                 # Read in the whole set of tile-level XML files, too, so we can 
                 # grab tileId values from them
-                tileXmlPattern = os.path.join(safeDirName, "GRANULE", "*", "*.xml")
-                tileXmlFiles = [fn for fn in filenames if fnmatch.fnmatch(fn, tileXmlPattern)]
-                tileIdSet = set()
-                for tileXml in tileXmlFiles:
-                    tf = zf.open(tileXml)
-                    tileMeta = Sen2TileMeta(fileobj=tf)
-                    del tf
-                    tileIdSet.add(tileMeta.tileId[1:].upper())
-                self.tileNameList = sorted(list(tileIdSet))
+                # This is currently commented out, as it adds significant run-time. I
+                # expect to return to this in future. 
+#                tileXmlPattern = os.path.join(safeDirName, "GRANULE", "*", "*.xml")
+#                tileXmlFiles = [fn for fn in filenames if fnmatch.fnmatch(fn, tileXmlPattern)]
+#                tileIdSet = set()
+#                for tileXml in tileXmlFiles:
+#                    tf = zf.open(tileXml)
+#                    tileMeta = Sen2TileMeta(fileobj=tf)
+#                    del tf
+#                    tileIdSet.add(tileMeta.tileId[1:].upper())
+#                self.tileNameList = sorted(list(tileIdSet))
         
         self.zipfileMetaXML = xmlStr
         
