@@ -107,7 +107,9 @@ def moveZipfile(zipfilename, finalOutputDir, dummy, verbose, makeCopy):
     Move the given zipfile to the final output directory
     """
     finalFile = os.path.join(finalOutputDir, os.path.basename(zipfilename))
-    if dummy:
+    if shutil._samefile(zipfilename, finalFile):
+        print("Zipfile", zipfilename, "already in final location. Not moved. ")
+    elif dummy:
         print("Would move to", finalFile)
     else:
         if makeCopy:
