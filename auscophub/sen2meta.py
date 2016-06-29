@@ -268,6 +268,7 @@ class Sen2ZipfileMeta(object):
         
         self.processingLevel = findElementByXPath(generalInfoNode, 'Product_Info/PROCESSING_LEVEL')[0].firstChild.data.strip()
         self.spacecraftName = findElementByXPath(generalInfoNode, 'Product_Info/Datatake/SPACECRAFT_NAME')[0].firstChild.data.strip()
+        self.satId = "S" + self.spacecraftName.split('-')[1]
         self.processingSoftwareVersion = findElementByXPath(generalInfoNode, 
             'Product_Info/PROCESSING_BASELINE')[0].firstChild.data.strip()
         
