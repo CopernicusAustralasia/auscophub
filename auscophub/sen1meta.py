@@ -76,6 +76,17 @@ class Sen1ZipfileMeta(object):
             self.outlineWKT = footprintGeom.ExportToWkt()
             centroidJsonDict = json.loads(footprintGeom.Centroid().ExportToJson())
             self.centroidXY = centroidJsonDict["coordinates"]
+        
+        # Grab preview data if available
+        previewDir = os.path.join(safeDirName, "preview")
+        previewImgFiles = [fn for fn in filenames if os.path.dirname(fn) == previewDir and
+            fn.endswith('.png')]
+        if len(previewImgFiles) > 0:
+            # If we found some preview images, use the first one. In fact there is probably 
+            # only one
+            pf = zf.open(previewImgFiles[0])
+            self.previewImgBin = pf.read()
+            del pf
             
 
 class Sen1MetaError(Exception): pass
