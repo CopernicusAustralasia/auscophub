@@ -8,7 +8,7 @@ For moving one file, normal usage would be something like
     auscophub_storeSen2zipfile.py --storagetopdir /some/directory S2A_OPER_PRD_MSIL1C_PDMC_20160407T190635_R116_V20160406T001844_20160406T002213.zip
 This would move the given zipfile into a directory structure under /some/directory, with
 directory levels for year/year-month/gridCellName/
-where the grid cell name is a readable label for a 5 degree lat/long grid cell. 
+where the grid cell name is a readable lable for a 5 degree lat/long grid cell. 
 
 The input zipfile name can include its full path. 
 
