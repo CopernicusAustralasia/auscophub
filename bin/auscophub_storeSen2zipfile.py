@@ -79,7 +79,10 @@ def mainRoutine():
 
 def createXml(cmdargs, zipfilename, finalOutputDir, metainfo):
     """
-    Create the XML file in the final output directory
+    Create the XML file in the final output directory. This is a locally-designed XML
+    file intended to include just the sort of information users would need in order
+    to select zipfiles for download. 
+    
     """
     xmlFilename = os.path.basename(zipfilename).replace('.zip', '.xml')
     finalXmlFile = os.path.join(finalOutputDir, xmlFilename)
@@ -89,7 +92,19 @@ def createXml(cmdargs, zipfilename, finalOutputDir, metainfo):
     else:
         if cmdargs.verbose:
             print("Creating", finalXmlFile)
-        open(finalXmlFile, 'w').write(metainfo.zipfileMetaXML)
+        f = open(finalXmlFile, 'w')
+        f.write("<?xml version='1.0'?>\n")
+        f.write("<AUSCOPHUB_SAFE_FILEDESCRIPTION>\n")
+        (longitude, latitude) = tuple(metainfo.centroidXY)
+        f.write("  <CENTROID longitude='{}' latitude='{}' />\n".format(longitude, latitude))
+        f.write("  <ESA_CLOUD_COVER percentage='{}' />\n".format(int(round(metainfo.cloudPcnt))))
+        f.write("  <ESA_TILEOUTLINE_FOOTPRINT_WKT>\n")
+        f.write("    {}\n".format(metainfo.extPosWKT))
+        f.write("  </ESA_TILEOUTLINE_FOOTPRINT_WKT>\n")
+        acqTimestampStr = metainfo.datetime.strftime("%Y-%m-%d %H:%M:%S")
+        f.write("  <ACQUISITION_TIME datetime_utc='{}' />\n".format(acqTimestampStr))
+        f.write("</AUSCOPHUB_SAFE_FILEDESCRIPTION>\n")
+        f.close()
 
 
 def createPreviewImg(cmdargs, zipfilename, finalOutputDir, metainfo):
