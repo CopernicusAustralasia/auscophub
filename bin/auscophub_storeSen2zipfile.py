@@ -106,6 +106,8 @@ def createXml(cmdargs, zipfilename, finalOutputDir, metainfo):
         f.write("  </ESA_TILEOUTLINE_FOOTPRINT_WKT>\n")
         acqTimestampStr = metainfo.datetime.strftime("%Y-%m-%d %H:%M:%S")
         f.write("  <ACQUISITION_TIME datetime_utc='{}' />\n".format(acqTimestampStr))
+        f.write("  <ESA_PROCESSING software_version='{}' processingtime_utc='{}'/>\n".format(
+            metainfo.processingSoftwareVersion, metainfo.generationTime))
         f.write("</AUSCOPHUB_SAFE_FILEDESCRIPTION>\n")
         f.close()
 
@@ -119,6 +121,8 @@ def createPreviewImg(cmdargs, zipfilename, finalOutputDir, metainfo):
     
     if cmdargs.dummy:
         print("Would make", finalPngFile)
+    elif metainfo.previewImgBin is None:
+        print("No preview image provided in", zipfilename)
     else:
         if cmdargs.verbose:
             print("Creating", finalPngFile)
