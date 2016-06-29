@@ -76,40 +76,9 @@ def mainRoutine():
             
             dirstruct.moveZipfile(zipfilename, finalOutputDir, cmdargs.dummy, cmdargs.verbose, 
                 cmdargs.copy)
-            createXml(cmdargs, zipfilename, finalOutputDir, metainfo)
+            dirstruct.createSentinel1Xml(zipfilename, finalOutputDir, metainfo,
+                cmdargs.dummy, cmdargs.verbose)
             createPreviewImg(cmdargs, zipfilename, finalOutputDir, metainfo)
-
-
-def createXml(cmdargs, zipfilename, finalOutputDir, metainfo):
-    """
-    Create the XML file in the final output directory. This is a locally-designed XML
-    file intended to include just the sort of information users would need in order
-    to select zipfiles for download. 
-    
-    """
-    xmlFilename = os.path.basename(zipfilename).replace('.zip', '.xml')
-    finalXmlFile = os.path.join(finalOutputDir, xmlFilename)
-    
-    if cmdargs.dummy:
-        print("Would make", finalXmlFile)
-    else:
-        if cmdargs.verbose:
-            print("Creating", finalXmlFile)
-        f = open(finalXmlFile, 'w')
-        f.write("<?xml version='1.0'?>\n")
-        f.write("<AUSCOPHUB_SAFE_FILEDESCRIPTION>\n")
-        f.write("  <SATELLITE name='{}' />\n".format(metainfo.satellite))
-        (longitude, latitude) = tuple(metainfo.centroidXY)
-        f.write("  <CENTROID longitude='{}' latitude='{}' />\n".format(longitude, latitude))
-        f.write("  <ESA_TILEOUTLINE_FOOTPRINT_WKT>\n")
-        f.write("    {}\n".format(metainfo.outlineWKT))
-        f.write("  </ESA_TILEOUTLINE_FOOTPRINT_WKT>\n")
-        acqTimestampStr = metainfo.datetime.strftime("%Y-%m-%d %H:%M:%S")
-        f.write("  <ACQUISITION_TIME datetime_utc='{}' />\n".format(acqTimestampStr))
-        f.write("  <POLARISATION values='{}' />\n".format(','.join(metainfo.polarisation)))
-        f.write("  <SWATH values='{}' />\n".format(','.join(metainfo.swath)))
-        f.write("</AUSCOPHUB_SAFE_FILEDESCRIPTION>\n")
-        f.close()
 
 
 def createPreviewImg(cmdargs, zipfilename, finalOutputDir, metainfo):
