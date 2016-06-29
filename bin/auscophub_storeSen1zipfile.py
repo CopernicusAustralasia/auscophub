@@ -98,6 +98,7 @@ def createXml(cmdargs, zipfilename, finalOutputDir, metainfo):
         f = open(finalXmlFile, 'w')
         f.write("<?xml version='1.0'?>\n")
         f.write("<AUSCOPHUB_SAFE_FILEDESCRIPTION>\n")
+        f.write("  <SATELLITE name='{}' />\n".format(metainfo.satellite))
         (longitude, latitude) = tuple(metainfo.centroidXY)
         f.write("  <CENTROID longitude='{}' latitude='{}' />\n".format(longitude, latitude))
         f.write("  <ESA_TILEOUTLINE_FOOTPRINT_WKT>\n")
@@ -105,6 +106,8 @@ def createXml(cmdargs, zipfilename, finalOutputDir, metainfo):
         f.write("  </ESA_TILEOUTLINE_FOOTPRINT_WKT>\n")
         acqTimestampStr = metainfo.datetime.strftime("%Y-%m-%d %H:%M:%S")
         f.write("  <ACQUISITION_TIME datetime_utc='{}' />\n".format(acqTimestampStr))
+        f.write("  <POLARISATION values='{}' />\n".format(','.join(metainfo.polarisation)))
+        f.write("  <SWATH values='{}' />\n".format(','.join(metainfo.swath)))
         f.write("</AUSCOPHUB_SAFE_FILEDESCRIPTION>\n")
         f.close()
 
