@@ -15,7 +15,7 @@ from osgeo import ogr
 class Sen1ZipfileMeta(object):
     """
     This class is designed to operate on the whole zipfile of a Sentinel-1 SAFE dataset. 
-    The metadata for Sentinel-1 is cattered through various files within the SAFE archive,
+    The metadata for Sentinel-1 is scattered through various files within the SAFE archive,
     and this class just gathers up some bits which might be useful. 
     
     Someone who knows more about radar than me should work on classes to handle the individual
@@ -55,9 +55,7 @@ class Sen1ZipfileMeta(object):
             
             self.satellite = adsHeaderNode.getElementsByTagName('missionId')[0].firstChild.data.strip()
             self.productType = adsHeaderNode.getElementsByTagName('productType')[0].firstChild.data.strip()
-            self.polarisation = adsHeaderNode.getElementsByTagName('polarisation')[0].firstChild.data.strip()
             self.mode = adsHeaderNode.getElementsByTagName('mode')[0].firstChild.data.strip()
-            self.swath = adsHeaderNode.getElementsByTagName('swath')[0].firstChild.data.strip()
             startTimeStr = adsHeaderNode.getElementsByTagName('startTime')[0].firstChild.data.strip()
             self.datetime = datetime.datetime.strptime(startTimeStr, "%Y-%m-%dT%H:%M:%S.%f")
             
@@ -76,8 +74,27 @@ class Sen1ZipfileMeta(object):
             self.outlineWKT = footprintGeom.ExportToWkt()
             centroidJsonDict = json.loads(footprintGeom.Centroid().ExportToJson())
             self.centroidXY = centroidJsonDict["coordinates"]
+            
+            # Now loop over all the annotation XML files, getting all possible combinations of
+            # a couple of parameters, so we can make a complete list of them. Not at all sure 
+            # if this is useful, but it seemed like it would be. 
+            polarisationSet = set()
+            swathSet = set()
+            for xmlFile in annotationXmlFiles:
+                xmlf = zf.open(xmlFile)
+                xmlStr = xmlf.read()
+                xmlf.close()
+                doc = minidom.parseString(xmlStr)
+                productNode = doc.getElementsByTagName('product')[0]
+                adsHeaderNode = productNode.getElementsByTagName('adsHeader')[0]
+                polarisation = adsHeaderNode.getElementsByTagName('polarisation')[0].firstChild.data.strip()
+                polarisationSet.add(polarisation)
+                swath = adsHeaderNode.getElementsByTagName('swath')[0].firstChild.data.strip()
+                swathSet.add(swath)
+            self.polarisation = sorted(list(polarisationSet))
+            self.swath = sorted(list(swathSet))
         
-        # Grab preview data if available
+        # Grab preview data if available, for making a quick-look
         previewDir = os.path.join(safeDirName, "preview")
         previewImgFiles = [fn for fn in filenames if os.path.dirname(fn) == previewDir and
             fn.endswith('.png')]
