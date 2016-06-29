@@ -109,6 +109,12 @@ def createXml(cmdargs, zipfilename, finalOutputDir, metainfo):
         f.write("  <ACQUISITION_TIME datetime_utc='{}' />\n".format(acqTimestampStr))
         f.write("  <ESA_PROCESSING software_version='{}' processingtime_utc='{}'/>\n".format(
             metainfo.processingSoftwareVersion, metainfo.generationTime))
+        # Writing a list of tiles is commented out, until such time as I finish the
+        # special cases in the MGRS name function, for polar regions. 
+        # f.write("  <MGRSTILES>\n")
+        # for tileName in metainfo.tileNameList:
+        #     f.write("    {}\n".format(tileName))
+        # f.write("  </MGRSTILES>\n")
         f.write("</AUSCOPHUB_SAFE_FILEDESCRIPTION>\n")
         f.close()
 
