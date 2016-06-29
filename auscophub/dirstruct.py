@@ -56,14 +56,14 @@ def makeGridSquareDir(metainfo, gridCellSize):
 
 def longHemisphereChar(longitude):
     """
-    Appropriate hemisphere character for given longitude
+    Appropriate hemisphere character for given longitude (i.e. "E" or "W")
     """
     return ("W" if longitude < 0 else "E")
 
 
 def latHemisphereChar(latitude):
     """
-    Appropriate hemisphere character for given latitude
+    Appropriate hemisphere character for given latitude (i.e. "N" or "S")
     """
     return ("S" if latitude < 0 else "N")
 
