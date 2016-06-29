@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Move the given Sentinel SAFE zipfile to its appropriate
+Move the given Sentinel-2 SAFE zipfile to its appropriate
 storage directory, and create associated metadata files in that location. 
 
 Reads the internal metadata inside the zipfile to work out what the storage
@@ -28,7 +28,7 @@ def getCmdargs():
     Get commandline arguments
     """
     p = argparse.ArgumentParser(description="""
-        Move the given Copernicus SAFE zipfile into its final storage directory on 
+        Move the given Copernicus Sentinel-2 SAFE zipfile into its final storage directory on 
         the Aus Copernicus Hub. Also create associated metadata to allow simple access
         """)
     p.add_argument("zipfile", nargs="*", help="Name of SAFE zipfile to process")
@@ -98,6 +98,7 @@ def createXml(cmdargs, zipfilename, finalOutputDir, metainfo):
         f = open(finalXmlFile, 'w')
         f.write("<?xml version='1.0'?>\n")
         f.write("<AUSCOPHUB_SAFE_FILEDESCRIPTION>\n")
+        f.write("  <SATELLITE name='{}' />\n".format(metainfo.satId))
         (longitude, latitude) = tuple(metainfo.centroidXY)
         f.write("  <CENTROID longitude='{}' latitude='{}' />\n".format(longitude, latitude))
         f.write("  <ESA_CLOUD_COVER percentage='{}' />\n".format(int(round(metainfo.cloudPcnt))))
