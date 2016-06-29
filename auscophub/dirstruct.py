@@ -46,7 +46,7 @@ def makeGridSquareDir(metainfo, gridCellSize):
     # where we would put them, to modify the top/left/bottom/right bounds
     
     # Create the final directory string. Shows the topLeft-bottomRight coords
-    dirName = "{topLat}{topHemi}{leftLong}{leftHemi}-{botLat}{botHemi}{rightLong}{rightHemi}".format(
+    dirName = "{topLat:02}{topHemi}{leftLong:03}{leftHemi}-{botLat:02}{botHemi}{rightLong:03}{rightHemi}".format(
         topLat=abs(latitude5top), topHemi=latHemisphereChar(latitude5top),
         leftLong=abs(longitude5left), leftHemi=longHemisphereChar(longitude5left),
         botLat=abs(latitude5bottom), botHemi=latHemisphereChar(latitude5bottom),
