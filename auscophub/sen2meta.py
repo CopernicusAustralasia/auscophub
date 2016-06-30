@@ -261,9 +261,10 @@ class Sen2ZipfileMeta(object):
                 
                 # Read in the whole set of tile-level XML files, too, so we can 
                 # grab tileId values from them
+                self.tileNameList = None
                 # This is currently commented out, as it adds significant run-time. I
                 # expect to return to this in future. 
-#                tileXmlPattern = os.path.join(safeDirName, "GRANULE", "*", "*.xml")
+#                tileXmlPattern = safeDirName + "GRANULE/*/*.xml"
 #                tileXmlFiles = [fn for fn in filenames if fnmatch.fnmatch(fn, tileXmlPattern)]
 #                tileIdSet = set()
 #                for tileXml in tileXmlFiles:
