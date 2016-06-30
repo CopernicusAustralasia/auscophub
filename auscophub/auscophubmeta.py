@@ -74,6 +74,11 @@ class AusCopHubMeta(object):
         swathNodeList = safeDescrNode.getElementsByTagName('SWATH')
         if len(swathNodeList) > 0:
             self.swathValuesList = swathNodeList[0].getAttribute('values').split(',')
+        
+        mgrsTileNodeList = safeDescrNode.getElementsByTagName('MGRSTILES')
+        if len(mgrsTileNodeList) > 0:
+            tilesStr = mgrsTileNodeList[0].firstChild.data.strip()
+            self.mgrsTileList = [tile.strip() for tile in tilesStr.split('\n')]
 
 
 class AusCopHubMetaError(Exception): pass
