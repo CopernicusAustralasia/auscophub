@@ -373,7 +373,14 @@ def calcMGRSnameFromCoords(epsg, easting, northing):
     routines MGRS::getGridValues() and MGRS::fromUTM() are particularly instructive. 
 
     I have not coded the variations for the polar regions, nor for Svalbard and 
-    south-west Norway. 
+    south-west Norway. However, it appears that ESA have not used the special polar 
+    cases anyway. For latitude < -80 or > +84, MGRS is supposed to use Universal
+    Polar Stereographic projection (UPS) instead of UTM, but it seems that the 
+    ESA processing software leaves everything in UTM, and assigns a tile name
+    according to the UTM algorithm anyway. From my testing, it seems this routine
+    gets the same tile name as ESA, so I am leaving it that way. 
+    
+    I have no idea what ESA do in Svarlbard or south-west Norway. 
 
     """
     TWOMILLION = 2000000
@@ -393,6 +400,12 @@ def calcMGRSnameFromCoords(epsg, easting, northing):
     if not (epsgStr.startswith("327") or epsgStr.startswith("326")):
         raise Sen2MetaError("Cannot determine UTM zone from EPSG:{}".format(epsgStr))
     utmZone = int(epsgStr[3:])
+    # Technically, the US-MGRS tile specification has special cases for the poles, but
+    # it seems that ESA do not use them. However, if they do, this next trap would
+    # at least raise an exception and thus prevent us from doing the wrong thing. 
+    if utmZone == 61:
+        raise Sen2MetaError("Projection is Universal Polar Stereographic, which we do not yet cope with")
+
     utmZoneStr = "{:02}".format(utmZone)
 
     # Note that these do NOT use 'I' or 'O', hence I have to remove them explicitly
