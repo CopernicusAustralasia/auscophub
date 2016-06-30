@@ -74,9 +74,6 @@ class AusCopHubMeta(object):
         swathNodeList = safeDescrNode.getElementsByTagName('SWATH')
         if len(swathNodeList) > 0:
             self.swathValuesList = swathNodeList[0].getAttribute('values').split(',')
-        
-        
-
 
 
 class AusCopHubMetaError(Exception): pass
