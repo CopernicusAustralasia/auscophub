@@ -15,8 +15,8 @@ class AusCopHubMeta(object):
     Copernicus Hub server, to identify and chanracterise the SAFE format
     zipfiles delivered by ESA. 
     
-    Same class is used for Sentinel-1 and Sentinel-2 (and probably 3 when we get to it). Not
-    all attributes will be present, depending on the satellite. 
+    Same class is used for Sentinel-1 and Sentinel-2 (and probably 3 when we get to it). 
+    Not all attributes will be present, depending on the satellite. 
     
     Attributes:
         satellite               String, e.g. S1A, S2A, etc. 
