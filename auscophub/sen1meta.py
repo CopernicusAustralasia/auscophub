@@ -58,6 +58,13 @@ class Sen1ZipfileMeta(object):
             self.mode = adsHeaderNode.getElementsByTagName('mode')[0].firstChild.data.strip()
             startTimeStr = adsHeaderNode.getElementsByTagName('startTime')[0].firstChild.data.strip()
             self.datetime = datetime.datetime.strptime(startTimeStr, "%Y-%m-%dT%H:%M:%S.%f")
+            self.absoluteOrbitNumber = int(adsHeaderNode.getElementsByTagName('absoluteOrbitNumber')[0].firstChild.data.strip())
+            # Relative orbit formula supplied by Sarah Lawrie from Geoscience Australia
+            self.relativeOrbitNumber = ((self.absoluteOrbitNumber - 73) % 175) + 1
+            
+            gnrlAnnotationNode = doc.getElementsByTagName('generalAnnotation')[0]
+            productInfoNode = gnrlAnnotationNode.getElementsByTagName('productInformation')[0]
+            self.passDirection = productInfoNode.getElementsByTagName('pass')[0].firstChild.data.strip()
             
             # Create a list of the geolocation grid point lat/long values, so we can use them to
             # create a rough footprint
