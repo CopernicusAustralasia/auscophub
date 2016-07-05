@@ -156,6 +156,10 @@ def createSentinel1Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose):
         f.write("  <ACQUISITION_TIME datetime_utc='{}' />\n".format(acqTimestampStr))
         f.write("  <POLARISATION values='{}' />\n".format(','.join(metainfo.polarisation)))
         f.write("  <SWATH values='{}' />\n".format(','.join(metainfo.swath)))
+        f.write("  <MODE value='{}' />\n".format(metainfo.mode))
+        f.write("  <ORBIT_NUMBERS relative='{}' absolute='{}' />\n".format(metainfo.relativeOrbitNumber,
+            metainfo.absoluteOrbitNumber))
+        f.write("  <PASS direction='{}' />\n".format(metainfo.passDirection))
         f.write("</AUSCOPHUB_SAFE_FILEDESCRIPTION>\n")
         f.close()
 
