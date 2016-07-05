@@ -103,12 +103,12 @@ def checkFinalDir(finalOutputDir, dummy, verbose):
             raise AusCopDirStructError("Output directory {} is not writeable".format(finalOutputDir))
 
 
-def moveZipfile(zipfilename, finalOutputDir, dummy, verbose, makeCopy):
+def moveZipfile(zipfilename, finalOutputDir, dummy, verbose, makeCopy, makeSymlink):
     """
     Move the given zipfile to the final output directory
     """
     finalFile = os.path.join(finalOutputDir, os.path.basename(zipfilename))
-    if shutil._samefile(zipfilename, finalFile):
+    if os.path.exists(finalFile):
         print("Zipfile", zipfilename, "already in final location. Not moved. ")
     elif dummy:
         print("Would move to", finalFile)
@@ -117,6 +117,11 @@ def moveZipfile(zipfilename, finalOutputDir, dummy, verbose, makeCopy):
             if verbose:
                 print("Copy to", finalFile)
             shutil.copyfile(zipfilename, finalFile)
+        elif makeSymlink:
+            if verbose:
+                print("Symlink to", finalFile)
+            zipfilenameFull = os.path.abspath(zipfilename)
+            os.symlink(zipfilenameFull, finalFile)
         else:
             if verbose:
                 print("Move to", finalFile)

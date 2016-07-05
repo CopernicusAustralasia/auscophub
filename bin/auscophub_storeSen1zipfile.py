@@ -42,6 +42,8 @@ def getCmdargs():
         help="Do not actually perform operations, just print what would be done")
     p.add_argument("--copy", default=False, action="store_true",
         help="Instead of moving the zipfile, copy it instead (default will use move)")
+    p.add_argument("--symlink", default=False, action="store_true",
+        help="Instead of moving the zipfile, symbolic link it instead (default will use move)")
 
     cmdargs = p.parse_args()
     return cmdargs
@@ -74,7 +76,7 @@ def mainRoutine():
             dirstruct.checkFinalDir(finalOutputDir, cmdargs.dummy, cmdargs.verbose)
             
             dirstruct.moveZipfile(zipfilename, finalOutputDir, cmdargs.dummy, cmdargs.verbose, 
-                cmdargs.copy)
+                cmdargs.copy, cmdargs.symlink)
             dirstruct.createSentinel1Xml(zipfilename, finalOutputDir, metainfo,
                 cmdargs.dummy, cmdargs.verbose)
             dirstruct.createPreviewImg(zipfilename, finalOutputDir, metainfo,
