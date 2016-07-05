@@ -297,6 +297,8 @@ class Sen2ZipfileMeta(object):
         generationTimeNode = findElementByXPath(generalInfoNode, 'Product_Info/GENERATION_TIME')[0]
         generationTimeStr = generationTimeNode.firstChild.data.strip()
         self.generationTime = datetime.datetime.strptime(generationTimeStr, "%Y-%m-%dT%H:%M:%S.%fZ")
+        relOrbitStr = findElementByXPath(generalInfoNode, 'Product_Info/SENSING_ORBIT_NUMBER')[0].firstChild.data.strip()
+        self.relativeOrbitNumber = int(relOrbitStr)
         
         # The cloud indicator
         cloudPcntNode = findElementByXPath(qualInfoNode, 'Cloud_Coverage_Assessment')[0]
