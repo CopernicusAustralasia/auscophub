@@ -71,6 +71,25 @@ class AusCopHubMeta(object):
         if len(polarisationNodeList) > 0:
             self.polarisationValuesList = polarisationNodeList[0].getAttribute('values').split(',')
         
+        modeNodeList = safeDescrNode.getElementsByTagName('MODE')
+        if len(modeNodeList) > 0:
+            self.mode = modeNodeList[0].getAttribute('value')
+
+        orbitNodeList = safeDescrNode.getElementsByTagName('ORBIT_NUMBERS')
+        if len(orbitNodeList) > 0:
+            self.relativeOrbitNumber = None
+            self.absoluteOrbitNumber = None
+            valStr = orbitNodeList[0].getAttribute('relative')
+            if len(valStr) > 0:
+                self.relativeOrbitNumber = int(valStr)
+            valStr = orbitNodeList[0].getAttribute('absolute')
+            if len(valStr) > 0:
+                self.absoluteOrbitNumber = int(valStr)
+
+        passNodeList = safeDescrNode.getElementsByTagName('PASS')
+        if len(passNodeList) > 0:
+            self.passDirection = passNodeList[0].getAttribute('direction')
+
         swathNodeList = safeDescrNode.getElementsByTagName('SWATH')
         if len(swathNodeList) > 0:
             self.swathValuesList = swathNodeList[0].getAttribute('values').split(',')
