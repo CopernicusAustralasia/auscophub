@@ -193,6 +193,7 @@ def createSentinel2Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose):
         f.write("  <ACQUISITION_TIME datetime_utc='{}' />\n".format(acqTimestampStr))
         f.write("  <ESA_PROCESSING software_version='{}' processingtime_utc='{}'/>\n".format(
             metainfo.processingSoftwareVersion, metainfo.generationTime))
+        f.write("  <ORBIT_NUMBERS relative='{}' />\n".format(metainfo.relativeOrbitNumber))
         
         if metainfo.tileNameList is not None:
             # Only write the list of tile names if it actually exists. 
