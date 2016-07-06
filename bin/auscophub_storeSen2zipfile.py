@@ -15,6 +15,7 @@ from __future__ import print_function, division
 import sys
 import os
 import argparse
+import zipfile
 
 from auscophub import sen2meta
 from auscophub import dirstruct
@@ -44,6 +45,8 @@ def getCmdargs():
         help="Instead of moving the zipfile, copy it instead (default will use move)")
     p.add_argument("--symlink", default=False, action="store_true",
         help="Instead of moving the zipfile, symbolic link it instead (default will use move)")
+    p.add_argument("--errorlog", 
+        help="Any zipfiles with errors will be logged in this file")
 
     cmdargs = p.parse_args()
     return cmdargs
@@ -60,17 +63,29 @@ def mainRoutine():
     if cmdargs.zipfilelist is not None:
         zipfilelist.extend([line.strip() for line in open(cmdargs.zipfilelist)])
     
+    filesWithErrors = []
+    
     # Process each zipfile in the list
     for zipfilename in zipfilelist:
         ok = True
         if not os.path.exists(zipfilename):
-            print("Zipfile", zipfilename, "not found", file=sys.stderr)
+            msg = "File not found: {}".format(zipfilename)
             ok = False
-        # Probably some other errors to check for at this point, maybe zipfile permissions ????
+        if not os.access(zipfilename, os.R_OK):
+            msg = "No read permission: {}".format(zipfilename)
+            ok = False
+        if not zipfile.is_zipfile(zipfilename):
+            msg = "Is not a zipfile: {}".format(zipfilename)
+            ok = False
 
         if ok:
-            metainfo = sen2meta.Sen2ZipfileMeta(zipfilename=zipfilename)
-            
+            try:
+                metainfo = sen2meta.Sen2ZipfileMeta(zipfilename=zipfilename)
+            except Exception as e:
+                msg = "Exception raised reading: {}".format(zipfilename)
+                ok = False
+        
+        if ok:
             relativeOutputDir = dirstruct.makeRelativeOutputDir(metainfo, GRIDCELLSIZE)
             finalOutputDir = os.path.join(cmdargs.storagetopdir, relativeOutputDir)
             dirstruct.checkFinalDir(finalOutputDir, cmdargs.dummy, cmdargs.verbose)
@@ -81,6 +96,18 @@ def mainRoutine():
                 cmdargs.dummy, cmdargs.verbose)
             dirstruct.createPreviewImg(zipfilename, finalOutputDir, metainfo, 
                 cmdargs.dummy, cmdargs.verbose)
+        
+        if not ok:
+            filesWithErrors.append(msg)
+    
+    # Report files which had errors
+    if len(filesWithErrors) > 0:
+        if cmdargs.errorlog is not None:
+            f = open(cmdargs.errorlog, 'w')
+        else:
+            f = sys.stderr
+        for msg in filesWithErrors:
+            f.write(msg+'\n')
 
 
 if __name__ == "__main__":
