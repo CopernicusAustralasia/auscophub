@@ -96,8 +96,11 @@ class AusCopHubMeta(object):
         
         mgrsTileNodeList = safeDescrNode.getElementsByTagName('MGRSTILES')
         if len(mgrsTileNodeList) > 0:
-            tilesStr = mgrsTileNodeList[0].firstChild.data.strip()
-            self.mgrsTileList = [tile.strip() for tile in tilesStr.split('\n')]
+            ausCopHubTilesNodeList = [node for node in mgrsTileNodeList if 
+                node.getAttribute('source') == "AUSCOPHUB"]
+            if len(ausCopHubTilesNodeList) > 0:
+                tilesStr = ausCopHubTilesNodeList[0].firstChild.data.strip()
+                self.mgrsTileList = [tile.strip() for tile in tilesStr.split('\n')]
 
 
 class AusCopHubMetaError(Exception): pass
