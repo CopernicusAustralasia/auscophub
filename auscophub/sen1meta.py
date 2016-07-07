@@ -105,12 +105,16 @@ class Sen1ZipfileMeta(object):
         previewDir = os.path.join(safeDirName, "preview")
         previewImgFiles = [fn for fn in filenames if os.path.dirname(fn) == previewDir and
             fn.endswith('.png')]
+        self.previewImgBin = None
         if len(previewImgFiles) > 0:
             # If we found some preview images, use the first one. In fact there is probably 
             # only one
-            pf = zf.open(previewImgFiles[0])
-            self.previewImgBin = pf.read()
-            del pf
+            try:
+                pf = zf.open(previewImgFiles[0])
+                self.previewImgBin = pf.read()
+                del pf
+            except zipfile.BadZipfile:
+                pass
             
 
 class Sen1MetaError(Exception): pass

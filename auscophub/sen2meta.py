@@ -255,9 +255,12 @@ class Sen2ZipfileMeta(object):
                 previewFilename = bn.replace('PRD', 'BWI') + ".png"
                 previewFullFilename = safeDirName + previewFilename
                 if previewFullFilename in filenames:
-                    pf = zf.open(previewFullFilename)
-                    self.previewImgBin = pf.read()
-                    del pf
+                    try:
+                        pf = zf.open(previewFullFilename)
+                        self.previewImgBin = pf.read()
+                        del pf
+                    except zipfile.BadZipfile:
+                        pass
                 
                 # Read in the whole set of tile-level XML files, too, so we can 
                 # grab tileId values from them
