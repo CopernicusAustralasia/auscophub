@@ -9,6 +9,15 @@ import os
 import shutil
 import tempfile
 
+# Size of lat/long grid cells in which we store the files (in degrees). This is 
+# potentially a function of which Sentinel we are dealing with, hence the dictionary,
+# which is keyed by Sentiel number, i.e. 1, 2, 3, .....
+stdGridCellSize = {
+    1: 5,
+    2: 5, 
+    3: None     # I have no idea what we will do with Sentinel-3
+}
+
 
 def makeRelativeOutputDir(metainfo, gridCellSize):
     """
