@@ -36,6 +36,9 @@ def getCmdargs():
     p.add_argument("--storagetopdir", default=".", 
         help=("Top level directory under which all storage subdirectories will be created "+
             "(default='%(default)s')"))
+    p.add_argument("--xmlonly", default=False, action="store_true",
+        help=("Only generate the XML files. Do not move/copy/symlink the zipfiles, and "+
+            "do not generate preview images. Useful for updating the XML contents on all files. "))
     p.add_argument("--verbose", default=False, action="store_true",
         help="Print messages about exactly what is happening")
     p.add_argument("--dummy", default=False, action="store_true",
@@ -89,16 +92,20 @@ def mainRoutine():
             finalOutputDir = os.path.join(cmdargs.storagetopdir, relativeOutputDir)
             dirstruct.checkFinalDir(finalOutputDir, cmdargs.dummy, cmdargs.verbose)
             
-            dirstruct.moveZipfile(zipfilename, finalOutputDir, cmdargs.dummy, cmdargs.verbose, 
-                cmdargs.copy, cmdargs.symlink)
+            if not cmdargs.xmlonly:
+                dirstruct.moveZipfile(zipfilename, finalOutputDir, cmdargs.dummy, cmdargs.verbose, 
+                    cmdargs.copy, cmdargs.symlink)
+                    
             if sentinelNumber == 1:
                 dirstruct.createSentinel1Xml(zipfilename, finalOutputDir, metainfo, 
                     cmdargs.dummy, cmdargs.verbose)
             elif sentinelNumber == 2:
                 dirstruct.createSentinel2Xml(zipfilename, finalOutputDir, metainfo, 
                     cmdargs.dummy, cmdargs.verbose)
-            dirstruct.createPreviewImg(zipfilename, finalOutputDir, metainfo, 
-                cmdargs.dummy, cmdargs.verbose)
+            
+            if not cmdargs.xmlonly:
+                dirstruct.createPreviewImg(zipfilename, finalOutputDir, metainfo, 
+                    cmdargs.dummy, cmdargs.verbose)
 
         if not ok:
             filesWithErrors.append(msg)
