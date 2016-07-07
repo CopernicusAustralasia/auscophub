@@ -17,18 +17,17 @@ import os
 import argparse
 import zipfile
 
+from auscophub import sen1meta
 from auscophub import sen2meta
 from auscophub import dirstruct
 
-# Size of lat/long grid cells in which we store the files (in degrees)
-GRIDCELLSIZE = 5
 
 def getCmdargs():
     """
     Get commandline arguments
     """
     p = argparse.ArgumentParser(description="""
-        Move the given Copernicus Sentinel-2 SAFE zipfile into its final storage directory on 
+        Move the given Copernicus Sentinel SAFE zipfile into its final storage directory on 
         the Aus Copernicus Hub. Also create associated metadata to allow simple access
         """)
     p.add_argument("zipfile", nargs="*", help="Name of SAFE zipfile to process")
@@ -67,26 +66,26 @@ def mainRoutine():
     
     # Process each zipfile in the list
     for zipfilename in zipfilelist:
-        ok = True
-        if not os.path.exists(zipfilename):
-            msg = "File not found: {}".format(zipfilename)
-            ok = False
-        if not os.access(zipfilename, os.R_OK):
-            msg = "No read permission: {}".format(zipfilename)
-            ok = False
-        if not zipfile.is_zipfile(zipfilename):
-            msg = "Is not a zipfile: {}".format(zipfilename)
+        (ok, msg) = checkZipfileName(zipfilename)
+            
+        sentinelNumber = int(zipfilename[1])
+        if sentinelNumber not in (1, 2):
+            msg = "Unknown Sentinel number '{}': {}".format(sentinelNumber, zipfilename)
             ok = False
 
         if ok:
             try:
-                metainfo = sen2meta.Sen2ZipfileMeta(zipfilename=zipfilename)
+                if sentinelNumber == 1:
+                    metainfo = sen1meta.Sen1ZipfileMeta(zipfilename=zipfilename)
+                elif sentinelNumber == 2:
+                    metainfo = sen2meta.Sen2ZipfileMeta(zipfilename=zipfilename)
             except Exception as e:
-                msg = "Exception raised reading: {}".format(zipfilename)
+                msg = "Exception '{}' raised reading: {}".format(str(e), zipfilename)
                 ok = False
         
         if ok:
-            relativeOutputDir = dirstruct.makeRelativeOutputDir(metainfo, GRIDCELLSIZE)
+            relativeOutputDir = dirstruct.makeRelativeOutputDir(metainfo, 
+                dirstruct.stdGridCellSize[sentinelNumber])
             finalOutputDir = os.path.join(cmdargs.storagetopdir, relativeOutputDir)
             dirstruct.checkFinalDir(finalOutputDir, cmdargs.dummy, cmdargs.verbose)
             
@@ -96,7 +95,7 @@ def mainRoutine():
                 cmdargs.dummy, cmdargs.verbose)
             dirstruct.createPreviewImg(zipfilename, finalOutputDir, metainfo, 
                 cmdargs.dummy, cmdargs.verbose)
-        
+
         if not ok:
             filesWithErrors.append(msg)
     
@@ -108,6 +107,30 @@ def mainRoutine():
             f = sys.stderr
         for msg in filesWithErrors:
             f.write(msg+'\n')
+
+
+def checkZipfileName(zipfilename):
+    """
+    Check for some obvious errors with the zipfile name. 
+    Return a tuple (ok, msg), where ok is True if everything OK, and msg is a string
+    with an explanation of any error (None if no error). 
+    
+    """
+    ok = True
+    msg = None
+    if not os.path.exists(zipfilename):
+        msg = "File not found: {}".format(zipfilename)
+        ok = False
+    if not os.access(zipfilename, os.R_OK):
+        msg = "No read permission: {}".format(zipfilename)
+        ok = False
+    if not zipfile.is_zipfile(zipfilename):
+        msg = "Is not a zipfile: {}".format(zipfilename)
+        ok = False
+    if not (zipfilename.startswith("S") and len(zipfilename) > 2 and zipfilename[1].isdigit()):
+        msg = "Zipfile name non-standard, cannot identfy Sentinel: {}".format(zipfilename)
+        ok = False
+    return (ok, msg)
 
 
 if __name__ == "__main__":
