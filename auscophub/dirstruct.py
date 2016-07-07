@@ -206,7 +206,10 @@ def createSentinel2Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose):
         
         if metainfo.tileNameList is not None:
             # Only write the list of tile names if it actually exists. 
-            f.write("  <MGRSTILES>\n")
+            f.write("\n")
+            f.write("  <!-- These MGRS tile identifiers are not those supplied by ESA's processing software, but have been \n")
+            f.write("      calculated directly from tile centroids by the Australian Copernicus Hub -->\n")
+            f.write("  <MGRSTILES source='AUSCOPHUB' >\n")
             for tileName in metainfo.tileNameList:
                 f.write("    {}\n".format(tileName))
             f.write("  </MGRSTILES>\n")
