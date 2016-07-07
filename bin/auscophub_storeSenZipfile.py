@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Move the given Sentinel-2 SAFE zipfile to its appropriate
+Move the given Sentinel SAFE zipfile to its appropriate
 storage directory, and create associated metadata files in that location. 
 
 Reads the internal metadata inside the zipfile to work out what the storage
@@ -91,8 +91,12 @@ def mainRoutine():
             
             dirstruct.moveZipfile(zipfilename, finalOutputDir, cmdargs.dummy, cmdargs.verbose, 
                 cmdargs.copy, cmdargs.symlink)
-            dirstruct.createSentinel2Xml(zipfilename, finalOutputDir, metainfo, 
-                cmdargs.dummy, cmdargs.verbose)
+            if sentinelNumber == 1:
+                dirstruct.createSentinel1Xml(zipfilename, finalOutputDir, metainfo, 
+                    cmdargs.dummy, cmdargs.verbose)
+            elif sentinelNumber == 2:
+                dirstruct.createSentinel2Xml(zipfilename, finalOutputDir, metainfo, 
+                    cmdargs.dummy, cmdargs.verbose)
             dirstruct.createPreviewImg(zipfilename, finalOutputDir, metainfo, 
                 cmdargs.dummy, cmdargs.verbose)
 
@@ -121,13 +125,13 @@ def checkZipfileName(zipfilename):
     if not os.path.exists(zipfilename):
         msg = "File not found: {}".format(zipfilename)
         ok = False
-    if not os.access(zipfilename, os.R_OK):
+    elif not os.access(zipfilename, os.R_OK):
         msg = "No read permission: {}".format(zipfilename)
         ok = False
-    if not zipfile.is_zipfile(zipfilename):
+    elif not zipfile.is_zipfile(zipfilename):
         msg = "Is not a zipfile: {}".format(zipfilename)
         ok = False
-    if not (zipfilename.startswith("S") and len(zipfilename) > 2 and zipfilename[1].isdigit()):
+    elif not (zipfilename.startswith("S") and len(zipfilename) > 2 and zipfilename[1].isdigit()):
         msg = "Zipfile name non-standard, cannot identfy Sentinel: {}".format(zipfilename)
         ok = False
     return (ok, msg)
