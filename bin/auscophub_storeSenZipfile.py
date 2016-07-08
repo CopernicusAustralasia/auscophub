@@ -71,7 +71,7 @@ def mainRoutine():
     for zipfilename in zipfilelist:
         (ok, msg) = checkZipfileName(zipfilename)
             
-        sentinelNumber = int(zipfilename[1])
+        sentinelNumber = int(os.path.basename(zipfilename)[1])
         if sentinelNumber not in (1, 2):
             msg = "Unknown Sentinel number '{}': {}".format(sentinelNumber, zipfilename)
             ok = False
@@ -129,6 +129,7 @@ def checkZipfileName(zipfilename):
     """
     ok = True
     msg = None
+    zipfileBasename = os.path.basename(zipfilename)
     if not os.path.exists(zipfilename):
         msg = "File not found: {}".format(zipfilename)
         ok = False
@@ -138,7 +139,8 @@ def checkZipfileName(zipfilename):
     elif not zipfile.is_zipfile(zipfilename):
         msg = "Is not a zipfile: {}".format(zipfilename)
         ok = False
-    elif not (zipfilename.startswith("S") and len(zipfilename) > 2 and zipfilename[1].isdigit()):
+    elif not (zipfileBasename.startswith("S") and len(zipfileBasename) > 2 and 
+            zipfileBasename[1].isdigit()):
         msg = "Zipfile name non-standard, cannot identfy Sentinel: {}".format(zipfilename)
         ok = False
     return (ok, msg)
