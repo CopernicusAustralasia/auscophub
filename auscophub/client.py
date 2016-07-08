@@ -79,7 +79,7 @@ class ThreddsServerDirList(object):
         topDatasetNode = catalogNode.getElementsByTagName('dataset')[0]
         
         subdirNodeList = topDatasetNode.getElementsByTagName('catalogRef')
-        self.subdirs = [ThreddsCatalogRefEntry(dirFullUrl, node) for node in subdirNodeList]
+        self.subdirs = [ThreddsCatalogRefEntry(node) for node in subdirNodeList]
         
         datasetNodeList = topDatasetNode.getElementsByTagName('dataset')
         self.datasets = [ThreddsDatasetEntry(node) for node in datasetNodeList]
@@ -99,9 +99,10 @@ class ThreddsCatalogRefEntry(object):
     """
     Details of a <catalogRef> tag in the catalog.xml
     """
-    def __init__(self, baseUrl, catalogRefNode):
+    def __init__(self, catalogRefNode):
         self.href = catalogRefNode.getAttribute('xlink:href').strip()
         self.idStr = catalogRefNode.getAttribute('ID').strip()
+        self.title = catalogRefNode.getAttribute('xlink:title').strip()
         self.fullUrl = "{}/{}".format(THREDDS_CATALOG_BASE, self.idStr)
 
 
