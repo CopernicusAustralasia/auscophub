@@ -31,12 +31,18 @@ class AusCopHubMeta(object):
         swathValuesList         List of strings, radar swath-type values (e.g. IW1, IW2,..)
     
     """
-    def __init__(self, filename):
-        "Create from a given filename"
-        if not os.access(filename, os.R_OK):
-            raise AusCopHubMetaError("XML file '{}' not found".format(filename))
+    def __init__(self, xmlStr=None, filename=None):
+        """
+        Create from either an XML string, or a filename containing the XML
+        """
+        if xmlStr is None and filename is not None:
+            if not os.access(filename, os.R_OK):
+                raise AusCopHubMetaError("XML file '{}' not found".format(filename))
+
+            xmlStr = open(filename).read()
+        if xmlStr is None:
+            raise AusCopHubMetaError("Must give either xmlStr or filename argument")
         
-        xmlStr = open(filename).read()
         doc = minidom.parseString(xmlStr)
         
         safeDescrNodeList = doc.getElementsByTagName('AUSCOPHUB_SAFE_FILEDESCRIPTION')
