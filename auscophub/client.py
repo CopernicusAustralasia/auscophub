@@ -44,6 +44,98 @@ def makeUrlOpener(proxy=None):
     return opener
 
 
+def getDescriptionMetaFromThreddsByBounds(urlOpener, sentinelNumber, productId, 
+        startDate, endDate, northLat, southLat, westLong, eastLong):
+    """
+    Search the THREDDS server and return a list of AusCopHubMeta objects for
+    the given sentinel number, the given product, and are within the time and
+    location bounds given. These can be filtered further.
+    
+    The urlOpener argument is as created by the makeUrlOpener() function. 
+    SentinelNumber is an integer (i.e. 1, 2 or 3)
+    ProductId is a string, specific to the sentinel. 
+    For Sentinel-1, product strings are: SLC, GRD
+    For Sentinel-2, product strings are: L1C
+    For Sentinel-3, product strings are: I have no idea, yet......
+    Startdate and endDate are date strings, as yyyymmdd
+    Latitude and longitude bounds are given in decimal degrees. Note that we do
+        not yet cope with crossing 180 degrees. 
+    
+    Return value is a list of tuples of the form
+        (urlStr, metaObj)
+    where urlStr is the URL of the XML file on the server, and metaObj is 
+    the AusCopHubMeta object holding the contents of the XML fie, read from the 
+    server.
+    
+    """
+    # This assumes we can just use the productId string directly in the URL. 
+    # This may not always be true, but see how we go. 
+    if sentinelNumber == 1:
+        productCatalogUrl = "{}/{}".format(THREDDS_SEN1_CATALOG_BASE, productId)
+    elif sentinelNumber == 2:
+        productCatalogUrl = "{}/{}".format(THREDDS_SEN2_CATALOG_BASE, productId)
+    else:
+        raise AusCopHubClientError("Unknown sentinel number {}".format(sentinelNumber))
+    
+    startDateWithDash = "{}-{}".format(startDate[:4], startDate[4:])
+    endDateWithDash = "{}-{}".format(endDate[:4], endDate[4:])
+    
+    # Create a list of catalog objects for yyyy-mm subdirs which are in the date range
+    ymCatalogObjList = []
+    yearLists = ThreddsServerDirList(urlOpener, productCatalogUrl)
+    for subdirObj in yearLists.subdirs:
+        ymLists = client.ThreddsServerDirList(urlOpener, subdirObj.fullUrl)
+        for ymSubdirObj in ymLists.subdirs:
+            yearMonthWithDash = ymSubdirObj.title
+            if yearMonthWithDash >= startDateWithDash and yearMonthWithDash <= endDateWithDash:
+                ymCatalogObjList.append(ymSubdirObj)
+    
+    # Create a list of catalog objects for grid cell subdirs which are in the bounding box. 
+    # Note that the test function expands the bounding box by one grid cell, because 
+    # grid cells are based on the centroid, so there is overlap. 
+    gridCellCatalogObjList = []
+    for subdirObj in ymCatalogObjList:
+        gridCellDirName = subdirObj.title
+        if gridCellDirWithinBounds(gridCellDirName, northLat, southLat, westLong, eastLong):
+            gridCellCatalogObjList.append(subdirObj)
+    
+    # Create a list of dataset objects for every XML file in the given list of catalog objects. 
+    dsObjList = []
+    for subdirObj in gridCellCatalogObjList:
+        dirlists = ThreddsServerDirList(urlOpener, subdirObj.fullUrl)
+        dsObjList.extend([dsObj for dsObj in dirlists.datasets if dsObj.name.endswith(".xml")])
+    
+    # Create a list of the meta files and their contents
+    metaList = []
+    for dsObj in dsObjList:
+        url = dsObj.fullUrl
+        xmlStr = urlOpener(url).read()
+        metaObj = auscophubmeta.AusCopHubMeta(xmlstr=xmlStr)
+        metaList.append((url, metaObj))
+    
+    return metaList
+
+
+def gridCellDirWithinBounds(gridCellDirName, northLat, southLat, westLong, eastLong):
+    """
+    Return True if the given grid cell directory name lies within <gridCellSize> of the 
+    lat/long bounds given. The extra margin around the given lat/long bounds is 
+    because we want to capture the image footprints whose centroid may lie in the
+    neighbouring grid cell, but which overlap onto the given lat/long bounds. It is expected
+    that subsequent filtering will apply more subtle and detailed tests to the
+    exact footprint given. 
+        
+    """
+    # Decode the grid cell bounds from the string. Assumes a fixed format. 
+    gcNorthLat = int(gridCellDirName[:2])
+    gcWestLong = int(gridCellDirName[3:6])
+    gcSouthLat = int(gridCellDirName[8:10])
+    gcEastLong = int(gridCellDirName[11:14])
+    gridCellSize = gcNorthLat - gcSouthLat
+    
+    withinEastWest = ((gcWest
+
+
 def loadDatasetDescriptionXmlList(urlOpener, xmlDatasetEntryList):
     """
     Given a list of DatasetEntry object, all of which correspond to .xml files
