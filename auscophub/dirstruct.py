@@ -85,8 +85,8 @@ def makeYearMonthDir(metainfo):
     the months up a bit. After we have a few years of data, it could become rather onerous
     if we do not divide them. 
     """
-    year = metainfo.datetime.year
-    month = metainfo.datetime.month
+    year = metainfo.startTime.year
+    month = metainfo.startTime.month
     
     dirName = os.path.join("{:04}".format(year), "{:04}-{:02}".format(year, month))
     return dirName
@@ -161,8 +161,10 @@ def createSentinel1Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose):
         f.write("  <ESA_TILEOUTLINE_FOOTPRINT_WKT>\n")
         f.write("    {}\n".format(metainfo.outlineWKT))
         f.write("  </ESA_TILEOUTLINE_FOOTPRINT_WKT>\n")
-        acqTimestampStr = metainfo.datetime.strftime("%Y-%m-%d %H:%M:%S")
-        f.write("  <ACQUISITION_TIME datetime_utc='{}' />\n".format(acqTimestampStr))
+        startTimestampStr = metainfo.startTime.strftime("%Y-%m-%d %H:%M:%S.%f")
+        stopTimestampStr = metainfo.stopTime.strftime("%Y-%m-%d %H:%M:%S.%f")
+        f.write("  <ACQUISITION_TIME start_datetime_utc='{}' stop_datetime_utc='{}' />\n".format(
+            startTimestampStr, stopTimestampStr))
         f.write("  <POLARISATION values='{}' />\n".format(','.join(metainfo.polarisation)))
         f.write("  <SWATH values='{}' />\n".format(','.join(metainfo.swath)))
         f.write("  <MODE value='{}' />\n".format(metainfo.mode))
@@ -198,8 +200,10 @@ def createSentinel2Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose):
         f.write("  <ESA_TILEOUTLINE_FOOTPRINT_WKT>\n")
         f.write("    {}\n".format(metainfo.extPosWKT))
         f.write("  </ESA_TILEOUTLINE_FOOTPRINT_WKT>\n")
-        acqTimestampStr = metainfo.datetime.strftime("%Y-%m-%d %H:%M:%S")
-        f.write("  <ACQUISITION_TIME datetime_utc='{}' />\n".format(acqTimestampStr))
+        startTimestampStr = metainfo.startTime.strftime("%Y-%m-%d %H:%M:%S.%f")
+        stopTimestampStr = metainfo.stopTime.strftime("%Y-%m-%d %H:%M:%S.%f")
+        f.write("  <ACQUISITION_TIME start_datetime_utc='{}' stop_datetime_utc='{}' />\n".format(
+            startTimestampStr, stopTimestampStr))
         f.write("  <ESA_PROCESSING software_version='{}' processingtime_utc='{}'/>\n".format(
             metainfo.processingSoftwareVersion, metainfo.generationTime))
         f.write("  <ORBIT_NUMBERS relative='{}' />\n".format(metainfo.relativeOrbitNumber))

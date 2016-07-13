@@ -57,7 +57,9 @@ class Sen1ZipfileMeta(object):
             self.productType = adsHeaderNode.getElementsByTagName('productType')[0].firstChild.data.strip()
             self.mode = adsHeaderNode.getElementsByTagName('mode')[0].firstChild.data.strip()
             startTimeStr = adsHeaderNode.getElementsByTagName('startTime')[0].firstChild.data.strip()
-            self.datetime = datetime.datetime.strptime(startTimeStr, "%Y-%m-%dT%H:%M:%S.%f")
+            self.startTime = datetime.datetime.strptime(startTimeStr, "%Y-%m-%dT%H:%M:%S.%f")
+            stopTimeStr = adsHeaderNode.getElementsByTagName('stopTime')[0].firstChild.data.strip()
+            self.stopTime = datetime.datetime.strptime(stopTimeStr, "%Y-%m-%dT%H:%M:%S.%f")
             self.absoluteOrbitNumber = int(adsHeaderNode.getElementsByTagName('absoluteOrbitNumber')[0].firstChild.data.strip())
             # Relative orbit formula supplied by Sarah Lawrie from Geoscience Australia
             self.relativeOrbitNumber = ((self.absoluteOrbitNumber - 73) % 175) + 1

@@ -23,7 +23,8 @@ class AusCopHubMeta(object):
         ctrLong                 Float, longitude of centroid of imagery
         ctrLat                  Float, latitude of centroid of imagery
         cloudCoverPcnt          Int, percentage cloud cover
-        acquisitiondatetime     datetime object, for acquisition time (in UTC)
+        startTime               datetime object, for acquisition start time (in UTC)
+        stopTime                datetime object, for acquisition stop time (in UTC)
         footprintWkt            WKT string of rough footprint, as supplied by ESA
         esaSoftwareVersion      String, ESA's processing software version number
         esaProcessingTimeStr    String, time at which ESA processed (in UTC)
@@ -61,8 +62,10 @@ class AusCopHubMeta(object):
         
         acqTimeNodeList = safeDescrNode.getElementsByTagName('ACQUISITION_TIME')
         if len(acqTimeNodeList) > 0:
-            acqTimeStr = acqTimeNodeList[0].getAttribute('datetime_utc')
-            self.acquisitiondatetime = datetime.datetime.strptime(acqTimeStr, '%Y-%m-%d %H:%M:%S')
+            startTimeStr = acqTimeNodeList[0].getAttribute('start_datetime_utc')
+            self.startTime = datetime.datetime.strptime(startTimeStr, '%Y-%m-%d %H:%M:%S.%f')
+            stopTimeStr = acqTimeNodeList[0].getAttribute('stop_datetime_utc')
+            self.stopTime = datetime.datetime.strptime(stopTimeStr, '%Y-%m-%d %H:%M:%S.%f')
         
         footprintNodeList = safeDescrNode.getElementsByTagName('ESA_TILEOUTLINE_FOOTPRINT_WKT')
         if len(footprintNodeList) > 0:

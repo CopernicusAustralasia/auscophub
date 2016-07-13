@@ -292,10 +292,14 @@ class Sen2ZipfileMeta(object):
         self.processingSoftwareVersion = findElementByXPath(generalInfoNode, 
             'Product_Info/PROCESSING_BASELINE')[0].firstChild.data.strip()
         
-        # The image acquisition time. Why are the start and stop times always identical????
+        # The image acquisition start and stop times. In older versions of the ESA processing
+        # software, note that start and stop times were identical (which is obviously wrong)
         prodStartTimeNode = findElementByXPath(generalInfoNode, 'Product_Info/PRODUCT_START_TIME')[0]
         prodStartTimeStr = prodStartTimeNode.firstChild.data.strip()
-        self.datetime = datetime.datetime.strptime(prodStartTimeStr, "%Y-%m-%dT%H:%M:%S.%fZ")
+        self.startTime = datetime.datetime.strptime(prodStartTimeStr, "%Y-%m-%dT%H:%M:%S.%fZ")
+        prodStopTimeNode = findElementByXPath(generalInfoNode, 'Product_Info/PRODUCT_STOP_TIME')[0]
+        prodStopTimeStr = prodStopTimeNode.firstChild.data.strip()
+        self.stopTime = datetime.datetime.strptime(prodStopTimeStr, "%Y-%m-%dT%H:%M:%S.%fZ")
         # Product generation time, i.e. when ESA processed it
         generationTimeNode = findElementByXPath(generalInfoNode, 'Product_Info/GENERATION_TIME')[0]
         generationTimeStr = generationTimeNode.firstChild.data.strip()
