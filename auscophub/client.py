@@ -87,7 +87,6 @@ def getDescriptionMetaFromThreddsByBounds(urlOpener, sentinelNumber, instrumentS
     else:
         raise AusCopHubClientError("Unknown sentinel number {}".format(sentinelNumber))
     
-    print(productCatalogUrl)
     # Find the top-level year directories
     ymCatalogObjList = []
     yearLists = ThreddsServerDirList(urlOpener, productCatalogUrl)
