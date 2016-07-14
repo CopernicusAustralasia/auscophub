@@ -105,7 +105,7 @@ def mainRoutine():
     if cmdargs.bbox is not None:
         metalist = filterByBoundingBox(metalist, boundingBox)
     elif cmdargs.polygonfile is not None:
-        print("Not yet implemented")
+        print("--polygonfile is not yet implemented")
     
     # Generate list of zipfile URLS
     zipfileUrlList = [urlStr.replace(".xml", ".zip") for (urlStr, metaObj) in metalist]
