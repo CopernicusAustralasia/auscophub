@@ -104,9 +104,7 @@ def getDescriptionMetaFromThreddsByBounds(urlOpener, sentinelNumber, instrumentS
             if yearMonthWithDash >= startDateWithDash and yearMonthWithDash <= endDateWithDash:
                 ymCatalogObjList.append(ymSubdirObj)
     
-    # Create a list of catalog objects for grid cell subdirs which are in the bounding box. 
-    # Note that the test function expands the bounding box by one grid cell, because 
-    # grid cells are based on the centroid, so there is overlap. 
+    # Create a list of catalog objects for grid cell subdirs which intersect the bounding box. 
     gridCellCatalogObjList = []
     (westLong, eastLong, southLat, northLat) = longLatBoundingBox
     for ymSubdirObj in ymCatalogObjList:
