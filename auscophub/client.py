@@ -26,8 +26,8 @@ THREDDS_BASE = "http://dapds00.nci.org.au/thredds"
 THREDDS_CATALOG_BASE = "{}/catalog".format(THREDDS_BASE)
 THREDDS_FILES_BASE = "{}/fileServer".format(THREDDS_BASE)
 THREDDS_COPERNICUS_SUBDIR = "uc0/fj7_dev/Copernicus"
-THREDDS_SEN1_CATALOG_BASE = "{}/{}/Sentinel-1A/C-SAR".format(THREDDS_CATALOG_BASE, THREDDS_COPERNICUS_SUBDIR)
-THREDDS_SEN2_CATALOG_BASE = "{}/{}/Sentinel-2A/MSI".format(THREDDS_CATALOG_BASE, THREDDS_COPERNICUS_SUBDIR)
+THREDDS_SEN1_CATALOG_BASE = "{}/{}/Sentinel-1".format(THREDDS_CATALOG_BASE, THREDDS_COPERNICUS_SUBDIR)
+THREDDS_SEN2_CATALOG_BASE = "{}/{}/Sentinel-2".format(THREDDS_CATALOG_BASE, THREDDS_COPERNICUS_SUBDIR)
 
 
 def makeUrlOpener(proxy=None):
@@ -44,8 +44,8 @@ def makeUrlOpener(proxy=None):
     return opener
 
 
-def getDescriptionMetaFromThreddsByBounds(urlOpener, sentinelNumber, productId, 
-        startDate, endDate, northLat, southLat, westLong, eastLong):
+def getDescriptionMetaFromThreddsByBounds(urlOpener, sentinelNumber, instrumentStr, 
+        productId, startDate, endDate, longLatBoundingBox):
     """
     Search the THREDDS server and return a list of AusCopHubMeta objects for
     the given sentinel number, the given product, and are within the time and
@@ -53,13 +53,23 @@ def getDescriptionMetaFromThreddsByBounds(urlOpener, sentinelNumber, productId,
     
     The urlOpener argument is as created by the makeUrlOpener() function. 
     SentinelNumber is an integer (i.e. 1, 2 or 3)
-    ProductId is a string, specific to the sentinel. 
-    For Sentinel-1, product strings are: SLC, GRD
-    For Sentinel-2, product strings are: L1C
-    For Sentinel-3, product strings are: I have no idea, yet......
+    The instrumentStr and productId are strings, specific to the sentinel. 
+    For Sentinel-1:
+        instrumentStr is always 'C-SAR'
+        productId is one of: SLC, GRD      (Note that RAW and OCN may be supported in future)
+    For Sentinel-2:
+        instrumentStr is always 'MSI'
+        productId is one of: L1C
+    For Sentinel-3:
+        instrumentStr is one of: OLCI, SLSTR, SRAL, MWR
+        productId is one of: I have no idea, yet......
     Startdate and endDate are date strings, as yyyymmdd
-    Latitude and longitude bounds are given in decimal degrees. Note that we do
-        not yet cope with crossing 180 degrees. 
+
+    Latitude and longitude bounds are given in decimal degrees. Note that 
+        this will limit to files whose centroid falls within the grid cells 
+        overlapping this bounding box. 
+        Note also that we do not yet cope with crossing 180 degrees. 
+        The bounding box is a tuple of (westLong, eastong, southLong, northLong)
     
     Return value is a list of tuples of the form
         (urlStr, metaObj)
@@ -68,23 +78,28 @@ def getDescriptionMetaFromThreddsByBounds(urlOpener, sentinelNumber, productId,
     server.
     
     """
-    # This assumes we can just use the productId string directly in the URL. 
+    # This assumes we can just use the instrumentStr and productId string directly in the URL. 
     # This may not always be true, but see how we go. 
     if sentinelNumber == 1:
-        productCatalogUrl = "{}/{}".format(THREDDS_SEN1_CATALOG_BASE, productId)
+        productCatalogUrl = "{}/{}/{}".format(THREDDS_SEN1_CATALOG_BASE, instrumentStr, productId)
     elif sentinelNumber == 2:
-        productCatalogUrl = "{}/{}".format(THREDDS_SEN2_CATALOG_BASE, productId)
+        productCatalogUrl = "{}/{}/{}".format(THREDDS_SEN2_CATALOG_BASE, instrumentStr, productId)
     else:
         raise AusCopHubClientError("Unknown sentinel number {}".format(sentinelNumber))
     
+    print(productCatalogUrl)
+    # Find the top-level year directories
+    ymCatalogObjList = []
+    yearLists = ThreddsServerDirList(urlOpener, productCatalogUrl)
+    if len(yearLists.subdirs) == 0:
+        raise AusCopHubClientError("Cannot find year directories. Check the server '{}'".format(productCatalogUrl))
+        
     startDateWithDash = "{}-{}".format(startDate[:4], startDate[4:])
     endDateWithDash = "{}-{}".format(endDate[:4], endDate[4:])
     
     # Create a list of catalog objects for yyyy-mm subdirs which are in the date range
-    ymCatalogObjList = []
-    yearLists = ThreddsServerDirList(urlOpener, productCatalogUrl)
     for subdirObj in yearLists.subdirs:
-        ymLists = client.ThreddsServerDirList(urlOpener, subdirObj.fullUrl)
+        ymLists = ThreddsServerDirList(urlOpener, subdirObj.fullUrl)
         for ymSubdirObj in ymLists.subdirs:
             yearMonthWithDash = ymSubdirObj.title
             if yearMonthWithDash >= startDateWithDash and yearMonthWithDash <= endDateWithDash:
@@ -94,10 +109,13 @@ def getDescriptionMetaFromThreddsByBounds(urlOpener, sentinelNumber, productId,
     # Note that the test function expands the bounding box by one grid cell, because 
     # grid cells are based on the centroid, so there is overlap. 
     gridCellCatalogObjList = []
-    for subdirObj in ymCatalogObjList:
-        gridCellDirName = subdirObj.title
-        if gridCellDirWithinBounds(gridCellDirName, northLat, southLat, westLong, eastLong):
-            gridCellCatalogObjList.append(subdirObj)
+    (westLong, eastLong, southLat, northLat) = longLatBoundingBox
+    for ymSubdirObj in ymCatalogObjList:
+        cellLists = ThreddsServerDirList(urlOpener, ymSubdirObj.fullUrl)
+        for cellDirObj in cellLists.subdirs:
+            gridCellDirName = cellDirObj.title
+            if gridCellDirWithinBounds(gridCellDirName, northLat, southLat, westLong, eastLong):
+                gridCellCatalogObjList.append(cellDirObj)
     
     # Create a list of dataset objects for every XML file in the given list of catalog objects. 
     dsObjList = []
@@ -109,8 +127,8 @@ def getDescriptionMetaFromThreddsByBounds(urlOpener, sentinelNumber, productId,
     metaList = []
     for dsObj in dsObjList:
         url = dsObj.fullUrl
-        xmlStr = urlOpener(url).read()
-        metaObj = auscophubmeta.AusCopHubMeta(xmlstr=xmlStr)
+        xmlStr = urlOpener.open(url).read()
+        metaObj = auscophubmeta.AusCopHubMeta(xmlStr=xmlStr)
         metaList.append((url, metaObj))
     
     return metaList
@@ -118,23 +136,31 @@ def getDescriptionMetaFromThreddsByBounds(urlOpener, sentinelNumber, productId,
 
 def gridCellDirWithinBounds(gridCellDirName, northLat, southLat, westLong, eastLong):
     """
-    Return True if the given grid cell directory name lies within <gridCellSize> of the 
-    lat/long bounds given. The extra margin around the given lat/long bounds is 
-    because we want to capture the image footprints whose centroid may lie in the
-    neighbouring grid cell, but which overlap onto the given lat/long bounds. It is expected
-    that subsequent filtering will apply more subtle and detailed tests to the
-    exact footprint given. 
+    Return True if the given grid cell directory name lies at least partially within the 
+    lat/long bounds given. 
         
     """
     # Decode the grid cell bounds from the string. Assumes a fixed format. 
-    gcNorthLat = int(gridCellDirName[:2])
-    gcWestLong = int(gridCellDirName[3:6])
-    gcSouthLat = int(gridCellDirName[8:10])
-    gcEastLong = int(gridCellDirName[11:14])
-    gridCellSize = gcNorthLat - gcSouthLat
+    gcNorthLat = decodeDegreesStr(gridCellDirName[:3])
+    gcWestLong = decodeDegreesStr(gridCellDirName[3:7])
+    gcSouthLat = decodeDegreesStr(gridCellDirName[8:11])
+    gcEastLong = decodeDegreesStr(gridCellDirName[11:15])
     
-    withinEastWest = ((gcWest
+    withinEastWest = ((gcEastLong >= westLong) and (gcWestLong <= eastLong))
+    withinNorthSouth = ((gcSouthLat <= northLat) and (gcNorthLat >= southLat))
+    within = withinEastWest and withinNorthSouth
+    return within
 
+
+def decodeDegreesStr(valStr):
+    """
+    Return a signed latitude/longitude value from a string. Only copes with the integer 
+    values used in grid cell names. 
+    """
+    val = int(valStr[:-1])
+    if valStr[-1] in ("S", "W"):
+        val = -val
+    return val
 
 def loadDatasetDescriptionXmlList(urlOpener, xmlDatasetEntryList):
     """
