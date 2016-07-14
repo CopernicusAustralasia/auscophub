@@ -14,6 +14,8 @@ import os
 import argparse
 import datetime
 
+from osgeo import ogr
+
 from auscophub import client
 
 
@@ -99,8 +101,11 @@ def mainRoutine():
     metalist = [(urlStr, metaObj) for (urlStr, metaObj) in metalist 
         if os.path.basename(urlStr).strip(".xml") not in excludeSet]
     
-    # Do any further filtering here, e.g. intersection of footprints with shapefile, 
-    # or whatever. Still to do.....
+    # Do any further filtering here
+    if cmdargs.bbox is not None:
+        metalist = filterByBoundingBox(metalist, boundingBox)
+    elif cmdargs.polygonfile is not None:
+        print("Not yet implemented")
     
     # Generate list of zipfile URLS
     zipfileUrlList = [urlStr.replace(".xml", ".zip") for (urlStr, metaObj) in metalist]
@@ -123,6 +128,24 @@ def loadExcludeList(excludeListFile):
         raise AusCopHubSearchError("Unable to read excludelist file '{}'".format(excludeListFile))
     
     return excludeSet
+
+
+def filterByBoundingBox(metalist, boundingBox):
+    """
+    Filter the list items based on their footprint polygons, and the exact bounding 
+    box given. 
+    """
+    (westLong, eastLong, southLat, northLat) = boundingBox
+    bboxWkt = 'POLYGON(({left} {top}, {right} {top}, {right} {bottom}, {left} {bottom}, {left} {top}))'.format(
+        left=westLong, right=eastLong, top=northLat, bottom=southLat)
+    bboxGeom = ogr.Geometry(wkt=bboxWkt)
+    
+    metalistFiltered = []
+    for (urlStr, metaObj) in metalist:
+        footprintGeom = ogr.Geometry(wkt=str(metaObj.footprintWkt))
+        if footprintGeom.Intersects(bboxGeom):
+            metalistFiltered.append((urlStr, metaObj))
+    return metalistFiltered
 
 
 def writeOutput(cmdargs, zipfileUrlList):
