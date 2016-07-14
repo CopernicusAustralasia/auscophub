@@ -50,7 +50,7 @@ def getCmdargs():
         help="Latest date to search, as yyyymmdd (default=%(default)s)")
     
     spatialGroup = p.add_argument_group(title="Searching by location")
-    spatialGroup.add_argument("--bbox", nargs=4, 
+    spatialGroup.add_argument("--bbox", nargs=4, type=float, 
         metavar=('westLong', 'eastLong', 'southLat', 'northLat'),
         help=("Lat/long bounding box to search within. Current limitations of the server "+
             "mean that we are actually searching in the n-degree grid cells which lie at least "+
@@ -67,7 +67,8 @@ def getCmdargs():
         help="Name of bash script of curl commands for downloading zipfiles. Default does not write this. ")
     outputGroup.add_argument("--curloptions", default="--silent --show-error",
         help=("Commandline options to add to the curl commands generated for --curlscript. "+
-            "Give this as a single quoted string. Default='%(default)s'"))
+            "Give this as a single quoted string. Default='%(default)s'. "+
+            "(Note that --proxy will automatically add a -x option, so not required here)"))
     
     cmdargs = p.parse_args()
     
@@ -95,7 +96,7 @@ def mainRoutine():
     metalist = client.getDescriptionMetaFromThreddsByBounds(urlOpener, cmdargs.sentinel, 
         cmdargs.instrument, cmdargs.product, cmdargs.startdate, cmdargs.enddate, 
         boundingBox)
-    metalist = [(urlStr, metaObj) for (urlStr, metaobj) in metalist 
+    metalist = [(urlStr, metaObj) for (urlStr, metaObj) in metalist 
         if os.path.basename(urlStr).strip(".xml") not in excludeSet]
     
     # Do any further filtering here, e.g. intersection of footprints with shapefile, 
@@ -135,9 +136,14 @@ def writeOutput(cmdargs, zipfileUrlList):
         f.close()
     if cmdargs.curlscript is not None:
         f = open(cmdargs.curlscript, 'w')
+        f.write("#!/bin/bash\n")
         for zipfileUrl in zipfileUrlList:
             zipfileName = os.path.basename(zipfileUrl)
-            curlCmd = "curl {} -o {} {}".format(zipfileUrl, zipfileName, cmdargs.curloptions)
+            proxyOpt = ""
+            if cmdargs.proxy is not None:
+                proxyOpt = " -x {}".format(cmdargs.proxy)
+            curlCmd = "curl {} -o {} {} {}".format(zipfileUrl, zipfileName, cmdargs.curloptions,
+                proxyOpt)
             f.write(curlCmd+'\n')
         f.close()
 
