@@ -53,12 +53,13 @@ def getCmdargs():
         "Each line should contain one zipfile name, with no path or URL details. "))
     filterGroup.add_argument("--maxcloud", type=int, default=50,
         help=("Maximum acceptable cloud cover percentage (default=%(default)s). "+
-            "Has no effect for Sentinel-1. For optical sensors, exclude any zipfiles with "+
-            "reported cloud percentage greater than this. "))
+            "Has no effect for Sentinel-1. For optical sensors, include only zipfiles with "+
+            "reported cloud percentage up to this maximum. "))
     filterGroup.add_argument("--polarisation", 
-        help=("Required polarisation (radar only). Exclude any zipfiles which do not "+
-            "include the given polarisation. Possible values are 'HH', 'VV', 'HH+HV', 'VV+VH'. "+
+        help=("Required polarisation (radar only). Include only zipfiles which have "+
+            "the given polarisation. Possible values are 'HH', 'VV', 'HH+HV', 'VV+VH'. "+
             "Default will include any polarisations. "))
+    filterGroup.add_argument("--swathmode"
     
     temporalGroup = p.add_argument_group(title="Searching by date")
     temporalGroup.add_argument("--startdate", default="20141001",
