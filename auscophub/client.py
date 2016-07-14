@@ -93,8 +93,8 @@ def getDescriptionMetaFromThreddsByBounds(urlOpener, sentinelNumber, instrumentS
     if len(yearLists.subdirs) == 0:
         raise AusCopHubClientError("Cannot find year directories. Check the server '{}'".format(productCatalogUrl))
         
-    startDateWithDash = "{}-{}".format(startDate[:4], startDate[4:])
-    endDateWithDash = "{}-{}".format(endDate[:4], endDate[4:])
+    startDateWithDash = "{}-{}".format(startDate[:4], startDate[4:6])
+    endDateWithDash = "{}-{}".format(endDate[:4], endDate[4:6])
     
     # Create a list of catalog objects for yyyy-mm subdirs which are in the date range
     for subdirObj in yearLists.subdirs:
@@ -128,7 +128,10 @@ def getDescriptionMetaFromThreddsByBounds(urlOpener, sentinelNumber, instrumentS
         url = dsObj.fullUrl
         xmlStr = urlOpener.open(url).read()
         metaObj = auscophubmeta.AusCopHubMeta(xmlStr=xmlStr)
-        metaList.append((url, metaObj))
+        # Filter by exact date, instead of just month, as above
+        yyyymmdd = metaObj.startTime.strftime("%Y%m%d")
+        if yyyymmdd >= startDate and yyyymmdd <= endDate:
+            metaList.append((url, metaObj))
     
     return metaList
 
