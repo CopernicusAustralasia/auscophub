@@ -63,9 +63,16 @@ class AusCopHubMeta(object):
         acqTimeNodeList = safeDescrNode.getElementsByTagName('ACQUISITION_TIME')
         if len(acqTimeNodeList) > 0:
             startTimeStr = acqTimeNodeList[0].getAttribute('start_datetime_utc')
-            self.startTime = datetime.datetime.strptime(startTimeStr, '%Y-%m-%d %H:%M:%S.%f')
+            fmtStr = '%Y-%m-%d %H:%M:%S.%f'
+            if len(startTimeStr) == 0:
+                # Check for old name
+                startTimeStr = acqTimeNodeList[0].getAttribute('datetime_utc')
+                fmtStr = '%Y-%m-%d %H:%M:%S'
+            self.startTime = datetime.datetime.strptime(startTimeStr, fmtStr)
+
             stopTimeStr = acqTimeNodeList[0].getAttribute('stop_datetime_utc')
-            self.stopTime = datetime.datetime.strptime(stopTimeStr, '%Y-%m-%d %H:%M:%S.%f')
+            if len(stopTimeStr) > 0:
+                self.stopTime = datetime.datetime.strptime(stopTimeStr, '%Y-%m-%d %H:%M:%S.%f')
         
         footprintNodeList = safeDescrNode.getElementsByTagName('ESA_TILEOUTLINE_FOOTPRINT_WKT')
         if len(footprintNodeList) > 0:
