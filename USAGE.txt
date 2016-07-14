@@ -1,11 +1,13 @@
-Current the only main program is auscophub_storeSen2zipfile.py. It is used to move
+Server Side
+-----------
+Current the only main program is auscophub_storeSenZipfile.py. It is used to move
 one or more SAFE-format zipfiles into their final home, and create associated
 XML and PNG files. 
 
 It takes a --help option, to give full commandline help. 
 
 For moving one file, normal usage would be something like
-    auscophub_storeSen2zipfile.py --storagetopdir /some/directory S2A_OPER_PRD_MSIL1C_PDMC_20160407T190635_R116_V20160406T001844_20160406T002213.zip
+    auscophub_storeSenZipfile.py --storagetopdir /some/directory S2A_OPER_PRD_MSIL1C_PDMC_20160407T190635_R116_V20160406T001844_20160406T002213.zip
 This would move the given zipfile into a directory structure under /some/directory, with
 directory levels for year/year-month/gridCellName/
 where the grid cell name is a readable label for a 5 degree lat/long grid cell. In this particular 
@@ -14,12 +16,35 @@ case, it would be
 
 The input zipfile name can include its full path. 
 
-It can also be used to move a large list of zipfile. These are placed in a text file, one 
+It can also be used to move a large list of zipfiles. These are placed in a text file, one 
 zipfile per line, and this text file name is given to the --zipfilelist option, e.g.
-    auscophub_storeSen2zipfile.py --storagetopdir /some/directory --zipfilelist ziplist.txt
+    auscophub_storeSenZipfile.py --storagetopdir /some/directory --zipfilelist ziplist.txt
 
-Note the options for testing:
+Note the options for testing, and unusual cases:
     --dummy         Do nothing, just report
     --verbose       Report what is happening, as it happens
     --copy          Instead of moving the zipfile, copy it to its final location, 
                     leaving the original untouched
+    --symlink       Instead of moving the zipfile, just create a symbolic
+                    link from the final location to the original file. 
+    --xmlonly       Create the XML files in final location, but do not move
+                    the zipfile, or create the PNG file. Useful when updating the
+                    format of the XML file. 
+
+
+Client Side
+-----------
+One main program is provided, for simple searching of the server, based on date and region. 
+    auscophub_searchZipfiles.py
+It takes a --help option, to give full commandline help. 
+
+Two main Python modules are provided. The most important one is 
+    auscophub.client
+This contains routines useful routines to manage connecting to the server and searching
+the available files. The routines within this form the basis of auscophub_searchZipfiles.py. 
+
+The other is 
+    auscophub.auscophubmeta
+and is a small class which reads the XML file provided for each zipfile, by AusCopHub. Each of 
+these contains simple metadata to assist in searching. This facility is used within the
+client code above. 
