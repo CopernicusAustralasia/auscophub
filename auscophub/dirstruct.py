@@ -126,6 +126,7 @@ def moveZipfile(zipfilename, finalOutputDir, dummy, verbose, makeCopy, makeSymli
             if verbose:
                 print("Copy to", finalFile)
             shutil.copyfile(zipfilename, finalFile)
+            shutil.copystat(zipfilename, finalFile)
         elif makeSymlink:
             if verbose:
                 print("Symlink to", finalFile)
