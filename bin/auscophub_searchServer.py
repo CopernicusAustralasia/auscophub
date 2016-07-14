@@ -36,7 +36,7 @@ def getCmdargs():
             "(which each have only a single instrument), but required for Sentinel-3"))
     p.add_argument("--product",
         help=("Data product (i.e. processing level) to search. Options are dependent on satellite "+
-            "family. For Sentinel-1, options are {SLC, GRD}. RAW and OCN may be supported later. "+
+            "family. For Sentinel-1, options are {SLC (default), GRD}. RAW and OCN may be supported later. "+
             "For Sentinel-2, options are L1C. In the future, L2A may be supported. "+
             "For Sentinel-3, options are currently unknown"))
     p.add_argument("--proxy", help=("URL of proxy server. Default uses no proxy, "+
@@ -44,6 +44,10 @@ def getCmdargs():
     p.add_argument("--excludelist", help=("File listing zipfile names to exclude from "+
         "search results. Useful for excluding files you already have, or ones with known problems. "+
         "Each line should contain one zipfile name, with no path or URL details. "))
+    p.add_argument("--maxcloud", type=int, default=50,
+        help=("Maximum acceptable cloud cover percentage (default=%(default)s). "+
+            "Has no effect for Sentinel-1. For optical sensors, filter out any zipfiles with "+
+            "reported cloud percentage greater than this. "))
     
     temporalGroup = p.add_argument_group(title="Searching by date")
     temporalGroup.add_argument("--startdate", default="20141001",
@@ -107,6 +111,8 @@ def mainRoutine():
     elif cmdargs.polygonfile is not None:
         print("--polygonfile is not yet implemented")
     
+    metalist = filterByCloud(metalist, cmdargs)
+    
     # Generate list of zipfile URLS
     zipfileUrlList = [urlStr.replace(".xml", ".zip") for (urlStr, metaObj) in metalist]
     
@@ -144,6 +150,22 @@ def filterByBoundingBox(metalist, boundingBox):
     for (urlStr, metaObj) in metalist:
         footprintGeom = ogr.Geometry(wkt=str(metaObj.footprintWkt))
         if footprintGeom.Intersects(bboxGeom):
+            metalistFiltered.append((urlStr, metaObj))
+    return metalistFiltered
+
+
+def filterByCloud(metalist, cmdargs):
+    """
+    Filter the meta objects by cloud amount. If no cloud amount present, then
+    all are acceptable (e.g. for Sentinel-1)
+    
+    """
+    metalistFiltered = []
+    for (urlStr, metaObj) in metalist:
+        cloudPcnt = None
+        if hasattr(metaObj, 'cloudCoverPcnt'):
+            cloudPcnt = metaObj.cloudCoverPcnt
+        if cloudPcnt is None or cloudPcnt <= cmdargs.maxcloud:
             metalistFiltered.append((urlStr, metaObj))
     return metalistFiltered
 
