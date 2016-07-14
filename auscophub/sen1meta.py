@@ -56,10 +56,6 @@ class Sen1ZipfileMeta(object):
             self.satellite = adsHeaderNode.getElementsByTagName('missionId')[0].firstChild.data.strip()
             self.productType = adsHeaderNode.getElementsByTagName('productType')[0].firstChild.data.strip()
             self.mode = adsHeaderNode.getElementsByTagName('mode')[0].firstChild.data.strip()
-            startTimeStr = adsHeaderNode.getElementsByTagName('startTime')[0].firstChild.data.strip()
-            self.startTime = datetime.datetime.strptime(startTimeStr, "%Y-%m-%dT%H:%M:%S.%f")
-            stopTimeStr = adsHeaderNode.getElementsByTagName('stopTime')[0].firstChild.data.strip()
-            self.stopTime = datetime.datetime.strptime(stopTimeStr, "%Y-%m-%dT%H:%M:%S.%f")
             self.absoluteOrbitNumber = int(adsHeaderNode.getElementsByTagName('absoluteOrbitNumber')[0].firstChild.data.strip())
             # Relative orbit formula supplied by Sarah Lawrie from Geoscience Australia
             self.relativeOrbitNumber = ((self.absoluteOrbitNumber - 73) % 175) + 1
@@ -89,6 +85,8 @@ class Sen1ZipfileMeta(object):
             # if this is useful, but it seemed like it would be. 
             polarisationSet = set()
             swathSet = set()
+            startTimeList = []
+            stopTimeList = []
             for xmlFile in annotationXmlFiles:
                 xmlf = zf.open(xmlFile)
                 xmlStr = xmlf.read()
@@ -100,6 +98,14 @@ class Sen1ZipfileMeta(object):
                 polarisationSet.add(polarisation)
                 swath = adsHeaderNode.getElementsByTagName('swath')[0].firstChild.data.strip()
                 swathSet.add(swath)
+
+                startTimeStr = adsHeaderNode.getElementsByTagName('startTime')[0].firstChild.data.strip()
+                startTimeList.append(datetime.datetime.strptime(startTimeStr, "%Y-%m-%dT%H:%M:%S.%f"))
+                stopTimeStr = adsHeaderNode.getElementsByTagName('stopTime')[0].firstChild.data.strip()
+                stopTimeList.append(datetime.datetime.strptime(stopTimeStr, "%Y-%m-%dT%H:%M:%S.%f"))
+
+            self.startTime = min(startTimeList)
+            self.stopTime = max(stopTimeList)
             self.polarisation = sorted(list(polarisationSet))
             self.swath = sorted(list(swathSet))
         
