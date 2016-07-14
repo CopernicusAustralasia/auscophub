@@ -28,7 +28,12 @@ def getCmdargs():
     defaultInstrumentDict = {1:'C-SAR', 2:'MSI', 3:None}
     defaultProductDict = {1:'SLC', 2:'L1C', 3:None}
     
-    p = argparse.ArgumentParser()
+    p = argparse.ArgumentParser(description="""
+        Rudimentary search tool to find zipped SAFE-format files on the Australian
+        Regional Copericus Data Hub. Limitations of the current server architecture
+        make this a basic tool, and it is planned that it will be superceded by
+        more appropriate search tools as more capability is added to the server. 
+    """)
     p.add_argument("--sentinel", type=int, default=2, choices=[1, 2, 3], 
         help="Number of Sentinel satellite family to search on (default=%(default)s)")
     p.add_argument("--instrument", 
@@ -40,14 +45,20 @@ def getCmdargs():
             "For Sentinel-2, options are L1C. In the future, L2A may be supported. "+
             "For Sentinel-3, options are currently unknown"))
     p.add_argument("--proxy", help=("URL of proxy server. Default uses no proxy, "+
-        "assuming direct connection to the internet. "))
-    p.add_argument("--excludelist", help=("File listing zipfile names to exclude from "+
+        "assuming direct connection to the internet. Currently only supports non-authenticating proxies. "))
+    
+    filterGroup = p.add_argument_group(title="Filtering options")
+    filterGroup.add_argument("--excludelist", help=("File listing zipfile names to exclude from "+
         "search results. Useful for excluding files you already have, or ones with known problems. "+
         "Each line should contain one zipfile name, with no path or URL details. "))
-    p.add_argument("--maxcloud", type=int, default=50,
+    filterGroup.add_argument("--maxcloud", type=int, default=50,
         help=("Maximum acceptable cloud cover percentage (default=%(default)s). "+
-            "Has no effect for Sentinel-1. For optical sensors, filter out any zipfiles with "+
+            "Has no effect for Sentinel-1. For optical sensors, exclude any zipfiles with "+
             "reported cloud percentage greater than this. "))
+    filterGroup.add_argument("--polarisation", 
+        help=("Required polarisation (radar only). Exclude any zipfiles which do not "+
+            "include the given polarisation. Possible values are 'HH', 'VV', 'HH+HV', 'VV+VH'. "+
+            "Default will include any polarisations. "))
     
     temporalGroup = p.add_argument_group(title="Searching by date")
     temporalGroup.add_argument("--startdate", default="20141001",
@@ -112,6 +123,7 @@ def mainRoutine():
         print("--polygonfile is not yet implemented")
     
     metalist = filterByCloud(metalist, cmdargs)
+    metalist = filterByPolarisation(metalist, cmdargs)
     
     # Generate list of zipfile URLS
     zipfileUrlList = [urlStr.replace(".xml", ".zip") for (urlStr, metaObj) in metalist]
@@ -167,6 +179,31 @@ def filterByCloud(metalist, cmdargs):
             cloudPcnt = metaObj.cloudCoverPcnt
         if cloudPcnt is None or cloudPcnt <= cmdargs.maxcloud:
             metalistFiltered.append((urlStr, metaObj))
+    return metalistFiltered
+
+
+def filterByPolarisation(metalist, cmdargs):
+    """
+    Filter the meta objects by polarisation. If no polarisation values present, then
+    all are acceptable (e.g. for Sentinel-2)
+    
+    """
+    if cmdargs.polarisation is not None:
+        metalistFiltered = []
+        reqdPolarisations = cmdargs.polarisation.split('+')
+        for (urlStr, metaObj) in metalist:
+            polarisationList = None
+            if hasattr(metaObj, 'polarisationValuesList'):
+                polarisationList = metaObj.polarisationValuesList
+            exclude = False
+            if polarisationList is not None:
+                for reqdPol in reqdPolarisations:
+                    if reqdPol not in polarisationList:
+                        exclude = True
+            if not exclude:
+                metalistFiltered.append((urlStr, metaObj))
+    else:
+        metalistFiltered = metalist
     return metalistFiltered
 
 
