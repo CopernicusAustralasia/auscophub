@@ -55,11 +55,13 @@ def getCmdargs():
         help=("Maximum acceptable cloud cover percentage (default=%(default)s). "+
             "Has no effect for Sentinel-1. For optical sensors, include only zipfiles with "+
             "reported cloud percentage up to this maximum. "))
-    filterGroup.add_argument("--polarisation", 
+    filterGroup.add_argument("--polarisation", choices=['HH', 'VV', 'HH+HV', 'VV+VH'], 
         help=("Required polarisation (radar only). Include only zipfiles which have "+
-            "the given polarisation. Possible values are 'HH', 'VV', 'HH+HV', 'VV+VH'. "+
+            "the given polarisation. "+
             "Default will include any polarisations. "))
-    filterGroup.add_argument("--swathmode"
+    filterGroup.add_argument("--swathmode", choices=['IW', 'EW', 'SM', 'WV'], 
+        help=("Desired swath mode (radar only). Include only zipfiles which were acquired in "+
+            "the given swath mode. Default will include any swath modes. "))
     
     temporalGroup = p.add_argument_group(title="Searching by date")
     temporalGroup.add_argument("--startdate", default="20141001",
@@ -94,7 +96,7 @@ def getCmdargs():
         cmdargs.instrument = defaultInstrumentDict[cmdargs.sentinel]
     if cmdargs.product is None:
         cmdargs.product = defaultProductDict[cmdargs.sentinel]
-        
+    
     return cmdargs
 
 
@@ -125,8 +127,10 @@ def mainRoutine():
     
     metalist = filterByCloud(metalist, cmdargs)
     metalist = filterByPolarisation(metalist, cmdargs)
+    metalist = filterBySwathMode(metalist, cmdargs)
+    metalist = filterByDirection(metalist, cmdargs)
     
-    # Generate list of zipfile URLS
+    # Generate list of zipfile URLs
     zipfileUrlList = [urlStr.replace(".xml", ".zip") for (urlStr, metaObj) in metalist]
     
     writeOutput(cmdargs, zipfileUrlList)
@@ -201,6 +205,25 @@ def filterByPolarisation(metalist, cmdargs):
                 for reqdPol in reqdPolarisations:
                     if reqdPol not in polarisationList:
                         exclude = True
+            if not exclude:
+                metalistFiltered.append((urlStr, metaObj))
+    else:
+        metalistFiltered = metalist
+    return metalistFiltered
+
+
+def filterBySwathMode(metalist, cmdargs):
+    """
+    Filter meta objects by swath mode. If no mode attribute present, e.g. for Sentinel-2,
+    then all meta objects are acceptable. 
+    
+    """
+    if cmdargs.swathmode is not None:
+        metalistFiltered = []
+        for (urlStr, metaObj) in metalist:
+            exclude = False
+            if hasattr(metaObj, 'mode') and metaObj.mode != cmdargs.swathmode:
+                exclude = True
             if not exclude:
                 metalistFiltered.append((urlStr, metaObj))
     else:
