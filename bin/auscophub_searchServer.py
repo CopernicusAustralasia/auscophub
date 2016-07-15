@@ -84,8 +84,8 @@ def getCmdargs():
         help=("Vector file of a polygon to search within. The same caveats about server"+
             "limitations given for --bbox also apply here, so be generous. The polygon "+
             "file can be any vector format readable using GDAL/OGR. It should contain a "+
-            "single polygon layer, with one or more polygons. Complex polygons will only slow "+
-            "down searching, so keep it simple. "))
+            "single polygon layer, with one or more polygons. Highly complex polygons will "+
+            "only slow down searching, so keep it simple. "))
     
     outputGroup = p.add_argument_group(title="Output options")
     outputGroup.add_argument("--urllist", 
@@ -245,6 +245,7 @@ def filterByDirection(metalist, cmdargs):
     Filter by pass direction. Comparison is case-insensitive. 
     """
     if cmdargs.direction is not None:
+        metalistFiltered = []
         for (urlStr, metaObj) in metalist:
             exclude = False
             if (hasattr(metaObj, 'passDirection') and 
