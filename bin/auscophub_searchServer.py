@@ -23,8 +23,8 @@ def getCmdargs():
     """
     Get commandline arguments
     """
-    today = datetime.date.today()
-    defaultEndDate = today.strftime("%Y%m%d")
+    tomorrow = datetime.date.today() + datetime.timedelta(1)
+    defaultEndDate = tomorrow.strftime("%Y%m%d")
     defaultInstrumentDict = {1:'C-SAR', 2:'MSI', 3:None}
     defaultProductDict = {1:'SLC', 2:'L1C', 3:None}
     
