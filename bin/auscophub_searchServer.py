@@ -7,6 +7,12 @@ subsequent download.
 This script does not actually perform data downloads itself, it just searches 
 the server to find what is available. 
 
+This is a very rudimentary search facility, limited by the current structure of
+the server itself. It is hoped that in time we will be able to implement
+better facilities on the server, enabling faster and more flexible searching
+from remote clients. This current mechanism is intended to get us going in
+a simple fashion, and will hopefully be replaced at some point. 
+
 """
 from __future__ import print_function, division
 
