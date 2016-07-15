@@ -87,7 +87,7 @@ def getCmdargs():
             "means you should be generous with your bounding box, or you might miss something at "+
             "the edges. "))
     spatialGroup.add_argument("--polygonfile", 
-        help=("Vector file of a polygon to search within. The same caveats about server"+
+        help=("Vector file of a polygon to search within. The same caveats about server "+
             "limitations given for --bbox also apply here, so be generous. The polygon "+
             "file can be any vector format readable using GDAL/OGR. It should contain a "+
             "single polygon layer, with one or more polygons. Highly complex polygons will "+
@@ -101,7 +101,7 @@ def getCmdargs():
     outputGroup.add_argument("--curloptions", default="--silent --show-error",
         help=("Commandline options to add to the curl commands generated for --curlscript. "+
             "Give this as a single quoted string. Default='%(default)s'. "+
-            "(Note that --proxy will automatically add a -x option, so not required here)"))
+            "(Note that --proxy will automatically add a -x option for curl, so not required here)"))
     
     cmdargs = p.parse_args()
     
