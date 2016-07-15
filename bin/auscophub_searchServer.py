@@ -62,6 +62,9 @@ def getCmdargs():
     filterGroup.add_argument("--swathmode", choices=['IW', 'EW', 'SM', 'WV'], 
         help=("Desired swath mode (radar only). Include only zipfiles which were acquired in "+
             "the given swath mode. Default will include any swath modes. "))
+    filterGroup.add_argument("--direction", choices=['Ascending', 'Descending'],
+        help=("Desired pass direction (radar only). Include only zipfiles which were "+
+            "acquired with the given pass direction. Default will include any direction. "))
     
     temporalGroup = p.add_argument_group(title="Searching by date")
     temporalGroup.add_argument("--startdate", default="20141001",
@@ -228,6 +231,22 @@ def filterBySwathMode(metalist, cmdargs):
                 metalistFiltered.append((urlStr, metaObj))
     else:
         metalistFiltered = metalist
+    return metalistFiltered
+
+
+def filterByDirection(metalist, cmdargs):
+    """
+    Filter by pass direction. Comparison is case-insensitive. 
+    """
+    metalistFiltered = []
+    if cmdargs.direction is not None:
+        for (urlStr, metaObj) in metalist:
+            exclude = False
+            if (hasattr(metaObj, 'passDirection') and 
+                    metaObj.passDirection.lower() != cmdargs.direction.lower()):
+                exclude = True
+            if not exclude:
+                metalistFiltered.append((urlStr, metaObj))
     return metalistFiltered
 
 
