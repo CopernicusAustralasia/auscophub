@@ -35,6 +35,7 @@ def makeUrlOpener(proxy=None):
     Use the crazy urllib2 routines to make a thing which can open a URL, with proxy
     handling if required. Return an opener object, which is used as
         reader = opener.open(url)
+        
     """
     if proxy is None:
         opener = build_opener()
@@ -51,31 +52,32 @@ def getDescriptionMetaFromThreddsByBounds(urlOpener, sentinelNumber, instrumentS
     the given sentinel number, the given product, and are within the time and
     location bounds given. These can be filtered further.
     
-    The urlOpener argument is as created by the makeUrlOpener() function. 
-    SentinelNumber is an integer (i.e. 1, 2 or 3)
-    The instrumentStr and productId are strings, specific to the sentinel. 
-    For Sentinel-1:
-        instrumentStr is always 'C-SAR'
-        productId is one of: SLC, GRD      (Note that RAW and OCN may be supported in future)
-    For Sentinel-2:
-        instrumentStr is always 'MSI'
-        productId is one of: L1C
-    For Sentinel-3:
-        instrumentStr is one of: OLCI, SLSTR, SRAL, MWR
-        productId is one of: I have no idea, yet......
-    Startdate and endDate are date strings, as yyyymmdd
+    Args:
+        urlOpener: Object as created by the makeUrlOpener() function
+        sentinelNumber (int): an integer (i.e. 1, 2 or 3), identifying which Sentinel family
+        instrumentStr (str): Which instrument - specific to each Sentinel family. Possible values
+            are - Sentinel-1: C-SAR; Sentinel-2: MSI; Sentinel-3: one of {OLCI, SLSTR, SRAL, MWR}.
+        productId (str): Which data product - specific to each Sentinel family. Possible values
+            are - Sentinel-1: one of {SLC, GRD}; 
+            Sentinel-2: L1C;
+            Sentinel-3: As yet unknown. 
+        startdate (str): Earliest acquisition date to include, as yyyymmdd
+        endDate (str): Latest acquisition date to include, as yyyymmdd
+        boundingBox (tuple): Search region lat/long bounding box in decimal degrees, in
+                the form (westLong, eastLong, southLat, northLat), with negative values for
+                south of equator and west of Greenwich. 
 
-    Latitude and longitude bounds are given in decimal degrees. Note that 
-        this will limit to files whose centroid falls within the grid cells 
-        overlapping this bounding box. 
-        Note also that we do not yet cope with crossing 180 degrees. 
-        The bounding box is a tuple of (westLong, eastong, southLong, northLong)
+    In future, support may be added for products RAW and OCN for Sentinel-1, and L2A for Sentinel-2. 
+
+    Warning:
+        Note that we do not (yet) cope with the boundingBox crossing the international 
+        date line
     
-    Return value is a list of tuples of the form
-        (urlStr, metaObj)
-    where urlStr is the URL of the XML file on the server, and metaObj is 
-    the AusCopHubMeta object holding the contents of the XML fie, read from the 
-    server.
+    Returns:
+        A list of tuples of the form (urlStr, metaObj)
+        where urlStr is the URL of the XML file on the server, and metaObj is 
+        the AusCopHubMeta object holding the contents of the XML file, read from the 
+        server.
     
     """
     # This assumes we can just use the instrumentStr and productId string directly in the URL. 
@@ -186,8 +188,8 @@ class ThreddsServerDirList(object):
     "interesting" pieces of the catalog.xml for the given subdirectory.
     
     Attributes:
-        subdirs             list of subdirectories under this one, i.e. <catalogRef> tags
-        datasets            list of datasets in this subdir, i.e. <dataset> tags
+        subdirs: list of ThreddsCatalogRefEntry objects, for subdirectories under this one, i.e. <catalogRef> tags
+        datasets: list of ThreddsDatasetEntry objects, for datasets in this subdir, i.e. <dataset> tags
         
     """
     def __init__(self, urlOpener, subdirUrl):

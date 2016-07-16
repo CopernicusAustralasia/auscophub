@@ -19,17 +19,17 @@ class AusCopHubMeta(object):
     Not all attributes will be present, depending on the satellite. 
     
     Attributes:
-        satellite               String, e.g. S1A, S2A, etc. 
-        ctrLong                 Float, longitude of centroid of imagery
-        ctrLat                  Float, latitude of centroid of imagery
-        cloudCoverPcnt          Int, percentage cloud cover
-        startTime               datetime object, for acquisition start time (in UTC)
-        stopTime                datetime object, for acquisition stop time (in UTC)
-        footprintWkt            WKT string of rough footprint, as supplied by ESA
-        esaSoftwareVersion      String, ESA's processing software version number
-        esaProcessingTimeStr    String, time at which ESA processed (in UTC)
-        polarisationValuesList  List of strings, radar polarisation values (e.g. HV, VV, ...)
-        swathValuesList         List of strings, radar swath-type values (e.g. IW1, IW2,..)
+        satellite:               String, e.g. S1A, S2A, etc. 
+        ctrLong:                 Float, longitude of centroid of imagery
+        ctrLat:                  Float, latitude of centroid of imagery
+        cloudCoverPcnt:          Int, percentage cloud cover
+        startTime:               datetime object, for acquisition start time (in UTC)
+        stopTime:                datetime object, for acquisition stop time (in UTC)
+        footprintWkt:            WKT string of rough footprint, as supplied by ESA
+        esaSoftwareVersion:      String, ESA's processing software version number
+        esaProcessingTimeStr:    String, time at which ESA processed (in UTC)
+        polarisationValuesList:  List of strings, radar polarisation values (e.g. HV, VV, ...)
+        swathValuesList:         List of strings, radar swath-type values (e.g. IW1, IW2,..)
     
     """
     def __init__(self, xmlStr=None, filename=None):
