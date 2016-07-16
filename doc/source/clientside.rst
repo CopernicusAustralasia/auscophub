@@ -1,0 +1,28 @@
+Client Side Access
+==================
+
+Simple Server Searching
+-----------------------
+A Python script has been written to allow a very rudimentary search facility. It
+works by accessing the XML fragments which are created on the server for each zipfile,
+and by making use of the temporal and spatial divisions created by the directory
+structure on the server. 
+
+It is anticipated that this simple mechanism will eventually be replaced with a 
+more flexible database search facility. 
+
+The simple search program is :command:`auscophub_searchServer.py`. It takes a 
+:command:`--help` option, which details the command line options available. Briefly,
+it is a Python commandline tool which allows the user to search the server by date range,
+geographic region (specified either as a bounding box or a polygon layer, e.g. shapefile), 
+and restricting by sensor-specific attributes such as cloud cover, radar polarisation, etc. 
+
+Its output is either a list of URLs for the resulting zipfiles, or a bash script of 
+:command:`curl` commands to perform the download of these files. 
+
+The :command:`--excludelist` option allows a generic method for excluding some zipfiles. This
+can be used to avoid re-downloading files the user already has. Thus the command
+can be used to update existing holdings. 
+
+This main program makes use of functions supplied in the :mod:`auscophub.client` module. These
+could also be used to create more customised server access programs. 
