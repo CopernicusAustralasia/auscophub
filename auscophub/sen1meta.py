@@ -57,8 +57,7 @@ class Sen1ZipfileMeta(object):
             self.productType = adsHeaderNode.getElementsByTagName('productType')[0].firstChild.data.strip()
             self.mode = adsHeaderNode.getElementsByTagName('mode')[0].firstChild.data.strip()
             self.absoluteOrbitNumber = int(adsHeaderNode.getElementsByTagName('absoluteOrbitNumber')[0].firstChild.data.strip())
-            # Relative orbit formula supplied by Sarah Lawrie from Geoscience Australia
-            self.relativeOrbitNumber = ((self.absoluteOrbitNumber - 73) % 175) + 1
+            self.relativeOrbitNumber()
             
             gnrlAnnotationNode = doc.getElementsByTagName('generalAnnotation')[0]
             productInfoNode = gnrlAnnotationNode.getElementsByTagName('productInformation')[0]
@@ -123,6 +122,46 @@ class Sen1ZipfileMeta(object):
                 del pf
             except zipfile.BadZipfile:
                 pass
+        
+        if not hasattr(self, 'startTime'):
+            # Assume we could not find anything from inside the zipfile, so
+            # fall back to things we can deduce from the filename
+            self.fallbackMetadataFromFilename(zipfilename)
+
+    def relativeOrbitNumber(self):
+        """
+        Relative orbit formula supplied by Sarah Lawrie from Geoscience Australia
+        """
+        self.relativeOrbitNumber = ((self.absoluteOrbitNumber - 73) % 175) + 1
+    
+    def fallbackMetadataFromFilename(self, zipfilename):
+        """
+        This is called for the product types which we do not really know how to handle, e.g.
+        RAW and OCN. It fills in a rudimentary amount of metadata which can be gleaned
+        directly from the zipfile name itself. 
+        
+        We really should do more to understand the internals of these other products, 
+        particularly the OCN, which is probably manageable, and useful. The RAW perhaps not 
+        so much. 
+        
+        """
+        filenamePieces = zipfilename.replace(".zip", "").split("_")
+        
+        self.centroidXY = None
+        self.polarisation = None
+        self.swath = None
+        self.passDirection = None
+        self.satellite = filenamePieces[0]
+        self.mode = filenamePieces[1]
+        self.productType = filenamePieces[2]
+        if self.productType in ('RAW', 'OCN'):
+            startTimeStr = filenamePieces[5]
+            self.startTime = datetime.datetime.strptime(startTimeStr, "%Y%m%dT%H%M%S")
+            stopTimeStr = filenamePieces[6]
+            self.stopTime = datetime.datetime.strptime(stopTimeStr, "%Y%m%dT%H%M%S")
             
+            self.absoluteOrbitNumber = int(filenamePieces[7])
+            self.relativeOrbitNumber()
+        
 
 class Sen1MetaError(Exception): pass
