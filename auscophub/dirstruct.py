@@ -25,9 +25,12 @@ def makeRelativeOutputDir(metainfo, gridCellSize):
     gridCellSize parameter is in degrees. 
     
     """
-    gridSquareDir = makeGridSquareDir(metainfo, gridCellSize)
     yearMonthDir = makeYearMonthDir(metainfo)
-    outDir = os.path.join(yearMonthDir, gridSquareDir)
+    if metainfo.centroidXY is not None:
+        gridSquareDir = makeGridSquareDir(metainfo, gridCellSize)
+        outDir = os.path.join(yearMonthDir, gridSquareDir)
+    else:
+        outDir = yearMonthDir
     return outDir
     
 
@@ -157,21 +160,25 @@ def createSentinel1Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose):
         f.write("<?xml version='1.0'?>\n")
         f.write("<AUSCOPHUB_SAFE_FILEDESCRIPTION>\n")
         f.write("  <SATELLITE name='{}' />\n".format(metainfo.satellite))
-        (longitude, latitude) = tuple(metainfo.centroidXY)
-        f.write("  <CENTROID longitude='{}' latitude='{}' />\n".format(longitude, latitude))
-        f.write("  <ESA_TILEOUTLINE_FOOTPRINT_WKT>\n")
-        f.write("    {}\n".format(metainfo.outlineWKT))
-        f.write("  </ESA_TILEOUTLINE_FOOTPRINT_WKT>\n")
+        if metainfo.centroidXY is not None:
+            (longitude, latitude) = tuple(metainfo.centroidXY)
+            f.write("  <CENTROID longitude='{}' latitude='{}' />\n".format(longitude, latitude))
+            f.write("  <ESA_TILEOUTLINE_FOOTPRINT_WKT>\n")
+            f.write("    {}\n".format(metainfo.outlineWKT))
+            f.write("  </ESA_TILEOUTLINE_FOOTPRINT_WKT>\n")
         startTimestampStr = metainfo.startTime.strftime("%Y-%m-%d %H:%M:%S.%f")
         stopTimestampStr = metainfo.stopTime.strftime("%Y-%m-%d %H:%M:%S.%f")
         f.write("  <ACQUISITION_TIME start_datetime_utc='{}' stop_datetime_utc='{}' />\n".format(
             startTimestampStr, stopTimestampStr))
-        f.write("  <POLARISATION values='{}' />\n".format(','.join(metainfo.polarisation)))
-        f.write("  <SWATH values='{}' />\n".format(','.join(metainfo.swath)))
+        if metainfo.polarisation is not None:
+            f.write("  <POLARISATION values='{}' />\n".format(','.join(metainfo.polarisation)))
+        if metainfo.swath is not None:
+            f.write("  <SWATH values='{}' />\n".format(','.join(metainfo.swath)))
         f.write("  <MODE value='{}' />\n".format(metainfo.mode))
         f.write("  <ORBIT_NUMBERS relative='{}' absolute='{}' />\n".format(metainfo.relativeOrbitNumber,
             metainfo.absoluteOrbitNumber))
-        f.write("  <PASS direction='{}' />\n".format(metainfo.passDirection))
+        if metainfo.passDirection is not None:
+            f.write("  <PASS direction='{}' />\n".format(metainfo.passDirection))
         f.write("</AUSCOPHUB_SAFE_FILEDESCRIPTION>\n")
         f.close()
 
