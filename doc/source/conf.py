@@ -53,8 +53,8 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'auscophub'
-copyright = u'2016, Neil Flood'
-author = u'Neil Flood'
+copyright = u'2016, AusCopHub Community'
+author = u'AusCopHub Community'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -229,7 +229,7 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
   (master_doc, 'auscophub.tex', u'auscophub Documentation',
-   u'Neil Flood', 'manual'),
+   u'AusCopHub Community', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
