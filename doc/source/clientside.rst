@@ -25,4 +25,5 @@ can be used to avoid re-downloading files the user already has. Thus the command
 can be used to update existing holdings. 
 
 This main program makes use of functions supplied in the :mod:`auscophub.client` module. These
-could also be used to create more customised server access programs. 
+could also be used to create more customised server access programs. The per-zipfile XML 
+fragments can be decoded using the code in the :mod:`auscophub.auscophubmeta` module. 
