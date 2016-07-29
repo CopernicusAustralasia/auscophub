@@ -88,6 +88,7 @@ def getDescriptionMetaFromThreddsByBounds(urlOpener, sentinelNumber, instrumentS
         productCatalogUrl = "{}/{}/{}".format(THREDDS_SEN2_CATALOG_BASE, instrumentStr, productId)
     else:
         raise AusCopHubClientError("Unknown sentinel number {}".format(sentinelNumber))
+#    productCatalogUrl += "/catalog.xml"
     
     # Find the top-level year directories
     ymCatalogObjList = []
@@ -199,7 +200,7 @@ class ThreddsServerDirList(object):
         topDatasetNode = catalogNode.getElementsByTagName('dataset')[0]
         
         subdirNodeList = topDatasetNode.getElementsByTagName('catalogRef')
-        self.subdirs = [ThreddsCatalogRefEntry(node) for node in subdirNodeList]
+        self.subdirs = [ThreddsCatalogRefEntry(node, subdirUrl) for node in subdirNodeList]
         
         datasetNodeList = topDatasetNode.getElementsByTagName('dataset')
         self.datasets = [ThreddsDatasetEntry(node) for node in datasetNodeList]
@@ -219,11 +220,11 @@ class ThreddsCatalogRefEntry(object):
     """
     Details of a <catalogRef> tag in the catalog.xml
     """
-    def __init__(self, catalogRefNode):
+    def __init__(self, catalogRefNode, baseUrl):
         self.href = catalogRefNode.getAttribute('xlink:href').strip()
         self.idStr = catalogRefNode.getAttribute('ID').strip()
         self.title = catalogRefNode.getAttribute('xlink:title').strip()
-        self.fullUrl = "{}/{}".format(THREDDS_CATALOG_BASE, self.idStr)
+        self.fullUrl = "{}/{}".format(baseUrl.strip("/catalog.xml"), self.href)
 
 
 def getThreddsCatalogXml(urlOpener, baseUrl, returnXmlString=False):
@@ -235,7 +236,9 @@ def getThreddsCatalogXml(urlOpener, baseUrl, returnXmlString=False):
     If returnXmlString is True, then just return the XML string, without parsing. 
     
     """
-    url = "{}/catalog.xml".format(baseUrl)
+    url = baseUrl
+    if not url.endswith("/catalog.xml"):
+        url = "{}/catalog.xml".format(baseUrl)
     reader = urlOpener.open(url)
     xmlStr = reader.read()
     
