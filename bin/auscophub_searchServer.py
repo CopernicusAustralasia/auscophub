@@ -57,7 +57,7 @@ def getCmdargs():
     filterGroup.add_argument("--excludelist", help=("File listing zipfile names to exclude from "+
         "search results. Useful for excluding files you already have, or ones with known problems. "+
         "Each line should contain one zipfile name, with no path or URL details. "))
-    filterGroup.add_argument("--maxcloud", type=int, default=50,
+    filterGroup.add_argument("--maxcloud", type=int, default=100,
         help=("Maximum acceptable cloud cover percentage (default=%(default)s). "+
             "Has no effect for Sentinel-1. For optical sensors, include only zipfiles with "+
             "reported cloud percentage up to this maximum. "))
