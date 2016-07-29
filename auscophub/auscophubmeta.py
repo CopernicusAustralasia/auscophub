@@ -110,6 +110,17 @@ class AusCopHubMeta(object):
         if len(swathNodeList) > 0:
             self.swathValuesList = swathNodeList[0].getAttribute('values').split(',')
         
+        zipfileNode = safeDescrNode.getElementsByTagName('ZIPFILE')
+        if len(zipfileNode) > 0:
+            self.zipfileSizeBytes = None
+            self.zipfileMd5Local = None
+            sizeBytesStr = zipfileNode[0].getAttribute('size_bytes')
+            if len(sizeBytesStr) > 0:
+                self.zipfileSizeBytes = int(sizeBytesStr)
+            md5local = zipfileNode[0].getAttribute('md5_local')
+            if len(md5local) > 0:
+                self.zipfileMd5local = md5local
+        
         mgrsTileNodeList = safeDescrNode.getElementsByTagName('MGRSTILES')
         if len(mgrsTileNodeList) > 0:
             ausCopHubTilesNodeList = [node for node in mgrsTileNodeList if 

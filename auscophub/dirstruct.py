@@ -8,6 +8,7 @@ from __future__ import print_function, division
 import os
 import shutil
 import tempfile
+import hashlib
 
 # Size of lat/long grid cells in which we store the files (in degrees). This is 
 # potentially a function of which Sentinel we are dealing with, hence the dictionary,
@@ -156,6 +157,8 @@ def createSentinel1Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose):
     else:
         if verbose:
             print("Creating", finalXmlFile)
+        fileInfo = ZipfileSysInfo(zipfilename)
+
         f = open(finalXmlFile, 'w')
         f.write("<?xml version='1.0'?>\n")
         f.write("<AUSCOPHUB_SAFE_FILEDESCRIPTION>\n")
@@ -179,6 +182,8 @@ def createSentinel1Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose):
             metainfo.absoluteOrbitNumber))
         if metainfo.passDirection is not None:
             f.write("  <PASS direction='{}' />\n".format(metainfo.passDirection))
+        f.write("  <ZIPFILE size_bytes='{}' md5_local='{}' />\n".format(fileInfo.sizeBytes, 
+            fileInfo.md5))
         f.write("</AUSCOPHUB_SAFE_FILEDESCRIPTION>\n")
         f.close()
 
@@ -198,6 +203,8 @@ def createSentinel2Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose):
     else:
         if verbose:
             print("Creating", finalXmlFile)
+        fileInfo = ZipfileSysInfo(zipfilename)
+        
         f = open(finalXmlFile, 'w')
         f.write("<?xml version='1.0'?>\n")
         f.write("<AUSCOPHUB_SAFE_FILEDESCRIPTION>\n")
@@ -215,6 +222,8 @@ def createSentinel2Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose):
         f.write("  <ESA_PROCESSING software_version='{}' processingtime_utc='{}'/>\n".format(
             metainfo.processingSoftwareVersion, metainfo.generationTime))
         f.write("  <ORBIT_NUMBERS relative='{}' />\n".format(metainfo.relativeOrbitNumber))
+        f.write("  <ZIPFILE size_bytes='{}' md5_local='{}' />\n".format(fileInfo.sizeBytes, 
+            fileInfo.md5))
         
         if metainfo.tileNameList is not None:
             # Only write the list of tile names if it actually exists. 
@@ -255,6 +264,33 @@ def createPreviewImg(zipfilename, finalOutputDir, metainfo, dummy, verbose):
         if os.path.exists(tmpImg):
             os.remove(tmpImg)
     
+
+class ZipfileSysInfo(object):
+    """
+    Information about the zipfile which can be obtained at operating system level,
+    without understanding the internal structure of the zipfile (i.e. it is just
+    a file). 
+    
+    """
+    def __init__(self, zipfilename):
+        statInfo = os.stat(zipfilename)
+        self.sizeBytes = statInfo.st_size
+        self.md5 = self.md5hash(zipfilename)
+    
+    @staticmethod
+    def md5hash(zipfilename):
+        """
+        Calculate the md5 hash of the given zipfile
+        """
+        hashObj = hashlib.md5()
+        blocksize = 65536
+        f = open(zipfilename)
+        buf = f.read(blocksize)
+        while len(buf) > 0:
+            hashObj.update(buf)
+            buf = f.read(blocksize)
+        return hashObj.hexdigest()
+
 
 class AusCopDirStructError(Exception): pass
 
