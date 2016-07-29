@@ -7,7 +7,7 @@ The code described here is contributed by the community of users of the Australi
 Regional Copernicus Data Hub. The Hub is a server for serving out satellite
 imagery from the Sentinel satellites of the European Copernicus program, for
 the Australasian and South-East Asian region. The hub itself is homed at
-`<http://copernicus.gov.au>`_. 
+`<http://www.copernicus.gov.au>`_. 
 
 The contributed code here has come from members of the hub consortium, and other 
 interested parties. 
@@ -17,6 +17,8 @@ Downloads
 The code is available as a tarball from 
 `BitBucket <https://bitbucket.org/chchrsc/auscophub/downloads>`_. The source code 
 repository is also hosted there. 
+
+Release notes for each version are available at :doc:`releasenotes`. 
 
 To install and run, follow the instructions in the given INSTALL.txt and USAGE.txt files. 
 It requires Python, numpy, and GDAL with Python bindings. 

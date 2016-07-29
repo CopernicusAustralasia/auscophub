@@ -1,0 +1,44 @@
+Release Notes
+=============
+
+Version 1.0.1 (2016-07-29)
+--------------------------
+
+Bug Fixes
+  * Update the scraping of the THREDDS server to cope with the changes NCI made to how they
+    generate the paths. In principle this is more robust against further such changes (we hope). 
+  * Default for --maxcloud is now 100, to be consistent with other filtering options in giving
+    "everything by default". 
+
+Version 1.0.0 (2016-07-20)
+--------------------------
+
+Server-side code is deemed sufficiently stable for operational use (although this could 
+be overly optimistic). 
+
+Bug Fixes
+  * Default end date in auscophub_searchServer.py is now 'tomorrow', local time, to guard 
+    against differences between user's local timezone and the GMT of the image acquisition 
+    times on the server. 
+  * Improvements in Sphinx documentation
+
+Version 0.9.1 (2016-07-15)
+--------------------------
+
+Bug Fixes
+  * Handle version number properly in setup.py
+
+Version 0.9.0 (2016-07-15)
+--------------------------
+
+Enhancements
+  * Added auscophub_searchServer.py, for rudimentary search of the server (based only 
+    on the associated XML metadata files), with filtering options for location (either 
+    boundingbox or vector outline e.g. shapefile), also pass direction, swath mode, 
+    polarization and maxcloud
+
+Version 0.1 (2016-06-29)
+------------------------
+
+First alpha-test version, mostly consisting of the framework for the hub management functions
+for handling the directory structure. Not yet complete, and just starting to test. 
