@@ -102,6 +102,10 @@ def getCmdargs():
         help=("Commandline options to add to the curl commands generated for --curlscript. "+
             "Give this as a single quoted string. Default='%(default)s'. "+
             "(Note that --proxy will automatically add a -x option for curl, so not required here)"))
+    outputGroup.add_argument("--saveserverxml", default=False, action="store_true",
+        help=("Save as local files all the server XML files associated with each of the zipfiles "+
+            "which make it through all the filters, i.e. would be one for each zipfile to "+
+            "be downloaded"))
     
     cmdargs = p.parse_args()
     
@@ -146,7 +150,7 @@ def mainRoutine():
     # Generate list of zipfile URLs
     zipfileUrlList = [urlStr.replace(".xml", ".zip") for (urlStr, metaObj) in metalist]
     
-    writeOutput(cmdargs, zipfileUrlList)
+    writeOutput(cmdargs, zipfileUrlList, metalist)
     
 
 def loadExcludeList(excludeListFile):
@@ -289,7 +293,7 @@ def getVectorMultipolygon(polygonfile):
     return wholeGeom
 
 
-def writeOutput(cmdargs, zipfileUrlList):
+def writeOutput(cmdargs, zipfileUrlList, metalist):
     """
     Write the selected output file(s)
     """
@@ -298,6 +302,7 @@ def writeOutput(cmdargs, zipfileUrlList):
         for zipfileUrl in zipfileUrlList:
             f.write(zipfileUrl+'\n')
         f.close()
+
     if cmdargs.curlscript is not None:
         f = open(cmdargs.curlscript, 'w')
         f.write("#!/bin/bash\n")
@@ -310,6 +315,12 @@ def writeOutput(cmdargs, zipfileUrlList):
                 proxyOpt)
             f.write(curlCmd+'\n')
         f.close()
+
+    if cmdargs.saveserverxml:
+        # Save each of the server XML fragments to its original filename, in the local directory
+        for (urlStr, metaObj) in metalist:
+            xmlFilename = os.path.basename(urlStr)
+            open(xmlFilename, 'w').write(metaObj.xmlStr)
 
 
 class AusCopHubSearchError(Exception): pass
