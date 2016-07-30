@@ -7,12 +7,12 @@ Version 1.0.1 (2016-07-29)
 Bug Fixes
   * Update the scraping of the THREDDS server to cope with the changes NCI made to how they
     generate the paths. In principle this is more robust against further such changes (we hope). 
-  * Default for --maxcloud is now 100, to be consistent with other filtering options in giving
-    "everything by default". 
+  * Default for :command:`--maxcloud` is now 100, to be consistent with other filtering 
+    options in giving "everything by default". 
 
 Enhancements
-  * Added --saveserverxml option to auscophub_searchServer.py, to save the server-side XML 
-    files locally for later use.
+  * Added :command:`--saveserverxml` option to auscophub_searchServer.py, to save the 
+    server-side XML files locally for later use.
 
 Version 1.0.0 (2016-07-20)
 --------------------------
