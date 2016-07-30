@@ -10,6 +10,10 @@ Bug Fixes
   * Default for --maxcloud is now 100, to be consistent with other filtering options in giving
     "everything by default". 
 
+Enhancements
+  * Added --saveserverxml option to auscophub_searchServer.py, to save the server-side XML 
+    files locally for later use.
+
 Version 1.0.0 (2016-07-20)
 --------------------------
 
