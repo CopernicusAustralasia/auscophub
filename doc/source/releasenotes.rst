@@ -13,6 +13,7 @@ Bug Fixes
 Enhancements
   * Added :command:`--saveserverxml` option to auscophub_searchServer.py, to save the 
     server-side XML files locally for later use.
+  * Added server-side XML tags for zipfile size and md5 hash. 
 
 Version 1.0.0 (2016-07-20)
 --------------------------
