@@ -10,10 +10,9 @@ How to create a distribution of AusCopHub.
     python setup.py sdist
    This creates a tar.gz under a subdirectory called dist
 5. Upload this to bitbucket, under the downloads tab. 
-6. Update the release notes page , by going through the 
-   change logs since the last release, and noting what has been done. 
-   Actually, the release notes page does not yet exist, but it will
-   by the next release.......
+6. Update the release notes page doc/source/releasenotes.rst, by going 
+   through the change logs since the last release, and noting what 
+   has been done. 
 
 
 Version Numbers.
