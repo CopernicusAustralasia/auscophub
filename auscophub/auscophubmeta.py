@@ -44,6 +44,9 @@ class AusCopHubMeta(object):
         if xmlStr is None:
             raise AusCopHubMetaError("Must give either xmlStr or filename argument")
         
+        # Save the XML string on the object, so we can see it later on, if required. 
+        self.xmlStr = xmlStr
+        
         doc = minidom.parseString(xmlStr)
         
         safeDescrNodeList = doc.getElementsByTagName('AUSCOPHUB_SAFE_FILEDESCRIPTION')
