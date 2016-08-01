@@ -27,17 +27,17 @@ It requires `Python <https://www.python.org/>`_, `numpy <http://www.numpy.org/>`
 assume the existence of the `curl <https://curl.haxx.se/>`_ command, 
 which is generally bundled with Linux. 
 
-Hub Management
---------------
-
-A number of code components have been contributed for management of the server itself.
-See :doc:`hubmgmnt`. 
-
 Client-side Code
 ----------------
 
 A number of code components have been contributed for client access to the server. 
 See :doc:`clientside`
+
+Hub Management
+--------------
+
+A number of code components have been contributed for management of the server itself.
+See :doc:`hubmgmnt`. 
 
 
 Indices and tables
