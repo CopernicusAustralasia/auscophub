@@ -21,7 +21,11 @@ repository is also hosted there.
 Release notes for each version are available at :doc:`releasenotes`. 
 
 To install and run, follow the instructions in the given INSTALL.txt and USAGE.txt files. 
-It requires Python, numpy, and GDAL with Python bindings. 
+
+It requires `Python <https://www.python.org/>`_, `numpy <http://www.numpy.org/>`_, and 
+`GDAL <http://www.gdal.org/>`_ with Python bindings. The generated client-side download scripts
+assume the existence of the `curl <https://curl.haxx.se/>`_ command, 
+which is generally bundled with Linux. 
 
 Hub Management
 --------------
