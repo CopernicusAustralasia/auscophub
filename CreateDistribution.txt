@@ -4,15 +4,15 @@ How to create a distribution of AusCopHub.
 2. Change the version number in the auscophub/__init__.py. Version number
    is of the form a.b.c, as discussed below. 
    DON'T FORGET TO COMMIT THIS, BEFORE THE NEXT STEP!!!!
-3. Use "hg tag" to add a version number tag, e.g.
-    hg tag 1.1.0
-4. Create the distribution tarball, using
-    python setup.py sdist
-   This creates a tar.gz under a subdirectory called dist
-5. Upload this to bitbucket, under the downloads tab. 
-6. Update the release notes page doc/source/releasenotes.rst, by going 
+3. Update the release notes page doc/source/releasenotes.rst, by going 
    through the change logs since the last release, and noting what 
    has been done. 
+4. Use "hg tag" to add a version number tag, e.g.
+    hg tag 1.1.0
+5. Create the distribution tarball, using
+    python setup.py sdist
+   This creates a tar.gz under a subdirectory called dist
+6. Upload this to bitbucket, under the downloads tab. 
 
 
 Version Numbers.
