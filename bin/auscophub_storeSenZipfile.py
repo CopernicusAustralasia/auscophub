@@ -39,6 +39,10 @@ def getCmdargs():
     p.add_argument("--xmlonly", default=False, action="store_true",
         help=("Only generate the XML files. Do not move/copy/symlink the zipfiles, and "+
             "do not generate preview images. Useful for updating the XML contents on all files. "))
+    p.add_argument("--nooverwrite", default=False, action="store_true",
+        help=("Do not overwrite existing XML and PNG files. Default will always write them, "+
+            "whether they exist or not. Note that the zipfile output will never be "+
+            "overwritten anyway, quite independent of this option. "))
     p.add_argument("--verbose", default=False, action="store_true",
         help="Print messages about exactly what is happening")
     p.add_argument("--dummy", default=False, action="store_true",
@@ -98,14 +102,14 @@ def mainRoutine():
                     
             if sentinelNumber == 1:
                 dirstruct.createSentinel1Xml(zipfilename, finalOutputDir, metainfo, 
-                    cmdargs.dummy, cmdargs.verbose)
+                    cmdargs.dummy, cmdargs.verbose, cmdargs.nooverwrite)
             elif sentinelNumber == 2:
                 dirstruct.createSentinel2Xml(zipfilename, finalOutputDir, metainfo, 
-                    cmdargs.dummy, cmdargs.verbose)
+                    cmdargs.dummy, cmdargs.verbose, cmdargs.nooverwrite)
             
             if not cmdargs.xmlonly:
                 dirstruct.createPreviewImg(zipfilename, finalOutputDir, metainfo, 
-                    cmdargs.dummy, cmdargs.verbose)
+                    cmdargs.dummy, cmdargs.verbose, cmdargs.nooverwrite)
 
         if not ok:
             filesWithErrors.append(msg)
@@ -141,7 +145,7 @@ def checkZipfileName(zipfilename):
         ok = False
     elif not (zipfileBasename.startswith("S") and len(zipfileBasename) > 2 and 
             zipfileBasename[1].isdigit()):
-        msg = "Zipfile name non-standard, cannot identfy Sentinel: {}".format(zipfilename)
+        msg = "Zipfile name non-standard, cannot identify Sentinel: {}".format(zipfilename)
         ok = False
     return (ok, msg)
 

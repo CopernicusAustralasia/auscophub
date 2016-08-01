@@ -142,7 +142,7 @@ def moveZipfile(zipfilename, finalOutputDir, dummy, verbose, makeCopy, makeSymli
             os.rename(zipfilename, finalFile)
 
 
-def createSentinel1Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose):
+def createSentinel1Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, noOverwrite):
     """
     Create the XML file in the final output directory, for Sentinel-1 zipfiles. 
     This is a locally-designed XML file intended to include only the sort of 
@@ -154,6 +154,8 @@ def createSentinel1Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose):
     
     if dummy:
         print("Would make", finalXmlFile)
+    elif os.path.exists(finalXmlFile) and noOverwrite:
+        print("XML already exists {}".format(finalXmlFile))
     else:
         if verbose:
             print("Creating", finalXmlFile)
@@ -188,7 +190,7 @@ def createSentinel1Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose):
         f.close()
 
 
-def createSentinel2Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose):
+def createSentinel2Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, noOverwrite):
     """
     Create the XML file in the final output directory, for Sentinel-2 zipfiles. 
     This is a locally-designed XML file intended to include only the sort of 
@@ -200,6 +202,8 @@ def createSentinel2Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose):
     
     if dummy:
         print("Would make", finalXmlFile)
+    elif os.path.exists(finalXmlFile) and noOverwrite:
+        print("XML already exists {}".format(finalXmlFile))
     else:
         if verbose:
             print("Creating", finalXmlFile)
@@ -238,7 +242,7 @@ def createSentinel2Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose):
         f.close()
 
 
-def createPreviewImg(zipfilename, finalOutputDir, metainfo, dummy, verbose):
+def createPreviewImg(zipfilename, finalOutputDir, metainfo, dummy, verbose, noOverwrite):
     """
     Create the preview image, in the final output directory
     """
@@ -249,6 +253,8 @@ def createPreviewImg(zipfilename, finalOutputDir, metainfo, dummy, verbose):
         print("Would make", finalPngFile)
     elif metainfo.previewImgBin is None:
         print("No preview image provided in", zipfilename)
+    elif os.path.exists(finalPngFile) and noOverwrite:
+        print("Preview image already exists {}".format(finalPngFile))
     else:
         if verbose:
             print("Creating", finalPngFile)
