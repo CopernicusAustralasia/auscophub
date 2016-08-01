@@ -1,6 +1,11 @@
 Release Notes
 =============
 
+Version 1.0.2 (2016-08-01)
+--------------------------
+Enhancements
+  * Server-side. Added --nooverwrite option to auscophub_storeSenZipfile.py
+
 Version 1.0.1 (2016-07-29)
 --------------------------
 
