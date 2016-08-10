@@ -116,7 +116,7 @@ class AusCopHubMeta(object):
         zipfileNode = safeDescrNode.getElementsByTagName('ZIPFILE')
         if len(zipfileNode) > 0:
             self.zipfileSizeBytes = None
-            self.zipfileMd5Local = None
+            self.zipfileMd5local = None
             sizeBytesStr = zipfileNode[0].getAttribute('size_bytes')
             if len(sizeBytesStr) > 0:
                 self.zipfileSizeBytes = int(sizeBytesStr)
