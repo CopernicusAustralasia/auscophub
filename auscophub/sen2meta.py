@@ -49,11 +49,12 @@ class Sen2TileMeta(object):
         tileIdNode = findElementByXPath(generalInfoNode, 'TILE_ID')[0].firstChild
         tileIdFullStr = tileIdNode.data.strip()
         # This is the tile id as given by ESA. However, it turns out that they have 
-        # got these wrong, so we calculate them ourselves, after we have all the 
-        # location information loaded. 
-        self.tileId_esaIsWrong = tileIdFullStr.split('_')[-2]
+        # got these wrong in earlier versions, so we may fix this later, after we have all the 
+        # location information loaded. See self.tileId further down. 
+        self.tileId_esa = tileIdFullStr.split('_')[-2]
         self.satId = tileIdFullStr[:3]
         self.procLevel = tileIdFullStr[13:16]    # Not sure whether to use absolute pos or split by '_'....
+        self.processingSoftwareVersion = tileIdFullStr[-5:]
         
         geomInfoNode = doc.getElementsByTagName('n1:Geometric_Info')[0]
         geocodingNode = findElementByXPath(geomInfoNode, 'Tile_Geocoding')[0]
@@ -81,9 +82,16 @@ class Sen2TileMeta(object):
             uly = float(findElementByXPath(posNode, 'ULY')[0].firstChild.data.strip())
             self.ulxyByRes[res] = (ulx, uly)
         
-        # Our own calculated version of the tile id
-        mgrsString = self.calcMGRSname()
-        self.tileId = 't' + mgrsString.lower()
+        # Our own version of the tile id, which we will use as the scene name
+        self.tileId = self.tileId_esa.lower()
+        if self.processingSoftwareVersion < "02.01":
+            # ESA had a bug in their MGRS algorithm, fixed in version 02.01. If the version
+            # is earlier, check against our own calculation, from the tile centroid. 
+            mgrsStr = 't' + self.calcMGRSname().lower()
+            # The bug apparently only affects the final character, so only change that. 
+            if mgrsStr[-1] != self.tileId[-1]:
+                if mgrsStr[:-1] == self.tileId[:-1]:
+                    self.tileId = mgrsStr
         
         # Sun and satellite angles. 
         tileAnglesNode = findElementByXPath(geomInfoNode, 'Tile_Angles')[0]
@@ -404,6 +412,12 @@ def calcMGRSnameFromCoords(epsg, easting, northing):
     srLL.ImportFromEPSG(4326)
     tr = osr.CoordinateTransformation(srUTM, srLL)
     (longitude, latitude, z) = tr.TransformPoint(easting, northing)
+    # We need these to do the latitude band in a way that matches ESA's approach.
+    # Note that we do not actually know what ESA's approach is, we are 
+    # just reverse-engineering it to match. 
+    (longitudeWestZoneEdge, latitudeWestZoneEdge, z) = tr.TransformPoint(200000, northing)
+    (longitudeEastZoneEdge, latitudeEastZoneEdge, z) = tr.TransformPoint(700000, northing)
+    avgLatitude = (latitudeWestZoneEdge + latitudeEastZoneEdge) / 2.0
 
     # Get UTM zone, from EPSG
     epsgStr = str(epsg)
@@ -427,7 +441,10 @@ def calcMGRSnameFromCoords(epsg, easting, northing):
 
     latitudebandStart = -80
     latitudebandWidth = 8
-    latbandNdx = int((latitude - latitudebandStart) / latitudebandWidth) + letters.index('C')
+    # Note that we use the average latitude across this level in the UTM zone. This is
+    # so we can match how ESA do it (without actually knowing how ESA do it), especially in
+    # the tiles on the boundary between J and K latitude bands, in the centre of each zone. 
+    latbandNdx = int((avgLatitude - latitudebandStart) / latitudebandWidth) + letters.index('C')
     # Only allow latitude band letters up to X. Should do something to 
     # cope with polar regions, which are supposed to be different......
     latbandNdx = min(letters.index('X'), latbandNdx)
