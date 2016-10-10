@@ -96,10 +96,6 @@ def mainRoutine():
             finalOutputDir = os.path.join(cmdargs.storagetopdir, relativeOutputDir)
             dirstruct.checkFinalDir(finalOutputDir, cmdargs.dummy, cmdargs.verbose)
             
-            if not cmdargs.xmlonly:
-                dirstruct.moveZipfile(zipfilename, finalOutputDir, cmdargs.dummy, cmdargs.verbose, 
-                    cmdargs.copy, cmdargs.symlink)
-                    
             if sentinelNumber == 1:
                 dirstruct.createSentinel1Xml(zipfilename, finalOutputDir, metainfo, 
                     cmdargs.dummy, cmdargs.verbose, cmdargs.nooverwrite)
@@ -107,6 +103,10 @@ def mainRoutine():
                 dirstruct.createSentinel2Xml(zipfilename, finalOutputDir, metainfo, 
                     cmdargs.dummy, cmdargs.verbose, cmdargs.nooverwrite)
             
+            if not cmdargs.xmlonly:
+                dirstruct.moveZipfile(zipfilename, finalOutputDir, cmdargs.dummy, cmdargs.verbose, 
+                    cmdargs.copy, cmdargs.symlink)
+                    
             if not cmdargs.xmlonly:
                 dirstruct.createPreviewImg(zipfilename, finalOutputDir, metainfo, 
                     cmdargs.dummy, cmdargs.verbose, cmdargs.nooverwrite)
