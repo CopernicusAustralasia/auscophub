@@ -255,6 +255,9 @@ class Sen2ZipfileMeta(object):
                 # inside the SAFE directory, so we have to construct that name. 
                 metafilename = bn.replace('PRD', 'MTD').replace('MSIL1C', 'SAFL1C') + ".xml"
                 fullmetafilename = safeDirName + metafilename
+                if fullmetafilename not in filenames:
+                    # We have a new format package, in which the meta filename is constant. 
+                    fullmetafilename = safeDirName + 'MTD_MSIL1C.xml'
                 mf = zf.open(fullmetafilename)
                 xmlStr = mf.read()
                 del mf
@@ -262,6 +265,13 @@ class Sen2ZipfileMeta(object):
                 # Read in the raw content of the preview image png file, and stash on the object
                 previewFilename = bn.replace('PRD', 'BWI') + ".png"
                 previewFullFilename = safeDirName + previewFilename
+                if previewFullFilename not in filenames:
+                    # Perhaps we have a new format package, with the preview image as 
+                    # a jp2 in the QI_DATA directory
+                    previewFullFilenameList = [fn for fn in filenames 
+                        if fnmatch.fnmatch(fn, '*/GRANULE/*/QI_DATA/*PVI.jp2')]
+                    if len(previewFullFilenameList) > 0:
+                        previewFullFilename = previewFullFilenameList[0]
                 if previewFullFilename in filenames:
                     try:
                         pf = zf.open(previewFullFilename)
