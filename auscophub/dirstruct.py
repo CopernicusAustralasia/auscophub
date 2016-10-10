@@ -9,6 +9,7 @@ import os
 import shutil
 import tempfile
 import hashlib
+import subprocess
 
 # Size of lat/long grid cells in which we store the files (in degrees). This is 
 # potentially a function of which Sentinel we are dealing with, hence the dictionary,
@@ -262,10 +263,12 @@ def createPreviewImg(zipfilename, finalOutputDir, metainfo, dummy, verbose, noOv
         os.close(fd)
         
         open(tmpImg, 'w').write(metainfo.previewImgBin)
-        cmd = "gdal_translate -q -of PNG -outsize 30% 30% {} {}".format(tmpImg, finalPngFile)
+        cmdList = ["gdal_translate", "-q", "-of", "PNG", "-outsize", "30%", "30%",
+            tmpImg, finalPngFile]
         if verbose:
-            print(cmd)
-        os.system(cmd)
+            print(' '.join(cmdList))
+        proc = subprocess.Popen(cmdList, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        proc.communicate()
         
         if os.path.exists(tmpImg):
             os.remove(tmpImg)
