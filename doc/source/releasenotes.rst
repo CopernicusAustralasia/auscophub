@@ -1,6 +1,15 @@
 Release Notes
 =============
 
+Version 1.0.3 (2016-10-13)
+--------------------------
+Enhancements
+  * Cope with the proposed changes to ESA's Sentinel-2 zipfile package, notably the 
+    changes in the names of files within the zipfile. So far this has only been 
+    tested on their sample data file. 
+  * Added --md5esa option to auscophub_storeSenZipfile.py, to we can pass through the
+    ESA-reported value of the MD5 for a zipfile, into the AusCopHub XML file. 
+
 Version 1.0.2 (2016-08-01)
 --------------------------
 Enhancements
