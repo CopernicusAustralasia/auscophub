@@ -143,7 +143,8 @@ def moveZipfile(zipfilename, finalOutputDir, dummy, verbose, makeCopy, makeSymli
             os.rename(zipfilename, finalFile)
 
 
-def createSentinel1Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, noOverwrite):
+def createSentinel1Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, noOverwrite,
+        md5esa):
     """
     Create the XML file in the final output directory, for Sentinel-1 zipfiles. 
     This is a locally-designed XML file intended to include only the sort of 
@@ -185,13 +186,19 @@ def createSentinel1Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, no
             metainfo.absoluteOrbitNumber))
         if metainfo.passDirection is not None:
             f.write("  <PASS direction='{}' />\n".format(metainfo.passDirection))
-        f.write("  <ZIPFILE size_bytes='{}' md5_local='{}' />\n".format(fileInfo.sizeBytes, 
+            
+        f.write("  <ZIPFILE size_bytes='{}' md5_local='{}' ".format(fileInfo.sizeBytes, 
             fileInfo.md5))
+        if md5esa is not None:
+            f.write("md5_esa='{}' ".format(md5esa))
+        f.write("/>\n")
+        
         f.write("</AUSCOPHUB_SAFE_FILEDESCRIPTION>\n")
         f.close()
 
 
-def createSentinel2Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, noOverwrite):
+def createSentinel2Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, noOverwrite,
+        md5esa):
     """
     Create the XML file in the final output directory, for Sentinel-2 zipfiles. 
     This is a locally-designed XML file intended to include only the sort of 
@@ -227,8 +234,12 @@ def createSentinel2Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, no
         f.write("  <ESA_PROCESSING software_version='{}' processingtime_utc='{}'/>\n".format(
             metainfo.processingSoftwareVersion, metainfo.generationTime))
         f.write("  <ORBIT_NUMBERS relative='{}' />\n".format(metainfo.relativeOrbitNumber))
-        f.write("  <ZIPFILE size_bytes='{}' md5_local='{}' />\n".format(fileInfo.sizeBytes, 
+        
+        f.write("  <ZIPFILE size_bytes='{}' md5_local='{}' ".format(fileInfo.sizeBytes, 
             fileInfo.md5))
+        if md5esa is not None:
+            f.write("md5_esa='{}' ".format(md5esa))
+        f.write("/>\n")
         
         if metainfo.tileNameList is not None:
             # Only write the list of tile names if it actually exists. 

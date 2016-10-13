@@ -53,6 +53,9 @@ def getCmdargs():
         help="Instead of moving the zipfile, symbolic link it instead (default will use move)")
     p.add_argument("--errorlog", 
         help="Any zipfiles with errors will be logged in this file")
+    p.add_argument("--md5esa", help=("Value of MD5 hash for a single zipfile, as given by ESA. "+
+        "This option only makes sense when processing a single zipfile, not for a list of "+
+        "zipfiles. The value will be included in the resulting XML file. "))
 
     cmdargs = p.parse_args()
     return cmdargs
@@ -68,6 +71,12 @@ def mainRoutine():
         zipfilelist.extend(cmdargs.zipfile)
     if cmdargs.zipfilelist is not None:
         zipfilelist.extend([line.strip() for line in open(cmdargs.zipfilelist)])
+    
+    numZipfiles = len(zipfilelist)
+    if cmdargs.md5esa is not None and  numZipfiles!= 1:
+        print("Can only use --md5esa with single zipfiles, but {} zipfiles were supplied".format(
+            numZipfiles), file=sys.stderr)
+        sys.exit(1)
     
     filesWithErrors = []
     
@@ -98,10 +107,10 @@ def mainRoutine():
             
             if sentinelNumber == 1:
                 dirstruct.createSentinel1Xml(zipfilename, finalOutputDir, metainfo, 
-                    cmdargs.dummy, cmdargs.verbose, cmdargs.nooverwrite)
+                    cmdargs.dummy, cmdargs.verbose, cmdargs.nooverwrite, cmdargs.md5esa)
             elif sentinelNumber == 2:
                 dirstruct.createSentinel2Xml(zipfilename, finalOutputDir, metainfo, 
-                    cmdargs.dummy, cmdargs.verbose, cmdargs.nooverwrite)
+                    cmdargs.dummy, cmdargs.verbose, cmdargs.nooverwrite, cmdargs.md5esa)
             
             if not cmdargs.xmlonly:
                 dirstruct.moveZipfile(zipfilename, finalOutputDir, cmdargs.dummy, cmdargs.verbose, 
