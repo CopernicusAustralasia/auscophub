@@ -1,6 +1,11 @@
 Release Notes
 =============
 
+Version 1.0.4 (2016-10-15)
+--------------------------
+Enhancements
+  * Force MD5 values to be upper case, both for locally computed, and ESA's. 
+
 Version 1.0.3 (2016-10-13)
 --------------------------
 Enhancements
