@@ -190,7 +190,7 @@ def createSentinel1Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, no
         f.write("  <ZIPFILE size_bytes='{}' md5_local='{}' ".format(fileInfo.sizeBytes, 
             fileInfo.md5))
         if md5esa is not None:
-            f.write("md5_esa='{}' ".format(md5esa))
+            f.write("md5_esa='{}' ".format(md5esa.upper()))
         f.write("/>\n")
         
         f.write("</AUSCOPHUB_SAFE_FILEDESCRIPTION>\n")
@@ -238,7 +238,7 @@ def createSentinel2Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, no
         f.write("  <ZIPFILE size_bytes='{}' md5_local='{}' ".format(fileInfo.sizeBytes, 
             fileInfo.md5))
         if md5esa is not None:
-            f.write("md5_esa='{}' ".format(md5esa))
+            f.write("md5_esa='{}' ".format(md5esa.upper()))
         f.write("/>\n")
         
         if metainfo.tileNameList is not None:
@@ -295,7 +295,7 @@ class ZipfileSysInfo(object):
     def __init__(self, zipfilename):
         statInfo = os.stat(zipfilename)
         self.sizeBytes = statInfo.st_size
-        self.md5 = self.md5hash(zipfilename)
+        self.md5 = self.md5hash(zipfilename).upper()
     
     @staticmethod
     def md5hash(zipfilename):
