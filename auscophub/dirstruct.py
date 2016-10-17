@@ -117,30 +117,42 @@ def checkFinalDir(finalOutputDir, dummy, verbose):
             raise AusCopDirStructError("Output directory {} is not writeable".format(finalOutputDir))
 
 
-def moveZipfile(zipfilename, finalOutputDir, dummy, verbose, makeCopy, makeSymlink):
+def moveZipfile(zipfilename, finalOutputDir, dummy, verbose, makeCopy, makeSymlink, nooverwrite):
     """
     Move the given zipfile to the final output directory
     """
+    preExisting = False
     finalFile = os.path.join(finalOutputDir, os.path.basename(zipfilename))
     if os.path.exists(finalFile):
-        print("Zipfile", zipfilename, "already in final location. Not moved. ")
-    elif dummy:
-        print("Would move to", finalFile)
-    else:
-        if makeCopy:
-            if verbose:
-                print("Copy to", finalFile)
-            shutil.copyfile(zipfilename, finalFile)
-            shutil.copystat(zipfilename, finalFile)
-        elif makeSymlink:
-            if verbose:
-                print("Symlink to", finalFile)
-            zipfilenameFull = os.path.abspath(zipfilename)
-            os.symlink(zipfilenameFull, finalFile)
+        if nooverwrite:
+            print("Zipfile", zipfilename, "already in final location. Not moved. ")
+            preExisting = True
         else:
-            if verbose:
-                print("Move to", finalFile)
-            os.rename(zipfilename, finalFile)
+            if dummy:
+                print("Would remove pre-existing", finalFile)
+            else:
+                if verbose:
+                    print("Removing", finalFile)
+                os.remove(finalFile)
+
+    if not preExisting:
+        if dummy:
+            print("Would move to", finalFile)
+        else:
+            if makeCopy:
+                if verbose:
+                    print("Copy to", finalFile)
+                shutil.copyfile(zipfilename, finalFile)
+                shutil.copystat(zipfilename, finalFile)
+            elif makeSymlink:
+                if verbose:
+                    print("Symlink to", finalFile)
+                zipfilenameFull = os.path.abspath(zipfilename)
+                os.symlink(zipfilenameFull, finalFile)
+            else:
+                if verbose:
+                    print("Move to", finalFile)
+                os.rename(zipfilename, finalFile)
 
 
 def createSentinel1Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, noOverwrite,

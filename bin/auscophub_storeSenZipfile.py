@@ -40,9 +40,8 @@ def getCmdargs():
         help=("Only generate the XML files. Do not move/copy/symlink the zipfiles, and "+
             "do not generate preview images. Useful for updating the XML contents on all files. "))
     p.add_argument("--nooverwrite", default=False, action="store_true",
-        help=("Do not overwrite existing XML and PNG files. Default will always write them, "+
-            "whether they exist or not. Note that the zipfile output will never be "+
-            "overwritten anyway, quite independent of this option. "))
+        help=("Do not overwrite existing ZIP, XML and PNG files. Default will always write them, "+
+            "whether they exist or not. "))
     p.add_argument("--verbose", default=False, action="store_true",
         help="Print messages about exactly what is happening")
     p.add_argument("--dummy", default=False, action="store_true",
@@ -114,7 +113,7 @@ def mainRoutine():
             
             if not cmdargs.xmlonly:
                 dirstruct.moveZipfile(zipfilename, finalOutputDir, cmdargs.dummy, cmdargs.verbose, 
-                    cmdargs.copy, cmdargs.symlink)
+                    cmdargs.copy, cmdargs.symlink, cmdargs.nooverwrite)
                     
             if not cmdargs.xmlonly:
                 dirstruct.createPreviewImg(zipfilename, finalOutputDir, metainfo, 
