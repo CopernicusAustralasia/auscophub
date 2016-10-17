@@ -1,6 +1,13 @@
 Release Notes
 =============
 
+Version 1.0.5 (2016-10-18)
+--------------------------
+Enhancements
+  * Changed auscophub_storeSenZipfile.py so that default behaviour will over-write
+    a pre-existing zipfile as well as xml and png files, and the --nooverwrite
+    option is now consistent for all file types. 
+
 Version 1.0.4 (2016-10-15)
 --------------------------
 Enhancements
