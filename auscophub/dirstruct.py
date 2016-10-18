@@ -10,6 +10,7 @@ import shutil
 import tempfile
 import hashlib
 import subprocess
+import errno
 
 # Size of lat/long grid cells in which we store the files (in degrees). This is 
 # potentially a function of which Sentinel we are dealing with, hence the dictionary,
@@ -109,7 +110,14 @@ def checkFinalDir(finalOutputDir, dummy, verbose):
         else:
             if verbose:
                 print("Creating dir", finalOutputDir)
-            os.makedirs(finalOutputDir, 0775)   # Should the permissions come from the command line?
+            try:
+                os.makedirs(finalOutputDir, 0775)   # Should the permissions come from the command line?
+            except OSError as e:
+                # If the error was just "File exists", then just move along, as it just means that
+                # the directory was created by another process after we checked. If it was anything 
+                # else then re-raise the exception, so we don't mask any other problems. 
+                if "File exists" not in str(e):
+                    raise 
 
     if not dummy:
         writeable = os.access(finalOutputDir, os.W_OK)
