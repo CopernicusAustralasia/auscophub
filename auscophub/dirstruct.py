@@ -10,7 +10,6 @@ import shutil
 import tempfile
 import hashlib
 import subprocess
-import errno
 
 # Size of lat/long grid cells in which we store the files (in degrees). This is 
 # potentially a function of which Sentinel we are dealing with, hence the dictionary,
