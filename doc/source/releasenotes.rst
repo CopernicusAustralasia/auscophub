@@ -1,6 +1,12 @@
 Release Notes
 =============
 
+Version 1.0.6 (2016-10-18)
+--------------------------
+Bug Fixes
+  * Recover gracefully on failure of makedirs() in dirstruct. This avoids a race condition
+    identified by Joseph when running parallel jobs of individual zipfiles. 
+
 Version 1.0.5 (2016-10-18)
 --------------------------
 Enhancements
