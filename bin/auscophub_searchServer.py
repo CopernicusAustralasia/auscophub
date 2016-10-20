@@ -71,7 +71,12 @@ def getCmdargs():
     filterGroup.add_argument("--direction", choices=['Ascending', 'Descending'],
         help=("Desired pass direction (radar only). Include only zipfiles which were "+
             "acquired with the given pass direction. Default will include any direction. "))
-    
+    filterGroup.add_argument("--allowbadmd5", default=False, action="store_true",
+        help=("Allow zipfiles for which the MD5 hash given by ESA does not match that which "+
+            "is calculated locally after transfer from ESA. Default will remove these from "+
+            "consideration. Such zipfiles do often contain much recoverable data, but will "+
+            "have some errors. "))
+
     temporalGroup = p.add_argument_group(title="Searching by date")
     temporalGroup.add_argument("--startdate", default="20141001",
         help="Earliest date to search, as yyyymmdd (default=%(default)s)")
@@ -141,6 +146,8 @@ def mainRoutine():
         if os.path.basename(urlStr).strip(".xml") not in excludeSet]
     
     # Do any further filtering here
+    if not cmdargs.allowbadmd5:
+        metalist = filterBadMd5(metalist)
     metalist = filterByRegion(metalist, boundingBox, searchPolygon)
     metalist = filterByCloud(metalist, cmdargs)
     metalist = filterByPolarisation(metalist, cmdargs)
@@ -168,6 +175,17 @@ def loadExcludeList(excludeListFile):
         raise AusCopHubSearchError("Unable to read excludelist file '{}'".format(excludeListFile))
     
     return excludeSet
+
+
+def filterBadMd5(metalist):
+    """
+    Remove any metadata objects where md5_local does not match md5_esa. 
+    
+    """
+    metalistFiltered = [metaObj for metaObj in metalist 
+        if metaObj.zipfileMd5esa is None or 
+        metaObj.zipfileMd5esa.lower() == metaObj.zipfileMd5local.lower()]
+    return metalistFiltered
 
 
 def filterByRegion(metalist, boundingBox, searchPolygon):

@@ -117,12 +117,16 @@ class AusCopHubMeta(object):
         if len(zipfileNode) > 0:
             self.zipfileSizeBytes = None
             self.zipfileMd5local = None
+            self.zipfileMd5esa = None
             sizeBytesStr = zipfileNode[0].getAttribute('size_bytes')
             if len(sizeBytesStr) > 0:
                 self.zipfileSizeBytes = int(sizeBytesStr)
             md5local = zipfileNode[0].getAttribute('md5_local')
             if len(md5local) > 0:
                 self.zipfileMd5local = md5local
+            md5esa = zipfileNode[0].getAttribute('md5_esa')
+            if len(md5esa) > 0:
+                self.zipfileMd5esa = md5esa
         
         mgrsTileNodeList = safeDescrNode.getElementsByTagName('MGRSTILES')
         if len(mgrsTileNodeList) > 0:
