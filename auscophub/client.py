@@ -128,11 +128,16 @@ def getDescriptionMetaFromThreddsByBounds(urlOpener, sentinelNumber, instrumentS
     for dsObj in dsObjList:
         url = dsObj.fullUrl
         xmlStr = urlOpener.open(url).read()
-        metaObj = auscophubmeta.AusCopHubMeta(xmlStr=xmlStr)
-        # Filter by exact date, instead of just month, as above
-        yyyymmdd = metaObj.startTime.strftime("%Y%m%d")
-        if yyyymmdd >= startDate and yyyymmdd <= endDate:
-            metaList.append((url, metaObj))
+        try:
+            metaObj = auscophubmeta.AusCopHubMeta(xmlStr=xmlStr)
+        except Exception:
+            metaObj = None
+        
+        if metaObj is not None:
+            # Filter by exact date, instead of just month, as above
+            yyyymmdd = metaObj.startTime.strftime("%Y%m%d")
+            if yyyymmdd >= startDate and yyyymmdd <= endDate:
+                metaList.append((url, metaObj))
     
     return metaList
 
