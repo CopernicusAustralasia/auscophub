@@ -124,7 +124,8 @@ def checkFinalDir(finalOutputDir, dummy, verbose):
             raise AusCopDirStructError("Output directory {} is not writeable".format(finalOutputDir))
 
 
-def moveZipfile(zipfilename, finalOutputDir, dummy, verbose, makeCopy, makeSymlink, nooverwrite):
+def moveZipfile(zipfilename, finalOutputDir, dummy, verbose, makeCopy, makeSymlink, nooverwrite,
+        moveandsymlink):
     """
     Move the given zipfile to the final output directory
     """
@@ -160,6 +161,8 @@ def moveZipfile(zipfilename, finalOutputDir, dummy, verbose, makeCopy, makeSymli
                 if verbose:
                     print("Move to", finalFile)
                 os.rename(zipfilename, finalFile)
+                if moveandsymlink:
+                    os.symlink(os.path.abspath(finalFile), os.path.abspath(zipfilename))
 
 
 def createSentinel1Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, noOverwrite,

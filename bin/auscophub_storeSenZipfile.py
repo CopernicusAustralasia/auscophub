@@ -50,6 +50,9 @@ def getCmdargs():
         help="Instead of moving the zipfile, copy it instead (default will use move)")
     p.add_argument("--symlink", default=False, action="store_true",
         help="Instead of moving the zipfile, symbolic link it instead (default will use move)")
+    p.add_argument("--moveandsymlink", default=False, action="store_true",
+        help=("Move the file, as per the default, and then create a symlink from the old "+
+            "location pointing to the new location (default will use move)"))
     p.add_argument("--errorlog", 
         help="Any zipfiles with errors will be logged in this file")
     p.add_argument("--md5esa", help=("Value of MD5 hash for a single zipfile, as given by ESA. "+
@@ -72,7 +75,7 @@ def mainRoutine():
         zipfilelist.extend([line.strip() for line in open(cmdargs.zipfilelist)])
     
     numZipfiles = len(zipfilelist)
-    if cmdargs.md5esa is not None and  numZipfiles!= 1:
+    if cmdargs.md5esa is not None and numZipfiles!= 1:
         print("Can only use --md5esa with single zipfiles, but {} zipfiles were supplied".format(
             numZipfiles), file=sys.stderr)
         sys.exit(1)
@@ -113,7 +116,7 @@ def mainRoutine():
             
             if not cmdargs.xmlonly:
                 dirstruct.moveZipfile(zipfilename, finalOutputDir, cmdargs.dummy, cmdargs.verbose, 
-                    cmdargs.copy, cmdargs.symlink, cmdargs.nooverwrite)
+                    cmdargs.copy, cmdargs.symlink, cmdargs.nooverwrite, cmdargs.moveandsymlink)
                     
             if not cmdargs.xmlonly:
                 dirstruct.createPreviewImg(zipfilename, finalOutputDir, metainfo, 
