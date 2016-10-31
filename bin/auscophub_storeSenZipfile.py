@@ -60,6 +60,11 @@ def getCmdargs():
         "zipfiles. The value will be included in the resulting XML file. "))
 
     cmdargs = p.parse_args()
+    
+    # Allow an explicit empty md5esa string to be equivalent to not providing it (i.e. set it to None)
+    if cmdargs.md5esa is not None and len(cmdargs.md5esa) == 0:
+        cmdargs.md5esa = None
+
     return cmdargs
 
 
