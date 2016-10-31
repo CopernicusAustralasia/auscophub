@@ -7,6 +7,8 @@ import zipfile
 import datetime
 from xml.dom import minidom
 
+from osgeo import ogr
+
 
 class Sen3ZipfileMeta(object):
     """
@@ -68,9 +70,13 @@ class Sen3ZipfileMeta(object):
         posListStr = posListNode.firstChild.data.strip()
         posListStrVals = posListStr.split()
         numVals = len(posListStrVals)
-        #TODO: Need to work out whether lat or long is first........
-        posListPairs = ["{} {}".format(posListStrVals[i], posListStrVals[i+1]) for i in range(0, numVals, 2)]
+        # Note that a gml:posList has pairs in order [lat long ....], with no sensible pair delimiter
+        posListPairs = ["{} {}".format(posListStrVals[i+1], posListStrVals[i]) for i in range(0, numVals, 2)]
         self.outlineWKT = "POLYGON(({}))".format(','.join(posListPairs))
+        # Centroid
+        poly = ogr.Geometry(wkt=self.outlineWKT)
+        centroidJsonDict = eval(poly.Centroid().ExportToJson())
+        self.centroidXY = centroidJsonDict["coordinates"]
         
         # Frame, which is not stored in the measurementFrameSet node, but in 
         # the generalProductInfo node. 
