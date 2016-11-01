@@ -28,6 +28,7 @@ THREDDS_FILES_BASE = "{}/fileServer".format(THREDDS_BASE)
 THREDDS_COPERNICUS_SUBDIR = "fj7/Copernicus"
 THREDDS_SEN1_CATALOG_BASE = "{}/{}/Sentinel-1".format(THREDDS_CATALOG_BASE, THREDDS_COPERNICUS_SUBDIR)
 THREDDS_SEN2_CATALOG_BASE = "{}/{}/Sentinel-2".format(THREDDS_CATALOG_BASE, THREDDS_COPERNICUS_SUBDIR)
+THREDDS_SEN3_CATALOG_BASE = "{}/{}/Sentinel-3".format(THREDDS_CATALOG_BASE, THREDDS_COPERNICUS_SUBDIR)
 
 
 def makeUrlOpener(proxy=None):
@@ -86,9 +87,10 @@ def getDescriptionMetaFromThreddsByBounds(urlOpener, sentinelNumber, instrumentS
         productCatalogUrl = "{}/{}/{}".format(THREDDS_SEN1_CATALOG_BASE, instrumentStr, productId)
     elif sentinelNumber == 2:
         productCatalogUrl = "{}/{}/{}".format(THREDDS_SEN2_CATALOG_BASE, instrumentStr, productId)
+    elif sentinelNumber == 3:
+        productCatalogUrl = "{}/{}/{}".format(THREDDS_SEN3_CATALOG_BASE, instrumentStr, productId)
     else:
         raise AusCopHubClientError("Unknown sentinel number {}".format(sentinelNumber))
-#    productCatalogUrl += "/catalog.xml"
     
     # Find the top-level year directories
     ymCatalogObjList = []
