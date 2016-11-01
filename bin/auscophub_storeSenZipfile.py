@@ -19,6 +19,7 @@ import zipfile
 
 from auscophub import sen1meta
 from auscophub import sen2meta
+from auscophub import sen3meta
 from auscophub import dirstruct
 
 
@@ -92,7 +93,7 @@ def mainRoutine():
         (ok, msg) = checkZipfileName(zipfilename)
             
         sentinelNumber = int(os.path.basename(zipfilename)[1])
-        if sentinelNumber not in (1, 2):
+        if sentinelNumber not in (1, 2, 3):
             msg = "Unknown Sentinel number '{}': {}".format(sentinelNumber, zipfilename)
             ok = False
 
@@ -102,6 +103,8 @@ def mainRoutine():
                     metainfo = sen1meta.Sen1ZipfileMeta(zipfilename=zipfilename)
                 elif sentinelNumber == 2:
                     metainfo = sen2meta.Sen2ZipfileMeta(zipfilename=zipfilename)
+                elif sentinelNumber == 3:
+                    metainfo = sen3meta.Sen3ZipfileMeta(zipfilename=zipfilename)
             except Exception as e:
                 msg = "Exception '{}' raised reading: {}".format(str(e), zipfilename)
                 ok = False
@@ -117,6 +120,9 @@ def mainRoutine():
                     cmdargs.dummy, cmdargs.verbose, cmdargs.nooverwrite, cmdargs.md5esa)
             elif sentinelNumber == 2:
                 dirstruct.createSentinel2Xml(zipfilename, finalOutputDir, metainfo, 
+                    cmdargs.dummy, cmdargs.verbose, cmdargs.nooverwrite, cmdargs.md5esa)
+            elif sentinelNumber == 3:
+                dirstruct.createSentinel3Xml(zipfilename, finalOutputDir, metainfo, 
                     cmdargs.dummy, cmdargs.verbose, cmdargs.nooverwrite, cmdargs.md5esa)
             
             if not cmdargs.xmlonly:
