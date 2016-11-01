@@ -32,7 +32,7 @@ def getCmdargs():
     tomorrow = datetime.date.today() + datetime.timedelta(1)
     defaultEndDate = tomorrow.strftime("%Y%m%d")
     defaultInstrumentDict = {1:'C-SAR', 2:'MSI', 3:None}
-    defaultProductDict = {1:'SLC', 2:'L1C', 3:None}
+    defaultProductDict = {1:'SLC', 2:'L1C', 3:'1_EFR___'}
     
     p = argparse.ArgumentParser(description="""
         Rudimentary search tool to find zipped SAFE-format files on the Australian
@@ -42,14 +42,14 @@ def getCmdargs():
     """)
     p.add_argument("--sentinel", type=int, default=2, choices=[1, 2, 3], 
         help="Number of Sentinel satellite family to search on (default=%(default)s)")
-    p.add_argument("--instrument", 
+    p.add_argument("--instrument", choices=['C_SAR', 'MSI', 'OLCI', 'SLSTR', 'SRAL'], 
         help=("Instrument to search on. Obvious default value for Sentinels 1 and 2 "+
             "(which each have only a single instrument), but required for Sentinel-3"))
-    p.add_argument("--product",
+    p.add_argument("--product", choices=['SLC', 'GRD', 'L1C', '1_EFR___', '1_ERR___'], 
         help=("Data product (i.e. processing level) to search. Options are dependent on satellite "+
             "family. For Sentinel-1, options are {SLC (default), GRD}. RAW and OCN may be supported later. "+
             "For Sentinel-2, options are L1C. In the future, L2A may be supported. "+
-            "For Sentinel-3, options are currently unknown"))
+            "For Sentinel-3 OLCI, options are {1_EFR___ (default), 1_ERR___}"))
     p.add_argument("--proxy", help=("URL of proxy server. Default uses no proxy, "+
         "assuming direct connection to the internet. Currently only supports non-authenticating proxies. "))
     
