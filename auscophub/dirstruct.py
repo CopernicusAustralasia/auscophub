@@ -28,9 +28,13 @@ def makeRelativeOutputDir(metainfo, gridCellSize):
     
     """
     yearMonthDir = makeYearMonthDir(metainfo)
+    dateDir = makeDateDir(metainfo)
     if metainfo.centroidXY is not None:
         gridSquareDir = makeGridSquareDir(metainfo, gridCellSize)
-        outDir = os.path.join(yearMonthDir, gridSquareDir)
+        if metainfo.satId[1] == "3":
+            outDir = os.path.join(yearMonthDir, dateDir, gridSquareDir)
+        else:
+            outDir = os.path.join(yearMonthDir, gridSquareDir)
     else:
         outDir = yearMonthDir
     return outDir
@@ -94,6 +98,19 @@ def makeYearMonthDir(metainfo):
     month = metainfo.startTime.month
     
     dirName = os.path.join("{:04}".format(year), "{:04}-{:02}".format(year, month))
+    return dirName
+
+
+def makeDateDir(metainfo):
+    """
+    Return the string for the date subdirectory. The date is the acquistion date 
+    of the imagery. Returns a directory name for yyyy-mm-dd. 
+    """
+    year = metainfo.startTime.year
+    month = metainfo.startTime.month
+    day = metainfo.startTime.day
+    
+    dirName = "{:04}-{:02}-{:02}".format(year, month, day)
     return dirName
 
 
