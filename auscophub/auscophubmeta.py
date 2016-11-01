@@ -84,7 +84,12 @@ class AusCopHubMeta(object):
         processingNodeList = safeDescrNode.getElementsByTagName('ESA_PROCESSING')
         if len(processingNodeList) > 0:
             self.esaSoftwareVersion = processingNodeList[0].getAttribute('software_version')
+            if len(self.esaSoftwareVersion) == 0:
+                self.esaSoftwareVersion = None
             self.esaProcessingTimeStr = processingNodeList[0].getAttribute('processingtime_utc')
+            self.baselineCollection = processingNodeList[0].getAttribute('baselinecollection')
+            if len(self.baselineCollection) == 0:
+                self.baselineCollection = None
         
         polarisationNodeList = safeDescrNode.getElementsByTagName('POLARISATION')
         if len(polarisationNodeList) > 0:
@@ -98,12 +103,16 @@ class AusCopHubMeta(object):
         if len(orbitNodeList) > 0:
             self.relativeOrbitNumber = None
             self.absoluteOrbitNumber = None
+            self.frameNumber = None
             valStr = orbitNodeList[0].getAttribute('relative')
             if len(valStr) > 0:
                 self.relativeOrbitNumber = int(valStr)
             valStr = orbitNodeList[0].getAttribute('absolute')
             if len(valStr) > 0:
                 self.absoluteOrbitNumber = int(valStr)
+            valStr = orbitNodeList[0].getAttribute('frame')
+            if len(valStr) > 0:
+                self.frameNumber = int(valStr)
 
         passNodeList = safeDescrNode.getElementsByTagName('PASS')
         if len(passNodeList) > 0:
