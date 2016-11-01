@@ -182,7 +182,7 @@ def filterBadMd5(metalist):
     Remove any metadata objects where md5_local does not match md5_esa. 
     
     """
-    metalistFiltered = [metaObj for metaObj in metalist 
+    metalistFiltered = [(urlStr, metaObj) for (urlStr, metaObj) in metalist 
         if metaObj.zipfileMd5esa is None or 
         metaObj.zipfileMd5esa.lower() == metaObj.zipfileMd5local.lower()]
     return metalistFiltered
