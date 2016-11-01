@@ -31,7 +31,7 @@ def getCmdargs():
     """
     tomorrow = datetime.date.today() + datetime.timedelta(1)
     defaultEndDate = tomorrow.strftime("%Y%m%d")
-    defaultInstrumentDict = {1:'C-SAR', 2:'MSI', 3:None}
+    defaultInstrumentDict = {1:'C-SAR', 2:'MSI', 3:'OLCI'}
     defaultProductDict = {1:'SLC', 2:'L1C', 3:'1_EFR___'}
     
     p = argparse.ArgumentParser(description="""
