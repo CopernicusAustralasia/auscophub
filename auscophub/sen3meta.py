@@ -88,7 +88,19 @@ class Sen3ZipfileMeta(object):
         orbitRefNode = self.findMetadataNodeByIdName(metadataNodeList, 'measurementOrbitReference')
         relativeOrbitNode = orbitRefNode.getElementsByTagName('sentinel-safe:relativeOrbitNumber')[0]
         self.relativeOrbitNumber = int(relativeOrbitNode.firstChild.data.strip())
-                
+        
+        # Processing level
+        # I am guessing at the reduced resolution stuff, as I have not yet seen an example.
+        # However, this highlights that this is how other products and processing levels will
+        # probably need to be done. 
+        self.processingLevel = None
+        packageUnitNode = [node for node in xfduNode.getElementsByTagName('xfdu:contentUnit')
+            if node.getAttribute('ID') == "packageUnit"][0]
+        packageTextInfo = packageUnitNode.getAttribute('textInfo')
+        if packageTextInfo.endswith("OLCI Full Resolution Level 1"):
+            self.processingLevel = "OL_1_EFR"
+        elif packageTextInfo.endswith("OLCI Reduced Resolution Level 1"):
+            self.processingLevel = "OL_1_ERR"
     
     @staticmethod
     def findMetadataNodeByIdName(metadataNodeList, idName):
@@ -103,5 +115,6 @@ class Sen3ZipfileMeta(object):
             metadataObj = matchingNodes[0]
 
         return metadataObj
+
 
 class Sen3MetaError(Exception): pass
