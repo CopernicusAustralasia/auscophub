@@ -101,6 +101,9 @@ class Sen3ZipfileMeta(object):
         relativeOrbitNode = orbitRefNode.getElementsByTagName('sentinel-safe:relativeOrbitNumber')[0]
         self.relativeOrbitNumber = int(relativeOrbitNode.firstChild.data.strip())
         
+        # Currently have no mechanism for a preview image
+        self.previewImgBin = None
+        
     @staticmethod
     def findMetadataNodeByIdName(metadataNodeList, idName):
         """
