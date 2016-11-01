@@ -13,11 +13,11 @@ import subprocess
 
 # Size of lat/long grid cells in which we store the files (in degrees). This is 
 # potentially a function of which Sentinel we are dealing with, hence the dictionary,
-# which is keyed by Sentiel number, i.e. 1, 2, 3, .....
+# which is keyed by Sentinel number, i.e. 1, 2, 3, .....
 stdGridCellSize = {
     1: 5,
     2: 5, 
-    3: None     # I have no idea what we will do with Sentinel-3
+    3: 40
 }
 
 
@@ -272,6 +272,54 @@ def createSentinel2Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, no
             for tileName in metainfo.tileNameList:
                 f.write("    {}\n".format(tileName))
             f.write("  </MGRSTILES>\n")
+        f.write("</AUSCOPHUB_SAFE_FILEDESCRIPTION>\n")
+        f.close()
+
+
+def createSentinel3Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, noOverwrite,
+        md5esa):
+    """
+    Create the XML file in the final output directory, for Sentinel-3 zipfiles. 
+    This is a locally-designed XML file intended to include only the sort of 
+    information users would need in order to select zipfiles for download. 
+    
+    """
+    xmlFilename = os.path.basename(zipfilename).replace('.zip', '.xml')
+    finalXmlFile = os.path.join(finalOutputDir, xmlFilename)
+    
+    if dummy:
+        print("Would make", finalXmlFile)
+    elif os.path.exists(finalXmlFile) and noOverwrite:
+        print("XML already exists {}".format(finalXmlFile))
+    else:
+        if verbose:
+            print("Creating", finalXmlFile)
+        fileInfo = ZipfileSysInfo(zipfilename)
+        
+        f = open(finalXmlFile, 'w')
+        f.write("<?xml version='1.0'?>\n")
+        f.write("<AUSCOPHUB_SAFE_FILEDESCRIPTION>\n")
+        f.write("  <SATELLITE name='{}' />\n".format(metainfo.satId))
+        (longitude, latitude) = tuple(metainfo.centroidXY)
+        f.write("  <CENTROID longitude='{}' latitude='{}' />\n".format(longitude, latitude))
+        f.write("  <ESA_TILEOUTLINE_FOOTPRINT_WKT>\n")
+        f.write("    {}\n".format(metainfo.outlineWKT))
+        f.write("  </ESA_TILEOUTLINE_FOOTPRINT_WKT>\n")
+        startTimestampStr = metainfo.startTime.strftime("%Y-%m-%d %H:%M:%S.%f")
+        stopTimestampStr = metainfo.stopTime.strftime("%Y-%m-%d %H:%M:%S.%f")
+        f.write("  <ACQUISITION_TIME start_datetime_utc='{}' stop_datetime_utc='{}' />\n".format(
+            startTimestampStr, stopTimestampStr))
+        f.write("  <ESA_PROCESSING processingtime_utc='{}' baselinecollection='{}'/>\n".format(
+            metainfo.generationTime, metainfo.baselineCollection))
+        f.write("  <ORBIT_NUMBERS relative='{}' frame='{}'/>\n".format(metainfo.relativeOrbitNumber,
+            metainfo.frameNumber))
+        
+        f.write("  <ZIPFILE size_bytes='{}' md5_local='{}' ".format(fileInfo.sizeBytes, 
+            fileInfo.md5))
+        if md5esa is not None:
+            f.write("md5_esa='{}' ".format(md5esa.upper()))
+        f.write("/>\n")
+        
         f.write("</AUSCOPHUB_SAFE_FILEDESCRIPTION>\n")
         f.close()
 
