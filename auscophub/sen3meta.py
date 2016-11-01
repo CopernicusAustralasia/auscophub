@@ -84,24 +84,23 @@ class Sen3ZipfileMeta(object):
         frameNode = prodInfoNode.getElementsByTagName('sentinel3:alongtrackCoordinate')[0]
         self.frameNumber = int(frameNode.firstChild.data.strip())
         
+        # Processing level
+        productTypeNode = prodInfoNode.getElementsByTagName('sentinel3:productType')[0]
+        self.processingLevel = productTypeNode.firstChild.data.strip()
+        
+        # Product creation/processing time. Note that they use a different time format (sigh.....)
+        creationTimeNode = prodInfoNode.getElementsByTagName('sentinel3:creationTime')[0]
+        generationTimeStr = creationTimeNode.firstChild.data.strip()
+        self.generationTime = datetime.datetime.strptime(generationTimeStr, "%Y%m%dT%H%M%S")
+        # I think this is as close as we get to a software version number. 
+        baselineNode = prodInfoNode.getElementsByTagName('sentinel3:baselineCollection')[0]
+        self.baselineCollection = baselineNode.firstChild.data.strip()
+
         # Orbit number
         orbitRefNode = self.findMetadataNodeByIdName(metadataNodeList, 'measurementOrbitReference')
         relativeOrbitNode = orbitRefNode.getElementsByTagName('sentinel-safe:relativeOrbitNumber')[0]
         self.relativeOrbitNumber = int(relativeOrbitNode.firstChild.data.strip())
         
-        # Processing level
-        # I am guessing at the reduced resolution stuff, as I have not yet seen an example.
-        # However, this highlights that this is how other products and processing levels will
-        # probably need to be done. 
-        self.processingLevel = None
-        packageUnitNode = [node for node in xfduNode.getElementsByTagName('xfdu:contentUnit')
-            if node.getAttribute('ID') == "packageUnit"][0]
-        packageTextInfo = packageUnitNode.getAttribute('textInfo')
-        if packageTextInfo.endswith("OLCI Full Resolution Level 1"):
-            self.processingLevel = "OL_1_EFR"
-        elif packageTextInfo.endswith("OLCI Reduced Resolution Level 1"):
-            self.processingLevel = "OL_1_ERR"
-    
     @staticmethod
     def findMetadataNodeByIdName(metadataNodeList, idName):
         """
