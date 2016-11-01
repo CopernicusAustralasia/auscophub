@@ -54,6 +54,9 @@ class Sen1ZipfileMeta(object):
             geoLocPointList = geoLocGridListNode.getElementsByTagName('geolocationGridPoint')
             
             self.satellite = adsHeaderNode.getElementsByTagName('missionId')[0].firstChild.data.strip()
+            # Copy the value of satellite into satId, to be compatible with the sen2meta and sen3meta classes. 
+            # I should have made these completely consistent from the start, but somehow managed not to. 
+            self.satId = self.satellite
             self.productType = adsHeaderNode.getElementsByTagName('productType')[0].firstChild.data.strip()
             self.mode = adsHeaderNode.getElementsByTagName('mode')[0].firstChild.data.strip()
             self.absoluteOrbitNumber = int(adsHeaderNode.getElementsByTagName('absoluteOrbitNumber')[0].firstChild.data.strip())
