@@ -93,20 +93,20 @@ def getDescriptionMetaFromThreddsByBounds(urlOpener, sentinelNumber, instrumentS
         raise AusCopHubClientError("Unknown sentinel number {}".format(sentinelNumber))
     
     # Find the top-level year directories
-    ymCatalogObjList = []
     yearLists = ThreddsServerDirList(urlOpener, productCatalogUrl)
     if len(yearLists.subdirs) == 0:
         raise AusCopHubClientError("Cannot find year directories. Check the server '{}'".format(productCatalogUrl))
         
-    startDateWithDash = "{}-{}".format(startDate[:4], startDate[4:6])
-    endDateWithDash = "{}-{}".format(endDate[:4], endDate[4:6])
+    startYMwithDash = "{}-{}".format(startDate[:4], startDate[4:6])
+    endYMwithDash = "{}-{}".format(endDate[:4], endDate[4:6])
     
     # Create a list of catalog objects for yyyy-mm subdirs which are in the date range
+    ymCatalogObjList = []
     for subdirObj in yearLists.subdirs:
         ymLists = ThreddsServerDirList(urlOpener, subdirObj.fullUrl)
         for ymSubdirObj in ymLists.subdirs:
             yearMonthWithDash = ymSubdirObj.title
-            if yearMonthWithDash >= startDateWithDash and yearMonthWithDash <= endDateWithDash:
+            if yearMonthWithDash >= startYMwithDash and yearMonthWithDash <= endYMwithDash:
                 ymCatalogObjList.append(ymSubdirObj)
     
     # Create a list of catalog objects for grid cell subdirs which intersect the bounding box. 
