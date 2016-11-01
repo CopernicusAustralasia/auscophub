@@ -99,6 +99,8 @@ def getDescriptionMetaFromThreddsByBounds(urlOpener, sentinelNumber, instrumentS
         
     startYMwithDash = "{}-{}".format(startDate[:4], startDate[4:6])
     endYMwithDash = "{}-{}".format(endDate[:4], endDate[4:6])
+    startYMDwithDash = "{}-{}-{}".format(startDate[:4], startDate[4:6], startDate[6:])
+    endYMDwithDash = "{}-{}-{}".format(endDate[:4], endDate[4:6], endDate[6:])
     
     # Create a list of catalog objects for yyyy-mm subdirs which are in the date range
     ymCatalogObjList = []
@@ -109,10 +111,25 @@ def getDescriptionMetaFromThreddsByBounds(urlOpener, sentinelNumber, instrumentS
             if yearMonthWithDash >= startYMwithDash and yearMonthWithDash <= endYMwithDash:
                 ymCatalogObjList.append(ymSubdirObj)
     
+    # Sentinel-3 is divided into individual days, but Sentinels 1 and 2 are divided to whole month.
+    # So, here, we create a list of catalog objects which represent the finest temporal
+    # division available, in either case, and this is used in the subsequent steps. 
+    if sentinelNumber == 3:
+        dayCatalogObjList = []
+        for ymSubdirObj in ymCatalogObjList:
+            dayLists = ThreddsServerDirList(urlOpener, ymSubdirObj.fullUrl)
+            for ymdSubdirObj in dayLists.subdirs:
+                ymdWithDash = ymdSubdirObj.title
+                if ymdWithDash >= startYMDwithDash and ymdWithDash <= endYMDwithDash:
+                    dayCatalogObjList.append(ymdSubdirObj)
+        timeCatalogObjList = dayCatalogObjList
+    elif sentinelNumber in [1, 2]:
+        timeCatalogObjList = ymCatalogObjList
+    
     # Create a list of catalog objects for grid cell subdirs which intersect the bounding box. 
     gridCellCatalogObjList = []
     (westLong, eastLong, southLat, northLat) = longLatBoundingBox
-    for ymSubdirObj in ymCatalogObjList:
+    for ymSubdirObj in timeCatalogObjList:
         cellLists = ThreddsServerDirList(urlOpener, ymSubdirObj.fullUrl)
         for cellDirObj in cellLists.subdirs:
             gridCellDirName = cellDirObj.title
