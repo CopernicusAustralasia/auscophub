@@ -4,9 +4,9 @@ Release Notes
 Version 1.0.7 (2016-11-26)
 --------------------------
 Enhancements
-  * Added --moveandsymlink option to auscophub_storeSenZipfile.py, to assist with NCI's interim
+  * Added :command:`--moveandsymlink` option to auscophub_storeSenZipfile.py, to assist with NCI's interim
     download-and-publish methods. Hopefully to be superceded later. 
-  * Allow --md5esa option on auscophub_storeSenZipfile.py to take an explicit empty string
+  * Allow :command:`--md5esa` option on auscophub_storeSenZipfile.py to take an explicit empty string
 
 New Features
   * Added auscophub_checkXmlByRoi.py script, to assist in cleaning up current holdings to
@@ -25,7 +25,7 @@ Version 1.0.5 (2016-10-18)
 --------------------------
 Enhancements
   * Changed auscophub_storeSenZipfile.py so that default behaviour will over-write
-    a pre-existing zipfile as well as xml and png files, and the --nooverwrite
+    a pre-existing zipfile as well as xml and png files, and the :command:`--nooverwrite`
     option is now consistent for all file types. 
 
 Version 1.0.4 (2016-10-15)
@@ -39,13 +39,13 @@ Enhancements
   * Cope with the proposed changes to ESA's Sentinel-2 zipfile package, notably the 
     changes in the names of files within the zipfile. So far this has only been 
     tested on their sample data file. 
-  * Added --md5esa option to auscophub_storeSenZipfile.py, to we can pass through the
+  * Added :command:`--md5esa` option to auscophub_storeSenZipfile.py, to we can pass through the
     ESA-reported value of the MD5 for a zipfile, into the AusCopHub XML file. 
 
 Version 1.0.2 (2016-08-01)
 --------------------------
 Enhancements
-  * Server-side. Added --nooverwrite option to auscophub_storeSenZipfile.py
+  * Server-side. Added :command:`--nooverwrite option` to auscophub_storeSenZipfile.py
 
 Version 1.0.1 (2016-07-29)
 --------------------------
