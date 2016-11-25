@@ -1,6 +1,20 @@
 Release Notes
 =============
 
+Version 1.0.7 (2016-11-26)
+--------------------------
+Enhancements
+  * Added --moveandsymlink option to auscophub_storeSenZipfile.py, to assist with NCI's interim
+    download-and-publish methods. Hopefully to be superceded later. 
+  * Allow --md5esa option on auscophub_storeSenZipfile.py to take an explicit empty string
+
+New Features
+  * Added auscophub_checkXmlByRoi.py script, to assist in cleaning up current holdings to
+    match the new ROI now being used. 
+  * Initial version of code to cope with Sentinel-3, handling it in much the same way as
+    other Sentinels. Directory structure is based on 40 degree grid cells, with daily temporal
+    divisions. As yet not tested live, and probably a few more decisions to make. 
+
 Version 1.0.6 (2016-10-18)
 --------------------------
 Bug Fixes
