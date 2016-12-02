@@ -335,12 +335,22 @@ class Sen2ZipfileMeta(object):
         coordsList = [float(v) for v in extPosNode.firstChild.data.strip().split()]
         x = coordsList[1::2]
         y = coordsList[0::2]
+        # Cope with footprints which cross the international date line. If we have 
+        # both negative and positive longitudes larger than 100, then add 360 to all 
+        # the negative ones
+        xMin = min(x)
+        xMax = max(x)
+        if xMin < -100 and xMax > 100:
+            x = [(xx + 360) if xx < 0 else xx for xx in x]
         self.extPosXY = zip(x, y)
         xyStrList = ["%s %s"%xy for xy in self.extPosXY]
         self.extPosWKT = "POLYGON(({}))".format(','.join(xyStrList))
         poly = ogr.Geometry(wkt=self.extPosWKT)
         centroidJsonDict = eval(poly.Centroid().ExportToJson())
         self.centroidXY = centroidJsonDict["coordinates"]
+        # Ensure centroid longitude is on standard [-180, 180] interval
+        if self.centroidXY[0] > 180:
+            self.centroidXY[0] -= 360
         
         # Special values in imagery
         scaleValNode = findElementByXPath(generalInfoNode, 'Product_Image_Characteristics/QUANTIFICATION_VALUE')[0]
