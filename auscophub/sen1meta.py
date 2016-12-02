@@ -73,6 +73,13 @@ class Sen1ZipfileMeta(object):
                 longitude = float(geolocGridPointNode.getElementsByTagName('longitude')[0].firstChild.data.strip())
                 latitude = float(geolocGridPointNode.getElementsByTagName('latitude')[0].firstChild.data.strip())
                 longLatList.append([longitude, latitude])
+            # Cope with footprints crossing the international date line. If we have 
+            # both negative and positive longitudes larger than 100, then add 360 to all 
+            # the negative ones
+            xMin = min([x for (x, y) in longLatList])
+            xMax = max([x for (x, y) in longLatList])
+            if xMin < -100 and xMax > 100:
+                longLatList = [(x+360, y) if x < 0 else (x, y) for (x, y) in longLatList]
             # Create a geometry object from this list
             jsonDict = {'type':'MultiPoint', 'coordinates':longLatList}
             jsonStr = json.dumps(jsonDict)
@@ -81,6 +88,9 @@ class Sen1ZipfileMeta(object):
             self.outlineWKT = footprintGeom.ExportToWkt()
             centroidJsonDict = json.loads(footprintGeom.Centroid().ExportToJson())
             self.centroidXY = centroidJsonDict["coordinates"]
+            # Ensure centroid longitude is on standard [-180, 180] interval
+            if self.centroidXY[0] > 180:
+                self.centroidXY[0] -= 360
             
             # Now loop over all the annotation XML files, getting all possible combinations of
             # a couple of parameters, so we can make a complete list of them. Not at all sure 
