@@ -32,7 +32,12 @@ def makeRelativeOutputDir(metainfo, gridCellSize):
     if metainfo.centroidXY is not None:
         gridSquareDir = makeGridSquareDir(metainfo, gridCellSize)
         if metainfo.satId[1] == "3":
-            outDir = os.path.join(yearMonthDir, dateDir, gridSquareDir)
+            if metainfo.productName in ("EFR___"):
+                # For all these products, we split into grid squares
+                outDir = os.path.join(yearMonthDir, dateDir, gridSquareDir)
+            else:
+                # For all other products in S-3 we do not split spatially at all. 
+                outDir = os.path.join(yearMonthDir, dateDir)
         else:
             outDir = os.path.join(yearMonthDir, gridSquareDir)
     else:
@@ -328,8 +333,10 @@ def createSentinel3Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, no
             startTimestampStr, stopTimestampStr))
         f.write("  <ESA_PROCESSING processingtime_utc='{}' baselinecollection='{}'/>\n".format(
             metainfo.generationTime, metainfo.baselineCollection))
-        f.write("  <ORBIT_NUMBERS relative='{}' frame='{}'/>\n".format(metainfo.relativeOrbitNumber,
-            metainfo.frameNumber))
+        f.write("  <ORBIT_NUMBERS relative='{}' ".format(metainfo.relativeOrbitNumber))
+        if metainfo.frameNumber is not None:
+            f.write("frame='{}'".format(metainfo.frameNumber))
+        f.write("/>\n")
         
         f.write("  <ZIPFILE size_bytes='{}' md5_local='{}' ".format(fileInfo.sizeBytes, 
             fileInfo.md5))
