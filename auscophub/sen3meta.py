@@ -72,21 +72,39 @@ class Sen3ZipfileMeta(object):
         numVals = len(posListStrVals)
         # Note that a gml:posList has pairs in order [lat long ....], with no sensible pair delimiter
         posListPairs = ["{} {}".format(posListStrVals[i+1], posListStrVals[i]) for i in range(0, numVals, 2)]
+        # Cope with footprints crossing the international date line. If we have 
+        # both negative and positive longitudes larger than 100, then add 360 to all 
+        # the negative ones
+        posListVals = [(float(x), float(y)) for (x, y) in [pair.split() for pair in posListPairs]]
+        xMin = min([x for (x, y) in posListVals])
+        xMax = max([x for (x, y) in posListVals])
+        if xMin < -100 and xMax > 100:
+            posListPairs = ["{} {}".format(x+360, y) if x < 0 else "{} {}".format(x, y) 
+                for (x, y) in posListVals]
+        self.outlineXY = [(float(x), float(y)) for (x, y) in [pair.split() for pair in posListPairs]]
         self.outlineWKT = "POLYGON(({}))".format(','.join(posListPairs))
         # Centroid
         poly = ogr.Geometry(wkt=self.outlineWKT)
         centroidJsonDict = eval(poly.Centroid().ExportToJson())
         self.centroidXY = centroidJsonDict["coordinates"]
+        # Ensure centroid longitude is on standard [-180, 180] interval
+        if self.centroidXY[0] > 180:
+            self.centroidXY[0] -= 360
         
         # Frame, which is not stored in the measurementFrameSet node, but in 
         # the generalProductInfo node. 
         prodInfoNode = self.findMetadataNodeByIdName(metadataNodeList, 'generalProductInformation')
-        frameNode = prodInfoNode.getElementsByTagName('sentinel3:alongtrackCoordinate')[0]
-        self.frameNumber = int(frameNode.firstChild.data.strip())
+        frameNodeList = prodInfoNode.getElementsByTagName('sentinel3:alongtrackCoordinate')
+        self.frameNumber = None
+        if len(frameNodeList) > 0:
+            frameNode = frameNodeList[0]
+            self.frameNumber = int(frameNode.firstChild.data.strip())
         
         # Processing level
         productTypeNode = prodInfoNode.getElementsByTagName('sentinel3:productType')[0]
-        self.processingLevel = productTypeNode.firstChild.data.strip()
+        self.productTypeStr = productTypeNode.firstChild.data.strip()
+        self.processingLevel = self.productTypeStr[3]
+        self.productName = self.productTypeStr[5:]
         
         # Product creation/processing time. Note that they use a different time format (sigh.....)
         creationTimeNode = prodInfoNode.getElementsByTagName('sentinel3:creationTime')[0]
