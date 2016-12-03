@@ -21,12 +21,20 @@ stdGridCellSize = {
 }
 
 
-def makeRelativeOutputDir(metainfo, gridCellSize):
+def makeRelativeOutputDir(metainfo, gridCellSize, productDirGiven=False):
     """
     Make the output directory string for the given zipfile metadata object. The
     gridCellSize parameter is in degrees. 
     
+    The productDirGiven argument is provided in order to be able to reproduce
+    the old behaviour, in which the upper directory levels satellite/instrument/product
+    are not generated here, but were assumed to have been given in some other way. 
+    If productDirGiven is True, the result will not include these levels. 
+    
     """
+    satDir = makeSatelliteDir(metainfo)
+    instrumentDir = makeInstrumentDir(metainfo)
+    productDir = makeProductDir(metainfo)
     yearMonthDir = makeYearMonthDir(metainfo)
     dateDir = makeDateDir(metainfo)
     if metainfo.centroidXY is not None:
@@ -42,7 +50,12 @@ def makeRelativeOutputDir(metainfo, gridCellSize):
             outDir = os.path.join(yearMonthDir, gridSquareDir)
     else:
         outDir = yearMonthDir
-    return outDir
+        
+    if not productDirGiven:
+        fullDir = os.path.join(satDir, instrumentDir, productDir, outDir)
+    else:
+        fullDir = outDir
+    return fullDir
     
 
 def makeGridSquareDir(metainfo, gridCellSize):
@@ -117,6 +130,48 @@ def makeDateDir(metainfo):
     
     dirName = "{:04}-{:02}-{:02}".format(year, month, day)
     return dirName
+
+
+def makeInstrumentDir(metainfo):
+    """
+    Return the directory we will use at the 'instrument' level, based on the 
+    metainfo object. 
+    
+    """
+    if metainfo.satId.startswith('S1'):
+        instrument = "C-SAR"
+    elif metainfo.satId.startswith('S2'):
+        instrument = "MSI"
+    elif metainfo.satId.startswith('S3'):
+        instrument = metainfo.instrument
+    else:
+        instrument = None
+    return instrument
+
+
+def makeSatelliteDir(metainfo):
+    """
+    Make the directory name for the 'satellite' level. 
+    """
+    satDir = "Sentinel-" + metainfo.satId[1]
+    return satDir
+
+
+def makeProductDir(metainfo):
+    """
+    Return the directory we will use at the 'product' level, based on the
+    metainfo object. 
+    """
+    if metainfo.satId.startswith('S1'):
+        product = metainfo.productType
+    elif metainfo.satId.startswith('S2'):
+        # Let's hope this still works when Level-2A comes along
+        product = "L" + metainfo.processingLevel[-2:]
+    elif metainfo.satId.startswith('S3'):
+        product = metainfo.productType
+    else:
+        product = None
+    return product
 
 
 def checkFinalDir(finalOutputDir, dummy, verbose):
