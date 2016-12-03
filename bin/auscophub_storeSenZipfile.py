@@ -59,6 +59,11 @@ def getCmdargs():
     p.add_argument("--md5esa", help=("Value of MD5 hash for a single zipfile, as given by ESA. "+
         "This option only makes sense when processing a single zipfile, not for a list of "+
         "zipfiles. The value will be included in the resulting XML file. "))
+    p.add_argument("--productdirgiven", default=False, action="store_true",
+        help=("Assume that the storagetopdir is given right down to the product level. This was "+
+            "the old behaviour, and this switch allows to continue using that if required. "+
+            "The default is to assume that the top dir does not include these, and they will "+
+            "be generated too"))
 
     cmdargs = p.parse_args()
     
@@ -111,7 +116,8 @@ def mainRoutine():
         
         if ok:
             relativeOutputDir = dirstruct.makeRelativeOutputDir(metainfo, 
-                dirstruct.stdGridCellSize[sentinelNumber])
+                dirstruct.stdGridCellSize[sentinelNumber], 
+                productDirGiven=cmdargs.productdirgiven)
             finalOutputDir = os.path.join(cmdargs.storagetopdir, relativeOutputDir)
             dirstruct.checkFinalDir(finalOutputDir, cmdargs.dummy, cmdargs.verbose)
             
