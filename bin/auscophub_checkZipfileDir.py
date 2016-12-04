@@ -51,14 +51,17 @@ def main():
             if fnmatch.fnmatch(fn, '*.zip'):
                 fnWithRelDir = os.path.join(dirpath, fn)
                 correctRelDir = getRelDir(fnWithRelDir)
-                absActualDir = os.path.abspath(dirpath)
-                (actualRelDir, topDir) = matchSubdirLevel(absActualDir, correctRelDir)
-                if actualRelDir != correctRelDir:
-                    if len(topDir) > 0:
-                        zipfilesToMove.append((dirpath, fn, topDir, correctRelDir))
-                    else:
-                        print("Zip file", os.path.join(absActualDir, fn), 
-                            "appears to be outside our directory structure altogether")
+                if correctRelDir is not None:
+                    absActualDir = os.path.abspath(dirpath)
+                    (actualRelDir, topDir) = matchSubdirLevel(absActualDir, correctRelDir)
+                    if actualRelDir != correctRelDir:
+                        if len(topDir) > 0:
+                            zipfilesToMove.append((dirpath, fn, topDir, correctRelDir))
+                        else:
+                            print("Zip file", os.path.join(absActualDir, fn), 
+                                "appears to be outside our directory structure altogether")
+                else:
+                    print("Cannot deduce correct dir for", os.path.join(dirpath, fn)))
 
     if len(zipfilesToMove) > 0:
         # Check all destination directories, and for any which do not exists, generate mkdir commands
