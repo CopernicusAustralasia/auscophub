@@ -66,6 +66,7 @@ def main():
         if cmdargs.outscript is not None:
             f = open(cmdargs.outscript, 'w')
             print("#!/bin/bash", file=f)
+            print("cd", os.getcwd(), file=f)
             dirsToCreate = [d for d in allCorrectDirs if not os.path.exists(d)]
             for d in dirsToCreate:
                 print("mkdir -p", d, file=f)
@@ -76,7 +77,8 @@ def main():
                     fnToMove = fn.replace('.zip', '.{}'.format(suffix))
                     fnToMoveFull = os.path.join(dirpath, fnToMove)
                     if os.path.exists(fnToMoveFull):
-                        print("mv", fnToMoveFull, topDir, correctRelDir, file=f)
+                        outDirFull = '/'.join([topDir, correctRelDir])
+                        print("mv", fnToMoveFull, outDirFull, file=f)
         
         print("Found", len(zipfilesToMove), "files in wrong directories")
     else:
