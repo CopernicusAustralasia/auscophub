@@ -102,9 +102,9 @@ class Sen3ZipfileMeta(object):
         
         # Processing level
         productTypeNode = prodInfoNode.getElementsByTagName('sentinel3:productType')[0]
-        self.productTypeStr = productTypeNode.firstChild.data.strip()
-        self.processingLevel = self.productTypeStr[3]
-        self.productName = self.productTypeStr[5:]
+        self.productType = productTypeNode.firstChild.data.strip()
+        self.processingLevel = self.productType[3]
+        self.productName = self.productType[5:]
         
         # Product creation/processing time. Note that they use a different time format (sigh.....)
         creationTimeNode = prodInfoNode.getElementsByTagName('sentinel3:creationTime')[0]
