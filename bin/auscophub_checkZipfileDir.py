@@ -19,7 +19,6 @@ from __future__ import print_function
 import os
 import argparse
 import fnmatch
-import re
 
 from auscophub import sen1meta, sen2meta, sen3meta, dirstruct
 
@@ -41,7 +40,6 @@ def main():
     """
     cmdargs = getCmdargs()
     
-    zipRegExp = re.compile(fnmatch.translate("*.zip"))
     suffixList = ['zip', 'xml', 'png']
     
     zipfilesToMove = []
@@ -61,7 +59,7 @@ def main():
                             print("Zip file", os.path.join(absActualDir, fn), 
                                 "appears to be outside our directory structure altogether")
                 else:
-                    print("Cannot deduce correct dir for", os.path.join(dirpath, fn)))
+                    print("Cannot deduce correct dir for", os.path.join(dirpath, fn))
 
     if len(zipfilesToMove) > 0:
         # Check all destination directories, and for any which do not exists, generate mkdir commands
@@ -101,7 +99,7 @@ def getRelDir(zipfilename):
             metainfo = sen2meta.Sen2ZipfileMeta(zipfilename=zipfilename)
         elif sentinelNumber == "S3":
             metainfo = sen3meta.Sen3ZipfileMeta(zipfilename=zipfilename)
-    except Exception as e:
+    except Exception:
         metainfo = None
 
     if metainfo is not None:
