@@ -9,6 +9,8 @@ from xml.dom import minidom
 
 from osgeo import ogr
 
+from auscophub import geomutils
+
 
 class Sen3ZipfileMeta(object):
     """
@@ -72,25 +74,20 @@ class Sen3ZipfileMeta(object):
         numVals = len(posListStrVals)
         # Note that a gml:posList has pairs in order [lat long ....], with no sensible pair delimiter
         posListPairs = ["{} {}".format(posListStrVals[i+1], posListStrVals[i]) for i in range(0, numVals, 2)]
+
         # Cope with footprints crossing the international date line. If we have 
         # both negative and positive longitudes larger than 100, then add 360 to all 
         # the negative ones
-        posListVals = [(float(x), float(y)) for (x, y) in [pair.split() for pair in posListPairs]]
-        xMin = min([x for (x, y) in posListVals])
-        xMax = max([x for (x, y) in posListVals])
-        if xMin < -100 and xMax > 100:
-            posListPairs = ["{} {}".format(x+360, y) if x < 0 else "{} {}".format(x, y) 
-                for (x, y) in posListVals]
-        self.outlineXY = [(float(x), float(y)) for (x, y) in [pair.split() for pair in posListPairs]]
-        self.outlineWKT = "POLYGON(({}))".format(','.join(posListPairs))
-        # Centroid
-        poly = ogr.Geometry(wkt=self.outlineWKT)
-        centroidJsonDict = eval(poly.Centroid().ExportToJson())
-        self.centroidXY = centroidJsonDict["coordinates"]
-        # Ensure centroid longitude is on standard [-180, 180] interval
-        if self.centroidXY[0] > 180:
-            self.centroidXY[0] -= 360
-        
+        posListVals = [[float(x), float(y)] for (x, y) in [pair.split() for pair in posListPairs]]
+        self.crossesDateline = geomutils.crossesDateline(posListVals)
+        footprintGeom = geomutils.geomFromOutlineCoords(posListVals)
+        if self.crossesDateline:
+            footprintGeom = geomutils.splitAtDateLine(footprintGeom)
+            self.centroidXY = geomutils.centroidAcrossDateline(posListVals)
+        else:
+            self.centroidXY = geomutils.centroidXYfromGeom(footprintGeom)
+        self.outlineWKT = footprintGeom.ExportToWkt()
+
         # Frame, which is not stored in the measurementFrameSet node, but in 
         # the generalProductInfo node. 
         prodInfoNode = self.findMetadataNodeByIdName(metadataNodeList, 'generalProductInformation')

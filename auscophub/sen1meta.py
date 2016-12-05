@@ -6,10 +6,11 @@ from __future__ import print_function, division
 import os
 import zipfile
 import datetime
-import json
 from xml.dom import minidom
 
 from osgeo import ogr
+
+from auscophub import geomutils
 
 
 class Sen1ZipfileMeta(object):
@@ -67,7 +68,8 @@ class Sen1ZipfileMeta(object):
             self.passDirection = productInfoNode.getElementsByTagName('pass')[0].firstChild.data.strip()
             
             # Create a list of the geolocation grid point lat/long values, so we can use them to
-            # create a rough footprint
+            # create a rough footprint. We make a convex hull around the points, and assume
+            # that this is roughly the outline of the footprint (by no means guaranteed). 
             longLatList = []
             for geolocGridPointNode in geoLocPointList:
                 longitude = float(geolocGridPointNode.getElementsByTagName('longitude')[0].firstChild.data.strip())
@@ -76,22 +78,18 @@ class Sen1ZipfileMeta(object):
             # Cope with footprints crossing the international date line. If we have 
             # both negative and positive longitudes larger than 100, then add 360 to all 
             # the negative ones
-            xMin = min([x for (x, y) in longLatList])
-            xMax = max([x for (x, y) in longLatList])
-            if xMin < -100 and xMax > 100:
-                longLatList = [(x+360, y) if x < 0 else (x, y) for (x, y) in longLatList]
-            # Create a geometry object from this list
-            jsonDict = {'type':'MultiPoint', 'coordinates':longLatList}
-            jsonStr = json.dumps(jsonDict)
-            pointGeom = ogr.CreateGeometryFromJson(jsonStr)
-            footprintGeom = pointGeom.ConvexHull()
+            self.crossesDateline = geomutils.crossesDateline(longLatList)
+            footprintGeom = geomutils.geomFromInteriorPoints(longLatList)
+            if self.crossesDateline:
+                coords = geomutils.nonNegativeLongitude(longLatList)
+                footprintGeomNonNeg = geomutils.geomFromInteriorPoints(coords)
+                footprintGeom = geomutils.splitAtDateLine(footprintGeomNonNeg)
+                coordsPolyNonNeg = geomutils.getCoords(footprintGeomNonNeg)
+                self.centroidXY = geomutils.centroidAcrossDateline(coordsPolyNonNeg)
+            else:
+                self.centroidXY = geomutils.centroidXYfromGeom(footprintGeom)
             self.outlineWKT = footprintGeom.ExportToWkt()
-            centroidJsonDict = json.loads(footprintGeom.Centroid().ExportToJson())
-            self.centroidXY = centroidJsonDict["coordinates"]
-            # Ensure centroid longitude is on standard [-180, 180] interval
-            if self.centroidXY[0] > 180:
-                self.centroidXY[0] -= 360
-            
+
             # Now loop over all the annotation XML files, getting all possible combinations of
             # a couple of parameters, so we can make a complete list of them. Not at all sure 
             # if this is useful, but it seemed like it would be. 
