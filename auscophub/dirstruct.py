@@ -5,6 +5,7 @@ Hub server.
 """
 from __future__ import print_function, division
 
+import sys
 import os
 import shutil
 import tempfile
@@ -210,7 +211,8 @@ def moveZipfile(zipfilename, finalOutputDir, dummy, verbose, makeCopy, makeSymli
     finalFile = os.path.join(finalOutputDir, os.path.basename(zipfilename))
     if os.path.exists(finalFile):
         if nooverwrite:
-            print("Zipfile", zipfilename, "already in final location. Not moved. ")
+            if verbose:
+                print("Zipfile", zipfilename, "already in final location. Not moved. ")
             preExisting = True
         else:
             if dummy:
@@ -256,7 +258,8 @@ def createSentinel1Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, no
     if dummy:
         print("Would make", finalXmlFile)
     elif os.path.exists(finalXmlFile) and noOverwrite:
-        print("XML already exists {}".format(finalXmlFile))
+        if verbose:
+            print("XML already exists {}".format(finalXmlFile))
     else:
         if verbose:
             print("Creating", finalXmlFile)
@@ -310,7 +313,8 @@ def createSentinel2Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, no
     if dummy:
         print("Would make", finalXmlFile)
     elif os.path.exists(finalXmlFile) and noOverwrite:
-        print("XML already exists {}".format(finalXmlFile))
+        if verbose:
+            print("XML already exists {}".format(finalXmlFile))
     else:
         if verbose:
             print("Creating", finalXmlFile)
@@ -367,7 +371,8 @@ def createSentinel3Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, no
     if dummy:
         print("Would make", finalXmlFile)
     elif os.path.exists(finalXmlFile) and noOverwrite:
-        print("XML already exists {}".format(finalXmlFile))
+        if verbose:
+            print("XML already exists {}".format(finalXmlFile))
     else:
         if verbose:
             print("Creating", finalXmlFile)
@@ -413,9 +418,11 @@ def createPreviewImg(zipfilename, finalOutputDir, metainfo, dummy, verbose, noOv
     if dummy:
         print("Would make", finalPngFile)
     elif metainfo.previewImgBin is None:
-        print("No preview image provided in", zipfilename)
+        if verbose:
+            print("No preview image provided in", zipfilename)
     elif os.path.exists(finalPngFile) and noOverwrite:
-        print("Preview image already exists {}".format(finalPngFile))
+        if verbose:
+            print("Preview image already exists {}".format(finalPngFile))
     else:
         if verbose:
             print("Creating", finalPngFile)
