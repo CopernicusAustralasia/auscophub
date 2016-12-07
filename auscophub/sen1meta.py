@@ -75,19 +75,10 @@ class Sen1ZipfileMeta(object):
                 longitude = float(geolocGridPointNode.getElementsByTagName('longitude')[0].firstChild.data.strip())
                 latitude = float(geolocGridPointNode.getElementsByTagName('latitude')[0].firstChild.data.strip())
                 longLatList.append([longitude, latitude])
-            # Cope with footprints crossing the international date line. If we have 
-            # both negative and positive longitudes larger than 100, then add 360 to all 
-            # the negative ones
-            self.crossesDateline = geomutils.crossesDateline(longLatList)
-            footprintGeom = geomutils.geomFromInteriorPoints(longLatList)
-            if self.crossesDateline:
-                coords = geomutils.nonNegativeLongitude(longLatList)
-                footprintGeomNonNeg = geomutils.geomFromInteriorPoints(coords)
-                footprintGeom = geomutils.splitAtDateLine(footprintGeomNonNeg)
-                coordsPolyNonNeg = geomutils.getCoords(footprintGeomNonNeg)
-                self.centroidXY = geomutils.centroidAcrossDateline(coordsPolyNonNeg)
-            else:
-                self.centroidXY = geomutils.centroidXYfromGeom(footprintGeom)
+            pointsGeom = geomutils.geomFromInteriorPoints(longLatList)
+            prefEpsg = geomutils.findSensibleProjection(pointsGeom)
+            footprintGeom = geomutils.polygonFromInteriorPoints(pointsGeom, prefEpsg)
+            self.centroidXY = geomutils.findCentroid(footprintGeom, prefEpsg)
             self.outlineWKT = footprintGeom.ExportToWkt()
 
             # Now loop over all the annotation XML files, getting all possible combinations of
