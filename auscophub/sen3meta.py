@@ -74,18 +74,14 @@ class Sen3ZipfileMeta(object):
         numVals = len(posListStrVals)
         # Note that a gml:posList has pairs in order [lat long ....], with no sensible pair delimiter
         posListPairs = ["{} {}".format(posListStrVals[i+1], posListStrVals[i]) for i in range(0, numVals, 2)]
-
-        # Cope with footprints crossing the international date line. If we have 
-        # both negative and positive longitudes larger than 100, then add 360 to all 
-        # the negative ones
         posListVals = [[float(x), float(y)] for (x, y) in [pair.split() for pair in posListPairs]]
-        self.crossesDateline = geomutils.crossesDateline(posListVals)
+
         footprintGeom = geomutils.geomFromOutlineCoords(posListVals)
-        if self.crossesDateline:
-            footprintGeom = geomutils.splitAtDateLine(footprintGeom)
-            self.centroidXY = geomutils.centroidAcrossDateline(posListVals)
+        prefEpsg = geomutils.findSensibleProjection(footprintGeom)
+        if prefEpsg is not None:
+            self.centroidXY = geomutils.findCentroid(footprintGeom, prefEpsg)
         else:
-            self.centroidXY = geomutils.centroidXYfromGeom(footprintGeom)
+            self.centroidXY = None
         self.outlineWKT = footprintGeom.ExportToWkt()
 
         # Frame, which is not stored in the measurementFrameSet node, but in 
