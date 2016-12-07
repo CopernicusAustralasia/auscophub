@@ -337,16 +337,10 @@ class Sen2ZipfileMeta(object):
         x = coordsList[1::2]
         y = coordsList[0::2]
         coords = [[x, y] for (x, y) in zip(x, y)]
-        # Cope with footprints which cross the international date line. If we have 
-        # both negative and positive longitudes larger than 100, then add 360 to all 
-        # the negative ones
-        self.crossesDateline = geomutils.crossesDateline(coords)
+
         footprintGeom = geomutils.geomFromOutlineCoords(coords)
-        if self.crossesDateline:
-            footprintGeom = geomutils.splitAtDateLine(footprintGeom)
-            self.centroidXY = geomutils.centroidAcrossDateline(coords)
-        else:
-            self.centroidXY = geomutils.centroidXYfromGeom(footprintGeom)
+        prefEpsg = geomutils.findSensibleProjection(footprintGeom)
+        self.centroidXY = geomutils.findCentroid(footprintGeom, prefEpsg)
         self.extPosWKT = footprintGeom.ExportToWkt()
 
         # Special values in imagery
