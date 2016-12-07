@@ -147,13 +147,14 @@ class Sen1ZipfileMeta(object):
         so much. 
         
         """
-        filenamePieces = zipfilename.replace(".zip", "").split("_")
+        filenamePieces = os.path.basename(zipfilename).replace(".zip", "").split("_")
         
         self.centroidXY = None
         self.polarisation = None
         self.swath = None
         self.passDirection = None
         self.satellite = filenamePieces[0]
+        self.satId = self.satellite
         self.mode = filenamePieces[1]
         self.productType = filenamePieces[2]
         if self.productType in ('RAW', 'OCN'):
