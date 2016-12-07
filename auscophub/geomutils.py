@@ -12,13 +12,108 @@ Note on efficiency.
 These routines all operate on the basic ogr.Geometry object. However, since this is 
 a relatively opaque structure, mostly they will convert to JSON strings and
 use those to get hold of the coordinates. This means there is a fair bit of
-converting back and forth, which means we are not at maximum efficiency. However, 
-in the context of AusCopHub, this is negligible compared to doing things
-like moving ESA zip files around. 
+converting back and forth, which means we are not at maximum efficiency. There is also
+quite a bit of changing of projection. However, in the context of AusCopHub, this is 
+all somewhat negligible compared to doing things like reading and copying ESA zip files. 
 
 """
+from __future__ import print_function, division
+
 import numpy
-from osgeo import ogr
+from osgeo import ogr, osr
+
+
+def findSensibleProjection(geom):
+    """
+    Given a polygon Geometry object in lat/long, work out what would be a suitable projection
+    to use with this area, in order to avoid things like the international 
+    date line wrap-around, or the north/sourth pole discontinuities. 
+    
+    This only makes sense for tiled products, as opposed to long strips which cross 
+    multiple zones, etc. 
+    
+    Main possible options are UTM in a suitable zone, UPS when near the poles. 
+    
+    Return the EPSG number of the projection. 
+    
+    """
+    coords = getCoords(geom)
+    y = coords[:, 1]
+    x = coords[:, 0]
+    yMin = y.min()
+    yMax = y.max()
+    if (yMax - yMin) > 90:
+        # We are crossing a lot of latitude, which suggests that we have a 
+        # long strip> In this case, we don't even bother to suggest an EPSG. 
+        epsg = None
+    elif yMin < -80:
+        # We are nearing the south pole, so go with UPS south
+        epsg = 32761
+    elif yMax > 80:
+        # Nearing north pole, so UPS North
+        epsg = 32661
+    else:
+        # Work out a UTM zone. Note that we use the median value to get a rough 
+        # idea of the centre, rather than the mean, because the mean is subject to all 
+        # sorts of problems when crossing the date line
+        xMedian = numpy.median(x)
+        yMedian = numpy.median(y)
+        zone = int((xMedian + 180)/6) % 60 + 1
+        if yMedian < 0:
+            epsgBase = 32700
+        else:
+            epsgBase = 32600
+        epsg = epsgBase + zone
+    return epsg
+
+
+def makeTransformations(epsg1, epsg2):
+    """
+    Make a pair of ogr.CoordinateTransformation objects, for transforming between
+    the two given EPSG projections.
+    
+    Return a tuple
+        (tr1to2, tr2to1)
+    
+    """
+    sr1 = osr.SpatialReference()
+    sr1.ImportFromEPSG(epsg1)
+    sr2 = osr.SpatialReference()
+    sr2.ImportFromEPSG(epsg2)
+    tr1to2 = osr.CoordinateTransformation(sr1, sr2)
+    tr2to1 = osr.CoordinateTransformation(sr2, sr1)
+    return (tr1to2, tr2to1)
+
+
+def findCentroid(geom, preferredEpsg):
+    """
+    Given a geometry as a lat/long polygon, find the lat/long centroid, by first projecting
+    into the preferred EPSG, so as to avoid discontinuities. The preferredEpsg is one
+    in which the polygon ought to make sense (as found, hopefully, 
+    by the findSensibleProjection() function). 
+    
+    Returns a pair [centroidX, centroidY] in lat/long
+    
+    """
+    (projTr, llTr) = makeTransformations(4326, preferredEpsg)
+    
+    geomProj = copyGeom(geom)
+    geomProj.Transform(projTr)
+    geomCentroid = geomProj.Centroid()
+    geomCentroid.Transform(llTr)
+    
+    centroidDict = eval(geomCentroid.ExportToJson())
+    centroidXY = centroidDict['coordinates']
+    return centroidXY
+
+
+def copyGeom(geom):
+    """
+    Return a copy of the geometry. OGR does not provide a good method for doing this. 
+    """
+    geomJson = geom.ExportToJson()
+    newGeom = ogr.CreateGeometryFromJson(geomJson)
+    return newGeom
 
 
 def getCoords(geom):
@@ -28,134 +123,18 @@ def getCoords(geom):
     
     If the polygon has holes, they will be discarded - this is just the outer polygon. 
     
+    If the geometry is a MultiPoint geom, also return a 2-d array of coords. 
+    
     """
     geomDict = eval(geom.ExportToJson())
     coords = geomDict['coordinates']
     if geomDict['type'] == 'Polygon':
         coordsArray = numpy.array(coords[0])
+    elif geomDict['type'] == 'MultiPoint':
+        coordsArray = numpy.array(coords)
     else:
         coordsArray = None
     return coordsArray
-
-
-def crossesDateline(geom):
-    """
-    Return True if the given lat/long polygon appears to cross the international date line. 
-    Geometry can be either a ogr.Geometry object or a numpy array of coordinates (or a list
-    of pairs). 
-    """
-    if isinstance(geom, ogr.Geometry):
-        coords = getCoords(geom)
-    elif isinstance(geom, numpy.ndarray) or isinstance(geom, list):
-        coords = numpy.array(geom)
-    x = coords[:, 0]
-    return (x.min() < -90 and x.max() > 90)
-
-
-def nonNegativeLongitude(coords):
-    """
-    Given a coords array for a single lat/long polygon, which is assumed to cross the
-    date line (with longitude values in the range [-180, 180]), return a copy of this 
-    array in which all negative longitude values have been wrapped around by 360, 
-    meaning that they will be continuous with the positive ones. 
-    
-    All returned longitudes will be in the range [0, 360].
-    
-    """
-    coords = numpy.array(coords)
-    x = coords[:, 0]
-    x[x<0] += 360
-    coords2 = coords.copy()
-    coords2[:, 0] = x
-    return coords2
-
-
-def withNegativeLongitude(coords):
-    """
-    Given a coords array for a single lat/long polygon, which is assumed to cross the
-    date line (with longitude values in the range [0, 360]), return a copy of this array 
-    in which all longitude values > 180 have been wrapped around by 360, meaning that 
-    they will be negative, and will thus be discontinuous with the positive ones. 
-    
-    All returned longitudes will be in the range [-180, 180].
-    
-    """
-    coords = numpy.array(coords)
-    x = coords[:, 0]
-    x[x>180] -= 360
-    coords2 = coords.copy()
-    coords2[:, 0] = x
-    return coords2
-
-
-def splitAtDateLine(geom):
-    """
-    Given a lat/long geometry which crosses the date line, with longitudes in the 
-    range [-180, 180], return a multipolygon geometry which has two polygons, one 
-    on either side of the date line. 
-    
-    All returned longitude values will also be in the range [-180, 180]. 
-    
-    """
-    coords = getCoords(geom)
-    coordsWrapped = nonNegativeLongitude(coords)
-
-    jsonWrapped = repr({'type':'Polygon', 'coordinates':[coordsWrapped.tolist()]})
-    geomWrapped = ogr.CreateGeometryFromJson(jsonWrapped)
-    
-    eastHemisphere = ogr.Geometry(wkt='POLYGON((0 -90, 180 -90, 180 90, 0 90, 0 -90))')
-    westHemisphereNonNeg = ogr.Geometry(wkt='POLYGON((180 -90, 360 -90, 360 90, 180 90, 180 -90))')
-    
-    eastHemPoly = geomWrapped.Intersection(eastHemisphere)
-    westHemPolyNonNeg = geomWrapped.Intersection(westHemisphereNonNeg)
-    
-    eastHemCoords = getCoords(eastHemPoly)
-    westHemCoordsNonNeg = getCoords(westHemPolyNonNeg)
-    westHemCoords = withNegativeLongitude(westHemCoordsNonNeg)
-    
-    jsonMulti = repr({
-        'type':'MultiPolygon', 
-        'coordinates': [
-                        [eastHemCoords.tolist()],
-                        [westHemCoords.tolist()]
-                       ]
-    })
-    geomMulti = ogr.CreateGeometryFromJson(jsonMulti)
-    
-    return geomMulti
-
-
-def centroidAcrossDateline(coords):
-    """
-    The given coords are assumed to be the lat/long outline of a polygon, which is assumed
-    to cross the date line, with longitude values in the 
-    range [-180, 180]. Work out the centroid in a manner which accounts for this. 
-    Return it as a tuple (ctrLongitude, ctrLatitude). The returned longitude value will 
-    be in the range [-180, 180]. 
-    
-    """
-    coordsWrapped = nonNegativeLongitude(coords)
-
-    jsonWrapped = repr({'type':'Polygon', 'coordinates':[coordsWrapped.tolist()]})
-    geomWrapped = ogr.CreateGeometryFromJson(jsonWrapped)
-
-    centroid = geomWrapped.Centroid()
-    centroidJson = centroid.ExportToJson()
-    (ctrX, ctrY) = eval(centroidJson)['coordinates']
-    if ctrX > 180:
-        ctrX -= 360
-    
-    return (ctrX, ctrY)
-
-
-def centroidXYfromGeom(geom):
-    """
-    Given a geometry polygon, return the centroid as (x, y) coordinates. Does not work
-    if the geom crosses the date line
-    """
-    centroidJsonDict = eval(geom.Centroid().ExportToJson())
-    centroidXY = centroidJsonDict["coordinates"]
-    return tuple(centroidXY)
 
 
 def geomFromOutlineCoords(coords):
@@ -174,13 +153,97 @@ def geomFromOutlineCoords(coords):
 def geomFromInteriorPoints(coords):
     """
     The given list of pairs (or 2-d numpy array) is the (x, y) coords of a set of internal
-    points inside a polygon. Create a polygon of the convex hull of these points
-    and return the ogr.Geometry object. 
+    points inside a polygon. Returns a MultiPoint Geometry. 
     
     """
     if isinstance(coords, numpy.ndarray):
         coords = coords.tolist()
     geomDict = {'type':'MultiPoint', 'coordinates':coords}
     geomPoints = ogr.CreateGeometryFromJson(repr(geomDict))
-    geomPoly = geomPoints.ConvexHull()
-    return geomPoly
+    return geomPoints
+
+
+def polygonFromInteriorPoints(geom, preferredEpsg):
+    """
+    Given a MultiPoint geometry object in lat/long, create a polygon of the 
+    convex hull of these points. 
+    
+    First project the lat/long points into the preferred EPSG, so that when we find 
+    the convex hull, we are not crossing any discontinuities such as the international date 
+    line. 
+    
+    Return a single polygon geometry in lat/long. 
+    
+    """
+    (projTr, llTr) = makeTransformations(4326, preferredEpsg)
+
+    geomProj = copyGeom(geom)
+    geomProj.Transform(projTr)
+    geomOutline = geomProj.ConvexHull()
+    geomOutline.Transform(llTr)
+    return geomOutline
+
+
+def crossesDateline(geom, preferredEpsg):
+    """
+    Given a Polygon Geometry object, in lat/long, detect whether it crosses the dateline. 
+    Do this in the projection of the preferred EPSG, so we remove (reduce?) the ambiguity
+    about inside/outside. 
+    
+    """
+    (xMin, xMax, yMin, yMax) = geom.GetEnvelope()
+    (projTr, llTr) = makeTransformations(4326, preferredEpsg)
+
+    geomProj = copyGeom(geom)
+    geomProj.Transform(projTr)
+    dateLineGeom = ogr.Geometry(wkt='LINESTRING(180 {}, 180 {})'.format(yMin, yMax))
+    dateLineGeom.Transform(projTr)
+    crosses = geomProj.Intersects(dateLineGeom)
+    return crosses
+
+
+def splitAtDateline(geom, preferredEpsg):
+    """
+    Given a Polygon Geometry object in lat/long, determine whether it crosses the date line, 
+    and if so, split it into a multipolygon with a part on either side. 
+    
+    Use the given preferred EPSG to perform calculations. 
+    
+    Return a new Geometry in lat/long. 
+    
+    """
+    crosses = crossesDateline(geom, preferredEpsg)
+    if crosses:
+        (projTr, llTr) = makeTransformations(4326, preferredEpsg)
+        coords = getCoords(geom)
+        (x, y) = (coords[:, 0], coords[:, 1])
+        (yMin, yMax) = (y.min(), y.max())
+        xMinPositive = x[x>=0].min()
+        xMaxNegative = x[x<0].max()
+        
+        # Create rectangles for the east and west hemispheres, constrained by the 
+        # extent of this polygon. Note that this assumes that we do not
+        # cross both the date line, and also the prime (zero) meridian. This may not
+        # always be true, notably when we are close to the pole. 
+        eastHemiRectCoords = [[yMax, xMinPositive], [yMin, xMinPositive], [yMin, 180], 
+            [yMax, 180], [yMax, xMinPositive]]
+        eastHemiRectJson = repr({'type':'Polygon', 'coordinates':eastHemiRectCoords})
+        westHemiRectCoords = [[yMax, -180], [yMin, -180], [yMin, xMaxNegative], 
+            [yMax, xMaxNegative], [yMax, -180]]
+        westHemiRectJson = repr({'type':'Polygon', 'coordinates':westHemiRectCoords})
+        eastHemiRect = ogr.CreateGeometryFromJson(eastHemiRectJson)
+        westHemiRect = ogr.CreateGeometryFromJson(westHemiRectJson)
+        
+        geomProj = copyGeom(geom)
+        geomProj.Transform(projTr)
+        eastHemiRect.Transform(projTr)
+        westHemiRect.Transform(projTr)
+        
+        eastHemiPart = geomProj.Intersection(eastHemiRect)
+        westHemiPart = geomProj.Intersection(westHemiRect)
+        eastHemiPart.Transform(llTr)
+        westHemiPart.Transform(llTr)
+        newGeom = eastHemiPart.Union(westHemiPart)
+    else:
+        newGeom = copyGeom(geom)
+    return newGeom
