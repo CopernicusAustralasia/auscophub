@@ -5,7 +5,6 @@ Hub server.
 """
 from __future__ import print_function, division
 
-import sys
 import os
 import shutil
 import tempfile
@@ -41,7 +40,7 @@ def makeRelativeOutputDir(metainfo, gridCellSize, productDirGiven=False):
     if metainfo.centroidXY is not None:
         gridSquareDir = makeGridSquareDir(metainfo, gridCellSize)
         if metainfo.satId[1] == "3":
-            if metainfo.productName in ("EFR___"):
+            if metainfo.productType in ("OL_1_EFR___"):
                 # For all these products, we split into grid squares
                 outDir = os.path.join(yearMonthDir, dateDir, gridSquareDir)
             else:
@@ -50,7 +49,11 @@ def makeRelativeOutputDir(metainfo, gridCellSize, productDirGiven=False):
         else:
             outDir = os.path.join(yearMonthDir, gridSquareDir)
     else:
-        outDir = yearMonthDir
+        if metainfo.satId[1] == "3":
+            outDir = os.path.join(yearMonthDir, dateDir)
+        else:
+            # This is a catchall fallback, just in case. 
+            outDir = yearMonthDir
         
     if not productDirGiven:
         fullDir = os.path.join(satDir, instrumentDir, productDir, outDir)
@@ -382,8 +385,9 @@ def createSentinel3Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, no
         f.write("<?xml version='1.0'?>\n")
         f.write("<AUSCOPHUB_SAFE_FILEDESCRIPTION>\n")
         f.write("  <SATELLITE name='{}' />\n".format(metainfo.satId))
-        (longitude, latitude) = tuple(metainfo.centroidXY)
-        f.write("  <CENTROID longitude='{}' latitude='{}' />\n".format(longitude, latitude))
+        if metainfo.centroidXY is not None:
+            (longitude, latitude) = tuple(metainfo.centroidXY)
+            f.write("  <CENTROID longitude='{}' latitude='{}' />\n".format(longitude, latitude))
         f.write("  <ESA_TILEOUTLINE_FOOTPRINT_WKT>\n")
         f.write("    {}\n".format(metainfo.outlineWKT))
         f.write("  </ESA_TILEOUTLINE_FOOTPRINT_WKT>\n")
