@@ -84,13 +84,13 @@ def getCmdargs():
         help="Latest date to search, as yyyymmdd (default=%(default)s)")
     
     spatialGroup = p.add_argument_group(title="Searching by location")
-    spatialGroup.add_argument("--bbox", nargs=4, type=float, 
+    spatialGroup.add_argument("--bbox", nargs=4, type=float, default=[110.0, 155.0, -45.0, -10.0], 
         metavar=('westLong', 'eastLong', 'southLat', 'northLat'),
         help=("Lat/long bounding box to search within. Current limitations of the server "+
             "mean that we are actually searching in the n-degree grid cells which lie at least "+
             "partially within this bounding box, and these are based on zipfile centroid. This "+
             "means you should be generous with your bounding box, or you might miss something at "+
-            "the edges. "))
+            "the edges. Default covers Australia. "))
     spatialGroup.add_argument("--polygonfile", 
         help=("Vector file of a polygon to search within. The same caveats about server "+
             "limitations given for --bbox also apply here, so be generous. The polygon "+
