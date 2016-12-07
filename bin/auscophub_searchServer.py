@@ -23,6 +23,7 @@ import datetime
 from osgeo import ogr, osr
 
 from auscophub import client
+from auscophub import geomutils
 
 
 def getCmdargs():
@@ -211,6 +212,9 @@ def filterByRegion(metalist, boundingBox, searchPolygon):
     metalistFiltered = []
     for (urlStr, metaObj) in metalist:
         footprintGeom = ogr.Geometry(wkt=str(metaObj.footprintWkt))
+        prefEpsg = geomutils.findSensibleProjection(footprintGeom)
+        if geomutils.crossesDateline(footprintGeom, prefEpsg):
+            footprintGeom = geomutils.splitAtDateline(footprintGeom, prefEpsg)
         if footprintGeom.Intersects(searchPolygon):
             metalistFiltered.append((urlStr, metaObj))
     return metalistFiltered
