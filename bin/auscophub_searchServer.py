@@ -48,12 +48,12 @@ def getCmdargs():
             "(which each have only a single instrument), but required for Sentinel-3"))
     p.add_argument("--product", 
         choices=['SLC', 'GRD', 'L1C', 'OL_1_EFR___', 'OL_1_ERR___', 'SL_1_RBT___',
-            'SL_1_WCT___', 'SL_1_WST___', 'SL_1_LST___', 'SR_2_WAT___', 'SR_2_LAN___'], 
+            'SL_2_WST___', 'SL_2_LST___', 'SR_2_WAT___', 'SR_2_LAN___'], 
         help=("Data product (i.e. processing level) to search. Options are dependent on satellite "+
             "family. For Sentinel-1, options are {SLC (default), GRD}. RAW and OCN may be supported later. "+
             "For Sentinel-2, options are L1C. In the future, L2A may be supported. "+
             "For Sentinel-3 OLCI, options are {OL_1_EFR___ (default), OL_1_ERR___}. "+
-            "For Sentinel-3 SLSTR, options are {SL_1_RBT___, SL_1_WCT___, SL_1_WST___, SL_1_LST___}. "+
+            "For Sentinel-3 SLSTR, options are {SL_1_RBT___, SL_2_WST___, SL_2_LST___}. "+
             "For Sentinel-3 SRAL, options are {SR_2_WAT___, SR_2_LAN___}"))
     p.add_argument("--proxy", help=("URL of proxy server. Default uses no proxy, "+
         "assuming direct connection to the internet. Currently only supports non-authenticating proxies. "))
