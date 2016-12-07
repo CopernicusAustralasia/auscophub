@@ -218,32 +218,47 @@ def splitAtDateline(geom, preferredEpsg):
         coords = getCoords(geom)
         (x, y) = (coords[:, 0], coords[:, 1])
         (yMin, yMax) = (y.min(), y.max())
-        xMinPositive = x[x>=0].min()
-        xMaxNegative = x[x<0].max()
+        xMinPositive = None
+        xMaxNegative = None
+        xGe0 = (x >= 0)
+        xLt0 = (x < 0)
+        if xGe0.any() > 0 and xLt0.any() > 0:
+            xMaxNegative = x[xLt0].max()
+            xMinPositive = x[xGe0].min()
         
-        # Create rectangles for the east and west hemispheres, constrained by the 
-        # extent of this polygon. Note that this assumes that we do not
-        # cross both the date line, and also the prime (zero) meridian. This may not
-        # always be true, notably when we are close to the pole. 
-        eastHemiRectCoords = [[yMax, xMinPositive], [yMin, xMinPositive], [yMin, 180], 
-            [yMax, 180], [yMax, xMinPositive]]
-        eastHemiRectJson = repr({'type':'Polygon', 'coordinates':eastHemiRectCoords})
-        westHemiRectCoords = [[yMax, -180], [yMin, -180], [yMin, xMaxNegative], 
-            [yMax, xMaxNegative], [yMax, -180]]
-        westHemiRectJson = repr({'type':'Polygon', 'coordinates':westHemiRectCoords})
-        eastHemiRect = ogr.CreateGeometryFromJson(eastHemiRectJson)
-        westHemiRect = ogr.CreateGeometryFromJson(westHemiRectJson)
-        
-        geomProj = copyGeom(geom)
-        geomProj.Transform(projTr)
-        eastHemiRect.Transform(projTr)
-        westHemiRect.Transform(projTr)
-        
-        eastHemiPart = geomProj.Intersection(eastHemiRect)
-        westHemiPart = geomProj.Intersection(westHemiRect)
-        eastHemiPart.Transform(llTr)
-        westHemiPart.Transform(llTr)
-        newGeom = eastHemiPart.Union(westHemiPart)
+            # Create rectangles for the east and west hemispheres, constrained by the 
+            # extent of this polygon. Note that this assumes that we do not
+            # cross both the date line, and also the prime (zero) meridian. This may not
+            # always be true, notably when we are close to the pole. 
+            eastHemiRectCoords = [[xMinPositive, yMax], [xMinPositive, yMin], [180, yMin], 
+                [180, yMax], [xMinPositive, yMax]]
+            eastHemiRectJson = repr({'type':'Polygon', 'coordinates':[eastHemiRectCoords]})
+            westHemiRectCoords = [[-180, yMax], [-180, yMin], [xMaxNegative, yMin], 
+                [xMaxNegative, yMax], [-180, yMax]]
+            westHemiRectJson = repr({'type':'Polygon', 'coordinates':[westHemiRectCoords]})
+            eastHemiRect = ogr.CreateGeometryFromJson(eastHemiRectJson)
+            westHemiRect = ogr.CreateGeometryFromJson(westHemiRectJson)
+
+            geomProj = copyGeom(geom)
+            geomProj.Transform(projTr)
+            eastHemiRect.Transform(projTr)
+            westHemiRect.Transform(projTr)
+
+            eastHemiPart = geomProj.Intersection(eastHemiRect)
+            westHemiPart = geomProj.Intersection(westHemiRect)
+            eastHemiPart.Transform(llTr)
+            westHemiPart.Transform(llTr)
+            
+            # Put these together as a single multipolygon
+            eastPartCoords = getCoords(eastHemiPart)
+            westPartCoords = getCoords(westHemiPart)
+            coordsMulti = [[eastPartCoords.tolist()], [westPartCoords.tolist()]]
+            jsonStr = repr({'type':'MultiPolygon', 'coordinates':coordsMulti})
+            newGeom = ogr.CreateGeometryFromJson(jsonStr)
+        else:
+            # It didn't really cross the date line, but seems to due to rounding
+            # error in crossesDateline(). 
+            newGeom = copyGeom(geom)
     else:
         newGeom = copyGeom(geom)
     return newGeom
