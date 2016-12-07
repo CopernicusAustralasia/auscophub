@@ -32,7 +32,7 @@ def getCmdargs():
     tomorrow = datetime.date.today() + datetime.timedelta(1)
     defaultEndDate = tomorrow.strftime("%Y%m%d")
     defaultInstrumentDict = {1:'C-SAR', 2:'MSI', 3:'OLCI'}
-    defaultProductDict = {1:'SLC', 2:'L1C', 3:'1_EFR___'}
+    defaultProductDict = {1:'SLC', 2:'L1C', 3:'OL_1_EFR___'}
     
     p = argparse.ArgumentParser(description="""
         Rudimentary search tool to find zipped SAFE-format files on the Australian
@@ -45,11 +45,15 @@ def getCmdargs():
     p.add_argument("--instrument", choices=['C_SAR', 'MSI', 'OLCI', 'SLSTR', 'SRAL'], 
         help=("Instrument to search on. Obvious default value for Sentinels 1 and 2 "+
             "(which each have only a single instrument), but required for Sentinel-3"))
-    p.add_argument("--product", choices=['SLC', 'GRD', 'L1C', '1_EFR___', '1_ERR___'], 
+    p.add_argument("--product", 
+        choices=['SLC', 'GRD', 'L1C', 'OL_1_EFR___', 'OL_1_ERR___', 'SL_1_RBT___',
+            'SL_1_WCT___', 'SL_1_WST___', 'SL_1_LST___', 'SR_2_WAT___', 'SR_2_LAN___'], 
         help=("Data product (i.e. processing level) to search. Options are dependent on satellite "+
             "family. For Sentinel-1, options are {SLC (default), GRD}. RAW and OCN may be supported later. "+
             "For Sentinel-2, options are L1C. In the future, L2A may be supported. "+
-            "For Sentinel-3 OLCI, options are {1_EFR___ (default), 1_ERR___}"))
+            "For Sentinel-3 OLCI, options are {OL_1_EFR___ (default), OL_1_ERR___}. "+
+            "For Sentinel-3 SLSTR, options are {SL_1_RBT___, SL_1_WCT___, SL_1_WST___, SL_1_LST___}. "+
+            "For Sentinel-3 SRAL, options are {SR_2_WAT___, SR_2_LAN___}"))
     p.add_argument("--proxy", help=("URL of proxy server. Default uses no proxy, "+
         "assuming direct connection to the internet. Currently only supports non-authenticating proxies. "))
     
@@ -71,6 +75,9 @@ def getCmdargs():
     filterGroup.add_argument("--direction", choices=['Ascending', 'Descending'],
         help=("Desired pass direction (radar only). Include only zipfiles which were "+
             "acquired with the given pass direction. Default will include any direction. "))
+    filterGroup.add_argument("--satelliteletter", choices=['A', 'B', 'C', 'D'],
+        help=("Restrict to a particular satellite for the given sentinel number (e.g. A for S2A). "+
+            "Default will include all satellites for the given sentinel number. "))
     filterGroup.add_argument("--allowbadmd5", default=False, action="store_true",
         help=("Allow zipfiles for which the MD5 hash given by ESA does not match that which "+
             "is calculated locally after transfer from ESA. Default will remove these from "+
@@ -149,6 +156,7 @@ def mainRoutine():
     if not cmdargs.allowbadmd5:
         metalist = filterBadMd5(metalist)
     metalist = filterByRegion(metalist, boundingBox, searchPolygon)
+    metalist = filterBySatellite(metalist, cmdargs)
     metalist = filterByCloud(metalist, cmdargs)
     metalist = filterByPolarisation(metalist, cmdargs)
     metalist = filterBySwathMode(metalist, cmdargs)
@@ -220,6 +228,22 @@ def filterByCloud(metalist, cmdargs):
         if hasattr(metaObj, 'cloudCoverPcnt'):
             cloudPcnt = metaObj.cloudCoverPcnt
         if cloudPcnt is None or cloudPcnt <= cmdargs.maxcloud:
+            metalistFiltered.append((urlStr, metaObj))
+    return metalistFiltered
+
+
+def filterBySatellite(metalist, cmdargs):
+    """
+    Filter the meta objects by particular satellite. If cmdargs.satelliteletter 
+    is None, all are included. 
+    
+    """
+    metalistFiltered = []
+    for (urlStr, metaObj) in metalist:
+        sat = None
+        if cmdargs.satelliteletter is not None:
+            sat = "S{}{}".format(cmdargs.sentinel, cmdargs.satelliteletter)
+        if sat is None or metaObj.satellite == sat:
             metalistFiltered.append((urlStr, metaObj))
     return metalistFiltered
 
