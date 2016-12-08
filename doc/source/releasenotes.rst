@@ -1,6 +1,18 @@
 Release Notes
 =============
 
+Version 1.0.8 (in prep)
+--------------------------
+Enhancements
+  * Finalised decisions about directory structure for Sentinel-3. Cope with more of the
+    proposed instruments and products for Sentinel-3. 
+  * Cope properly with zip file footprints which cross the international date line. 
+    This includes both the code for storing them in the correct subdirectories, and
+    also the client-side code for searching via the THREDDS server. 
+  * Made :command:`auscophub_storeSenZipfile.py` generate the platform/instrument/product
+    levels of the directory structure, plus a commandline option to switch back to the 
+    old behaviour, just in case it is required. 
+
 Version 1.0.7 (2016-11-26)
 --------------------------
 Enhancements
