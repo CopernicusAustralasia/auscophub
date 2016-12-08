@@ -40,12 +40,8 @@ def makeRelativeOutputDir(metainfo, gridCellSize, productDirGiven=False):
     if metainfo.centroidXY is not None:
         gridSquareDir = makeGridSquareDir(metainfo, gridCellSize)
         if metainfo.satId[1] == "3":
-            if metainfo.productType in ("OL_1_EFR___", "SL_1_RBT___", "SL_2_WST___", "SL_2_LST___"):
-                # For all these products, we split into grid squares
-                outDir = os.path.join(yearMonthDir, dateDir, gridSquareDir)
-            else:
-                # For all other products in S-3 we do not split spatially at all. 
-                outDir = os.path.join(yearMonthDir, dateDir)
+            # For all S-3 products we do not split spatially at all. 
+            outDir = os.path.join(yearMonthDir, dateDir)
         else:
             outDir = os.path.join(yearMonthDir, gridSquareDir)
     else:
