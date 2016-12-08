@@ -37,19 +37,15 @@ def makeRelativeOutputDir(metainfo, gridCellSize, productDirGiven=False):
     productDir = makeProductDir(metainfo)
     yearMonthDir = makeYearMonthDir(metainfo)
     dateDir = makeDateDir(metainfo)
-    if metainfo.centroidXY is not None:
+    if metainfo.satId[1] == "3":
+        # For all S-3 products we do not split spatially at all. 
+        outDir = os.path.join(yearMonthDir, dateDir)
+    elif metainfo.centroidXY is not None:
         gridSquareDir = makeGridSquareDir(metainfo, gridCellSize)
-        if metainfo.satId[1] == "3":
-            # For all S-3 products we do not split spatially at all. 
-            outDir = os.path.join(yearMonthDir, dateDir)
-        else:
-            outDir = os.path.join(yearMonthDir, gridSquareDir)
+        outDir = os.path.join(yearMonthDir, gridSquareDir)
     else:
-        if metainfo.satId[1] == "3":
-            outDir = os.path.join(yearMonthDir, dateDir)
-        else:
-            # This is a catchall fallback, just in case. 
-            outDir = yearMonthDir
+        # This is a catchall fallback, just in case. 
+        outDir = yearMonthDir
         
     if not productDirGiven:
         fullDir = os.path.join(satDir, instrumentDir, productDir, outDir)
