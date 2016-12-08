@@ -136,6 +136,11 @@ def getDescriptionMetaFromThreddsByBounds(urlOpener, sentinelNumber, instrumentS
             if gridCellDirWithinBounds(gridCellDirName, northLat, southLat, westLong, eastLong):
                 gridCellCatalogObjList.append(cellDirObj)
     
+    if len(gridCellCatalogObjList) == 0:
+        # Perhaps this is one of the products which has no spatial division, so just look in 
+        # lowest temporal division directory
+        gridCellCatalogObjList = timeCatalogObjList
+    
     # Create a list of dataset objects for every XML file in the given list of catalog objects. 
     dsObjList = []
     for subdirObj in gridCellCatalogObjList:
