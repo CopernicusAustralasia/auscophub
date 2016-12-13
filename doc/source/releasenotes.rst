@@ -1,7 +1,7 @@
 Release Notes
 =============
 
-Version 1.0.8 (in prep)
+Version 1.0.8 (2016-12-13)
 --------------------------
 Enhancements
   * Finalised decisions about directory structure for Sentinel-3. Cope with more of the
