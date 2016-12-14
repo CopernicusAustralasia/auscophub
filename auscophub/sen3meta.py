@@ -111,6 +111,10 @@ class Sen3ZipfileMeta(object):
         orbitRefNode = self.findMetadataNodeByIdName(metadataNodeList, 'measurementOrbitReference')
         relativeOrbitNode = orbitRefNode.getElementsByTagName('sentinel-safe:relativeOrbitNumber')[0]
         self.relativeOrbitNumber = int(relativeOrbitNode.firstChild.data.strip())
+        absoluteOrbitNode = orbitRefNode.getElementsByTagName('sentinel-safe:orbitNumber')[0]
+        self.absoluteOrbitNumber = int(absoluteOrbitNode.firstChild.data.strip())
+        cycleNode = orbitRefNode.getElementsByTagName('sentinel-safe:cycleNumber')[0]
+        self.cycleNumber = int(cycleNode.firstChild.data.strip())
         
         # Currently have no mechanism for a preview image
         self.previewImgBin = None
