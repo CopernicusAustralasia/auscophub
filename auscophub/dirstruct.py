@@ -391,7 +391,11 @@ def createSentinel3Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, no
             metainfo.generationTime, metainfo.baselineCollection))
         f.write("  <ORBIT_NUMBERS relative='{}' ".format(metainfo.relativeOrbitNumber))
         if metainfo.frameNumber is not None:
-            f.write("frame='{}'".format(metainfo.frameNumber))
+            f.write("frame='{}' ".format(metainfo.frameNumber))
+        if metainfo.absoluteOrbitNumber is not None:
+            f.write("absolute='{}' ".format(metainfo.absoluteOrbitNumber))
+        if metainfo.cycleNumber is not None:
+            f.write("cycle='{}' ".format(metainfo.cycleNumber))
         f.write("/>\n")
         
         f.write("  <ZIPFILE size_bytes='{}' md5_local='{}' ".format(fileInfo.sizeBytes, 
