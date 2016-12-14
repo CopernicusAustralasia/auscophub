@@ -197,8 +197,13 @@ def crossesDateline(geom, preferredEpsg):
     geomProj = copyGeom(geom)
     geomProj.Transform(projTr)
     dateLineGeom = ogr.Geometry(wkt='LINESTRING(180 {}, 180 {})'.format(yMin, yMax))
-    dateLineGeom.Transform(projTr)
-    crosses = geomProj.Intersects(dateLineGeom)
+    try:
+        dateLineGeom.Transform(projTr)
+        crosses = geomProj.Intersects(dateLineGeom)
+    except Exception:
+        # If we can't transform into the preferred EPSG, then it seems likely that
+        # the geom is nowhere near the date line. 
+        crosses = False
     return crosses
 
 
@@ -252,7 +257,30 @@ def splitAtDateline(geom, preferredEpsg):
             # Put these together as a single multipolygon
             eastPartCoords = getCoords(eastHemiPart)
             westPartCoords = getCoords(westHemiPart)
-            coordsMulti = [[eastPartCoords.tolist()], [westPartCoords.tolist()]]
+            # Discard any vertices which are still no the wrong side of the 180 line. I
+            # do not understand what is going on here, but I have invested far more of 
+            # my valuable time than I should, and this kludge will be a reasonable approximation. 
+            eastPartCoords = eastPartCoords[eastPartCoords[:, 0] > 0, :]
+            westPartCoords = westPartCoords[westPartCoords[:, 0] < 0, :]
+            
+            # Convert to lists
+            eastPartCoords = eastPartCoords.tolist()
+            westPartCoords = westPartCoords.tolist()
+            # Discard anything left with only 2 points
+            if len(eastPartCoords) < 3:
+                eastPartCoords = []
+            if len(westPartCoords) < 3:
+                westPartCoords = []
+            # Close polygons. What a kludge.....
+            if len(eastPartCoords) > 2:
+                if eastPartCoords[-1][0] != eastPartCoords[0][0] or eastPartCoords[-1][1] != eastPartCoords[0][1]:
+                    eastPartCoords.append(eastPartCoords[0])
+            if len(westPartCoords) > 2:
+                if westPartCoords[-1][0] != westPartCoords[0][0] or westPartCoords[-1][1] != westPartCoords[0][1]:
+                    westPartCoords.append(westPartCoords[0])
+            
+            # Make a multi-polygon from the two parts
+            coordsMulti = [[eastPartCoords], [westPartCoords]]
             jsonStr = repr({'type':'MultiPolygon', 'coordinates':coordsMulti})
             newGeom = ogr.CreateGeometryFromJson(jsonStr)
         else:
