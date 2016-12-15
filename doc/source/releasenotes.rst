@@ -1,6 +1,16 @@
 Release Notes
 =============
 
+Version 1.0.9 (2016-12-15)
+--------------------------
+Enhancements
+  * Local XML files for Sentinel-3 now include absolute orbit number and cycle number
+ 
+ Bug Fixes
+   * Client-side search tool does better cleaning of foorptin polygons which get split over 180 
+     degree longitude (international date line), as some were failing with topology errors
+     on intersecting with user's region of interest. 
+
 Version 1.0.8 (2016-12-13)
 --------------------------
 Enhancements
