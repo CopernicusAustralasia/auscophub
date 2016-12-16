@@ -5,6 +5,7 @@ Hub server.
 """
 from __future__ import print_function, division
 
+import sys
 import os
 import shutil
 import tempfile
@@ -435,7 +436,12 @@ def createPreviewImg(zipfilename, finalOutputDir, metainfo, dummy, verbose, noOv
         if verbose:
             print(' '.join(cmdList))
         proc = subprocess.Popen(cmdList, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        proc.communicate()
+        (stdout, stderr) = proc.communicate()
+        returncode = proc.returncode
+        
+        if returncode != 0 or len(stderr) > 0:
+            print("Error: gdal_translate filed with error. Return code = {}. \nstderr='{}'".format(
+                returncode, stderr), file=sys.stderr)
         
         if os.path.exists(tmpImg):
             os.remove(tmpImg)
