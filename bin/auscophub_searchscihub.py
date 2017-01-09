@@ -76,7 +76,7 @@ def getCmdargs():
             "version of curl doesn't know how to do it (default will check)"))
     p.add_argument("--includemd5", default=False, action="store_true",
         help="For every file found, query ESA for its MD5 hash, and include this in the output. "+
-            "Not recommended, as their server is very slow. "))
+            "Not recommended, as their server is very slow. ")
     p.add_argument("--excludelist", help=("File listing zipfile names to exclude from "+
         "search results. Useful for excluding files you already have, or ones with known problems. "+
         "Each line should contain one zipfile name, with no path or URL details. "))
@@ -185,8 +185,8 @@ def getServerContents(cmdargs, pageNum, rowsPerQuery, roiWkt):
     The list is formed by simply loading the reported JSON string. 
     """
     footprintStr = '"Intersects({})"'.format(roiWkt)
-    timeRangeStr = "[{}T00:00:00.000Z TO {}T00:00:00.000Z]".format(cmdargs.startdate, cmdargs.enddate)
-    ingestTimeRangeStr = "[{}T00:00:00.000Z TO {}T00:00:00.000Z]".format(
+    timeRangeStr = "[{}T00:00:00.000Z TO {}T23:59:59.999Z]".format(cmdargs.startdate, cmdargs.enddate)
+    ingestTimeRangeStr = "[{}T00:00:00.000Z TO {}T23:59:59.999Z]".format(
         cmdargs.ingeststartdate, cmdargs.ingestenddate)
     
     cloudSearch = 'cloudcoverpercentage:[0 TO {}]'.format(cmdargs.maxcloud)
