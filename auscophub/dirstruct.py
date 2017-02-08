@@ -235,7 +235,7 @@ def moveZipfile(zipfilename, finalOutputDir, dummy, verbose, makeCopy, makeSymli
             else:
                 if verbose:
                     print("Move to", finalFile)
-                os.rename(zipfilename, finalFile)
+                shutil.move(zipfilename, finalFile)
                 if moveandsymlink:
                     os.symlink(os.path.abspath(finalFile), os.path.abspath(zipfilename))
 
