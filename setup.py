@@ -15,6 +15,6 @@ setup(name='auscophub',
       author_email='neil.flood@dsiti.qld.gov.au',
       url='http://bitbucket.org/chchrsc/auscophub',
       description='Scripts for managing the GeoscienceAustralia/NCI Copernicus Hub server',
-      scripts=glob.glob(os.path.join("bin", "*.py")),
+      scripts=glob.glob(os.path.join("bin", "*.py")) + glob.glob(os.path.join("bin", "*.sh")),
       packages=['auscophub']
       )
