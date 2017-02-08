@@ -9,7 +9,7 @@ Enhancements
 
 Bug Fixes
   * Include bin/*.sh in scripts to install
-  * Use shutil.move() for the --moveandsymlink option, so it works across file systems
+  * Use shutil.move() for the :command:`--moveandsymlink` option, so it works across file systems
   * Better reporting of any errors from GDAL during creaation of quicklook png file
 
 Version 1.0.9 (2016-12-15)
