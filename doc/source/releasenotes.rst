@@ -1,15 +1,26 @@
 Release Notes
 =============
 
+Version 1.0.10 (2017-02-08)
+--------------------------
+Enhancements
+  * Added scripts to manage download of Sentinel-2 zip files from Amazon's AWS server to NCI.
+    Bash script for cron will require some tweaking for NCI's local choices. 
+
+Bug Fixes
+  * Include bin/*.sh in scripts to install
+  * Use shutil.move() for the --moveandsymlink option, so it works across file systems
+  * Better reporting of any errors from GDAL during creaation of quicklook png file
+
 Version 1.0.9 (2016-12-15)
 --------------------------
 Enhancements
   * Local XML files for Sentinel-3 now include absolute orbit number and cycle number
  
  Bug Fixes
-   * Client-side search tool does better cleaning of foorptin polygons which get split over 180 
-     degree longitude (international date line), as some were failing with topology errors
-     on intersecting with user's region of interest. 
+  * Client-side search tool does better cleaning of footprint polygons which get split over 180 
+    degree longitude (international date line), as some were failing with topology errors
+    on intersecting with user's region of interest. 
 
 Version 1.0.8 (2016-12-13)
 --------------------------
