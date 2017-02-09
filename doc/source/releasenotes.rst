@@ -1,6 +1,11 @@
 Release Notes
 =============
 
+Version 1.0.11 (2017-02-09)
+--------------------------
+Enhancements
+  * Added :command:`--exitonziperror` option to :command:`auscophub_storeSenZipfile.py`
+
 Version 1.0.10 (2017-02-08)
 --------------------------
 Enhancements
