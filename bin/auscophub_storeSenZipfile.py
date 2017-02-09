@@ -64,6 +64,8 @@ def getCmdargs():
             "the old behaviour, and this switch allows to continue using that if required. "+
             "The default is to assume that the top dir does not include these, and they will "+
             "be generated too"))
+    p.add_argument("--exitonziperror", default=False, action="store_true",
+        help="Test each zipfile, and exit on finding one which reports internal errors (default will not test)")
 
     cmdargs = p.parse_args()
     
@@ -96,6 +98,12 @@ def mainRoutine():
     # Process each zipfile in the list
     for zipfilename in zipfilelist:
         (ok, msg) = checkZipfileName(zipfilename)
+        
+        if cmdargs.exitonziperror:
+            zf = zipfile.ZipFile(zipfilename)
+            zipcheck = zf.testzip()
+            if zipcheck is not None:
+                raise zipfile.BadZipfile("Zipfile {} failed internal checks".format(zipfilename))
             
         sentinelNumber = int(os.path.basename(zipfilename)[1])
         if sentinelNumber not in (1, 2, 3):
