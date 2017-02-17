@@ -235,7 +235,15 @@ def extractResults(resultsDict):
     
     """
     outList = []
-    for entry in resultsDict['entry']:
+    
+    entryList = resultsDict['entry']
+    # ESA are nutters. If there is only a single entry, then instead of a list of entries, 
+    # they just have a single entry, so I have to convert that back to a list so that the loop 
+    # over entries will still work. 
+    if isinstance(entryList, dict):
+        entryList = [entryList]
+        
+    for entry in entryList:
         d = {}
         if type(entry) is dict:
             d['imagelink'] = entry['link'][0]['href']
