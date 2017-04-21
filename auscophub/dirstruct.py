@@ -264,7 +264,7 @@ def createSentinel1Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, no
         f = open(finalXmlFile, 'w')
         f.write("<?xml version='1.0'?>\n")
         f.write("<AUSCOPHUB_SAFE_FILEDESCRIPTION>\n")
-        f.write("  <SATELLITE name='{}' />\n".format(metainfo.satellite))
+        f.write("  <SATELLITE name='{}' />\n".format(metainfo.satId))
         if metainfo.centroidXY is not None:
             (longitude, latitude) = tuple(metainfo.centroidXY)
             f.write("  <CENTROID longitude='{}' latitude='{}' />\n".format(longitude, latitude))
