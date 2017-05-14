@@ -8,9 +8,10 @@ from __future__ import print_function, division
 import sys
 import os
 import shutil
-import tempfile
 import hashlib
 import subprocess
+from cStringIO import StringIO
+from PIL import Image
 
 # Size of lat/long grid cells in which we store the files (in degrees). This is 
 # potentially a function of which Sentinel we are dealing with, hence the dictionary,
@@ -427,26 +428,14 @@ def createPreviewImg(zipfilename, finalOutputDir, metainfo, dummy, verbose, noOv
     else:
         if verbose:
             print("Creating", finalPngFile)
-        (fd, tmpImg) = tempfile.mkstemp(prefix='tmpCopHub_', suffix='.png', dir=finalOutputDir)
-        os.close(fd)
-        
-        open(tmpImg, 'w').write(metainfo.previewImgBin)
-        cmdList = ["gdal_translate", "-q", "-of", "PNG", "-outsize", "30%", "30%",
-            tmpImg, finalPngFile]
-        if verbose:
-            print(' '.join(cmdList))
-        proc = subprocess.Popen(cmdList, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        (stdout, stderr) = proc.communicate()
-        returncode = proc.returncode
-        
-        if returncode != 0 or len(stderr) > 0:
-            print("Error: gdal_translate filed with error. Return code = {}. \nstderr='{}'".format(
-                returncode, stderr), file=sys.stderr)
-        
-        if os.path.exists(tmpImg):
-            os.remove(tmpImg)
-    
 
+        #resize the image
+        qldata = StringIO(metainfo.previewImgBin)
+        im = Image.open(qldata)
+        im.thumbnail((512,512), Image.ANTIALIAS)
+        im.save(finalPngFile, "PNG")
+
+            
 class ZipfileSysInfo(object):
     """
     Information about the zipfile which can be obtained at operating system level,
