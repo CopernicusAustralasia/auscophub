@@ -21,7 +21,7 @@ from auscophub import sen1meta
 from auscophub import sen2meta
 from auscophub import sen3meta
 from auscophub import dirstruct
-
+from auscophub.sen3thumb import sen3thumb 
 
 def getCmdargs():
     """
@@ -40,6 +40,8 @@ def getCmdargs():
     p.add_argument("--xmlonly", default=False, action="store_true",
         help=("Only generate the XML files. Do not move/copy/symlink the zipfiles, and "+
             "do not generate preview images. Useful for updating the XML contents on all files. "))
+    p.add_argument("--xmlandpreview", default=False, action="store_true",
+        help=("Generate the XML files and the preview images. Do not move/copy/symlink the zipfiles."))
     p.add_argument("--nooverwrite", default=False, action="store_true",
         help=("Do not overwrite existing ZIP, XML and PNG files. Default will always write them, "+
             "whether they exist or not. "))
@@ -139,14 +141,18 @@ def mainRoutine():
                 dirstruct.createSentinel3Xml(zipfilename, finalOutputDir, metainfo, 
                     cmdargs.dummy, cmdargs.verbose, cmdargs.nooverwrite, cmdargs.md5esa)
             
-            if not cmdargs.xmlonly:
+            if not cmdargs.xmlonly and not cmdargs.xmlandpreview:
                 dirstruct.moveZipfile(zipfilename, finalOutputDir, cmdargs.dummy, cmdargs.verbose, 
                     cmdargs.copy, cmdargs.symlink, cmdargs.nooverwrite, cmdargs.moveandsymlink)
                     
             if not cmdargs.xmlonly:
-                dirstruct.createPreviewImg(zipfilename, finalOutputDir, metainfo, 
-                    cmdargs.dummy, cmdargs.verbose, cmdargs.nooverwrite)
-
+                if sentinelNumber != 3:
+                    dirstruct.createPreviewImg(zipfilename, finalOutputDir, metainfo, 
+                                               cmdargs.dummy, cmdargs.verbose, cmdargs.nooverwrite)
+                else:
+                    sen3thumb(zipfilename, finalOutputDir,
+                              cmdargs.dummy, cmdargs.verbose, cmdargs.nooverwrite)
+                    
         if not ok:
             filesWithErrors.append(msg)
     
