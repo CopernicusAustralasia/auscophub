@@ -68,6 +68,8 @@ def getCmdargs():
             "be generated too"))
     p.add_argument("--exitonziperror", default=False, action="store_true",
         help="Test each zipfile, and exit on finding one which reports internal errors (default will not test)")
+    p.add_argument("--mountpath", default=".",
+        help="Basepath for archivemount a Sentinel-3 zipfile when generating its quicklook thumbnail.")
 
     cmdargs = p.parse_args()
     
@@ -151,7 +153,7 @@ def mainRoutine():
                                                cmdargs.dummy, cmdargs.verbose, cmdargs.nooverwrite)
                 else:
                     sen3thumb(zipfilename, finalOutputDir,
-                              cmdargs.dummy, cmdargs.verbose, cmdargs.nooverwrite)
+                              cmdargs.dummy, cmdargs.verbose, cmdargs.nooverwrite, mountpath=cmdargs.mountpath)
                     
         if not ok:
             filesWithErrors.append(msg)

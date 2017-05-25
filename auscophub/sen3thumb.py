@@ -10,7 +10,7 @@ import subprocess
 def sen3thumb(zipfilename, finalOutputDir, 
               dummy, verbose, noOverwrite, 
               pconvertpath=None, outputdir=None,
-              mountpoint='.',
+              mountpath='/tmp',
               bands=None):
     """
     Making thumbnail for Sentinel-3 using SNAP pconvert
@@ -22,7 +22,7 @@ def sen3thumb(zipfilename, finalOutputDir,
         elif 'SL_1_RBT' in zipfilename:
             bands = '114,110,106' #S3,S2,S1_radiance_an
         else:
-            if verbose: "Can't make thumbnail for this product."
+            if verbose: print("Can't make thumbnail for this product.")
             return
 
     # confirm pconvert command
@@ -40,7 +40,7 @@ def sen3thumb(zipfilename, finalOutputDir,
 
     pngFilename = os.path.basename(zipfilename).replace('.zip', '.png')
     finalPngFile = os.path.join(finalOutputDir, pngFilename)
-    
+    print(zipfilename, finalOutputDir)
     if dummy:
         print("Would make", finalPngFile)
     elif os.path.exists(finalPngFile) and noOverwrite:
@@ -57,7 +57,11 @@ def sen3thumb(zipfilename, finalOutputDir,
             outputdir = finalOutputDir
             
         # mount the file
+        mountpoint = os.path.join(mountpath, os.path.basename(zipfilename).split('.')[0])
+        if verbose: print("Creating mountpoint {}.".format(mountpoint))
+        os.mkdir(mountpoint)
         mountcmd = 'archivemount {} {}'.format(zipfilename, mountpoint)
+        if verbose: print("Mounting zipfile {} to {}.".format(zipfilename, mountpoint))
         returncode = subprocess.call(mountcmd, shell=True)
         if returncode != 0:
             raise thumbError("Failed to mount file {} to point {}.".format(zipfilename, mountpoint))
@@ -82,6 +86,7 @@ def sen3thumb(zipfilename, finalOutputDir,
     
         # unmount
         umount(mountpoint)
+        os.rmdir(mountpoint)
 
 
 def umount(mountpoint):
