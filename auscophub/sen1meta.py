@@ -98,14 +98,26 @@ class Sen1ZipfileMeta(object):
 
 
         # footprint
-        measurementFrameSet = self.findMetadataNodeByIdName(metadataNodeList, 'measurementFrameSet')
-        posListStr =  self.getElementsContainTagName(measurementFrameSet,'coordinates')[0].firstChild.data.strip()
+        measurementFrameSet = self.findMetadataNodeByIdName(metadataNodeList, 'measurementFrameSet')      
+        posSet = self.getElementsContainTagName(measurementFrameSet,'coordinates')
+        # first footprint
+        posListStr =  posSet[0].firstChild.data.strip()
         # This list has pairs in order [lat,long lat,long....], different from S1 and S3
         posListPairs= posListStr.split()
         posListVals = [[float(y), float(x)] for (x, y) in [pair.split(',') for pair in posListPairs]]
-
         footprintGeom = geomutils.geomFromOutlineCoords(posListVals)
-        footprintGeom.CloseRings()            
+        footprintGeom.CloseRings()
+        
+        # there are more than one polygons for OCN products
+        if len(posSet)>1:
+            for pos in posSet[1:]:
+                posListPairs= pos.firstChild.data.strip().split()
+                posListVals = [[float(y), float(x)] for (x, y) in [pair.split(',') for pair in posListPairs]]
+                footprint = geomutils.geomFromOutlineCoords(posListVals)
+                footprint.CloseRings()
+                footprintGeom=footprintGeom.Union(footprint)
+            footprintGeom=footprintGeom.ConvexHull()
+            
         prefEpsg = geomutils.findSensibleProjection(footprintGeom)
         if prefEpsg is not None:
             self.centroidXY = geomutils.findCentroid(footprintGeom, prefEpsg)
