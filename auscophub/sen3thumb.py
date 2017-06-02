@@ -1,16 +1,17 @@
 """
-Classes for handling Sentinel-3 metadata
+Function to generate Sentinel-3 thumbnail
 """
 from __future__ import print_function, division
 
 import os
 from distutils import spawn
 import subprocess
+import zipfile
+import shutil
 
 def sen3thumb(zipfilename, finalOutputDir, 
-              dummy, verbose, noOverwrite, 
+              dummy, verbose, noOverwrite, mountpath,
               pconvertpath=None, outputdir=None,
-              mountpath='/tmp',
               bands=None):
     """
     Making thumbnail for Sentinel-3 using SNAP pconvert
@@ -34,13 +35,16 @@ def sen3thumb(zipfilename, finalOutputDir,
         raise thumbError("Executable {} is not found.".format(cmd)) 
 
     # confirm mount command
+    # if archivemount is not available, unzip the file in the mount location
     mountcmd = 'archivemount'
+    mount = True
     if not spawn.find_executable(mountcmd):
-        raise thumbError("Executable {} is not found.".format(mountcmd)) 
+        mount = False
+        if verbose:
+            print("Executable {} is not found, will unzip the archive in path {}".format(mountcmd, mountpath)) 
 
     pngFilename = os.path.basename(zipfilename).replace('.zip', '.png')
     finalPngFile = os.path.join(finalOutputDir, pngFilename)
-    print(zipfilename, finalOutputDir)
     if dummy:
         print("Would make", finalPngFile)
     elif os.path.exists(finalPngFile) and noOverwrite:
@@ -60,11 +64,16 @@ def sen3thumb(zipfilename, finalOutputDir,
         mountpoint = os.path.join(mountpath, os.path.basename(zipfilename).split('.')[0])
         if verbose: print("Creating mountpoint {}.".format(mountpoint))
         os.mkdir(mountpoint)
-        mountcmd = 'archivemount {} {}'.format(zipfilename, mountpoint)
-        if verbose: print("Mounting zipfile {} to {}.".format(zipfilename, mountpoint))
-        returncode = subprocess.call(mountcmd, shell=True)
-        if returncode != 0:
-            raise thumbError("Failed to mount file {} to point {}.".format(zipfilename, mountpoint))
+        if mount:
+            mountcmd = 'archivemount {} {}'.format(zipfilename, mountpoint)
+            if verbose: print("Mounting zipfile {} to {}.".format(zipfilename, mountpoint))
+            returncode = subprocess.call(mountcmd, shell=True)
+            if returncode != 0:
+                raise thumbError("Failed to mount file {} to point {}.".format(zipfilename, mountpoint))
+        else:
+            if verbose: print("Extracting zipfile {} to {}.".format(zipfilename, mountpoint))
+            with zipfile.ZipFile(zipfilename, 'r') as zip_ref:
+                zip_ref.extractall(mountpoint)
 
         # run pconvert
         mountdir = os.listdir(mountpoint)
@@ -85,8 +94,10 @@ def sen3thumb(zipfilename, finalOutputDir,
             raise thumbError("Failed to run pconvert cmd {}.".format(cmd))
     
         # unmount
-        umount(mountpoint)
-        os.rmdir(mountpoint)
+        if mount:
+            umount(mountpoint)
+        shutil.rmtree(mountpoint)
+        if verbose: print("Directory {} is removed.".format(mountpoint))
 
 
 def umount(mountpoint):
