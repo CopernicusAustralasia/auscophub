@@ -263,7 +263,7 @@ def createSentinel1Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, no
             else:
                 if verbose:
                     print("Removing existing file {}".format(finalXmlFile))
-                os.chmod(finalXmlFile,644)
+                os.chmod(finalXmlFile,0644)
                 os.remove(finalXmlFile)
 
     if dummy:
@@ -305,7 +305,7 @@ def createSentinel1Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, no
         
         f.write("</AUSCOPHUB_SAFE_FILEDESCRIPTION>\n")
         f.close()
-        os.chmod(finalXmlFile,444)
+        os.chmod(finalXmlFile,0444)
 
 def createSentinel2Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, noOverwrite,
         md5esa):
@@ -329,7 +329,7 @@ def createSentinel2Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, no
             else:
                 if verbose:
                     print("Removing existing file {}".format(finalXmlFile))
-                os.chmod(finalXmlFile,644)
+                os.chmod(finalXmlFile,0644)
                 os.remove(finalXmlFile)
 
     if dummy:
@@ -374,7 +374,7 @@ def createSentinel2Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, no
             f.write("  </MGRSTILES>\n")
         f.write("</AUSCOPHUB_SAFE_FILEDESCRIPTION>\n")
         f.close()
-        os.chmod(finalXmlFile,444)
+        os.chmod(finalXmlFile,0444)
 
 def createSentinel3Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, noOverwrite,
         md5esa):
@@ -398,7 +398,7 @@ def createSentinel3Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, no
             else:
                 if verbose:
                     print("Removing existing file {}".format(finalXmlFile))
-                os.chmod(finalXmlFile,644)
+                os.chmod(finalXmlFile,0644)
                 os.remove(finalXmlFile)
 
     if dummy:
@@ -441,7 +441,7 @@ def createSentinel3Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, no
         
         f.write("</AUSCOPHUB_SAFE_FILEDESCRIPTION>\n")
         f.close()
-        os.chmod(finalXmlFile,444)
+        os.chmod(finalXmlFile,0444)
 
 def createPreviewImg(zipfilename, finalOutputDir, metainfo, dummy, verbose, noOverwrite):
     """
@@ -465,7 +465,7 @@ def createPreviewImg(zipfilename, finalOutputDir, metainfo, dummy, verbose, noOv
             else:
                 if verbose:
                     print("Removing existing file {}".format(finalPngFile))
-                os.chmod(finalPngFile,644)
+                os.chmod(finalPngFile,0644)
                 os.remove(finalPngFile) 
 
     if dummy:
@@ -479,7 +479,7 @@ def createPreviewImg(zipfilename, finalOutputDir, metainfo, dummy, verbose, noOv
         im = Image.open(qldata)
         im.thumbnail((512,512), Image.ANTIALIAS)
         im.save(finalPngFile, "PNG")
-        os.chmod(finalPngFile,444)
+        os.chmod(finalPngFile,0444)
             
 class ZipfileSysInfo(object):
     """
