@@ -104,11 +104,14 @@ def mainRoutine():
         (ok, msg) = checkZipfileName(zipfilename)
         
         if cmdargs.exitonziperror:
-            zf = zipfile.ZipFile(zipfilename)
-            zipcheck = zf.testzip()
-            if zipcheck is not None:
-                raise zipfile.BadZipfile("Zipfile {} failed internal checks".format(zipfilename))
-            
+            try:
+                zf = zipfile.ZipFile(zipfilename)
+                zipcheck = zf.testzip()
+                if zipcheck is not None:
+                    raise zipfile.BadZipfile("Zipfile {} failed internal checks".format(zipfilename))
+            except zipfile.BadZipfile as e:
+                raise zipfile.BadZipfile("Zipfile {} failed internal checks; {}".format(zipfilename,e))
+
         sentinelNumber = int(os.path.basename(zipfilename)[1])
         if sentinelNumber not in (1, 2, 3):
             msg = "Unknown Sentinel number '{}': {}".format(sentinelNumber, zipfilename)

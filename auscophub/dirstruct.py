@@ -263,7 +263,7 @@ def createSentinel1Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, no
         fileInfo = ZipfileSysInfo(zipfilename)
 
         f = open(finalXmlFile, 'w')
-        f.write("<?xml version='1.0'?>\n")
+        f.write("<?xml version='1.1'?>\n")
         f.write("<AUSCOPHUB_SAFE_FILEDESCRIPTION>\n")
         f.write("  <SATELLITE name='{}' />\n".format(metainfo.satId))
         if metainfo.centroidXY is not None:
@@ -318,7 +318,7 @@ def createSentinel2Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, no
         fileInfo = ZipfileSysInfo(zipfilename)
         
         f = open(finalXmlFile, 'w')
-        f.write("<?xml version='1.0'?>\n")
+        f.write("<?xml version='1.1'?>\n")
         f.write("<AUSCOPHUB_SAFE_FILEDESCRIPTION>\n")
         f.write("  <SATELLITE name='{}' />\n".format(metainfo.satId))
         (longitude, latitude) = tuple(metainfo.centroidXY)
@@ -376,7 +376,7 @@ def createSentinel3Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, no
         fileInfo = ZipfileSysInfo(zipfilename)
         
         f = open(finalXmlFile, 'w')
-        f.write("<?xml version='1.0'?>\n")
+        f.write("<?xml version='1.1'?>\n")
         f.write("<AUSCOPHUB_SAFE_FILEDESCRIPTION>\n")
         f.write("  <SATELLITE name='{}' />\n".format(metainfo.satId))
         if metainfo.centroidXY is not None:
@@ -417,14 +417,14 @@ def createPreviewImg(zipfilename, finalOutputDir, metainfo, dummy, verbose, noOv
     pngFilename = os.path.basename(zipfilename).replace('.zip', '.png')
     finalPngFile = os.path.join(finalOutputDir, pngFilename)
     
-    if dummy:
-        print("Would make", finalPngFile)
-    elif metainfo.previewImgBin is None:
-        if verbose:
+    if metainfo.previewImgBin is None:
+        if verbose or dummy:
             print("No preview image provided in", zipfilename)
     elif os.path.exists(finalPngFile) and noOverwrite:
-        if verbose:
+        if verbose or dummy:
             print("Preview image already exists {}".format(finalPngFile))
+    elif dummy:
+        print("Would make", finalPngFile)
     else:
         if verbose:
             print("Creating", finalPngFile)
