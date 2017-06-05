@@ -252,11 +252,22 @@ def createSentinel1Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, no
     xmlFilename = os.path.basename(zipfilename).replace('.zip', '.xml')
     finalXmlFile = os.path.join(finalOutputDir, xmlFilename)
     
+    if os.path.exists(finalXmlFile):
+        if noOverwrite:
+            if verbose or dummy:
+                print("XML already exists {}".format(finalXmlFile))
+            return
+        else:
+            if dummy:
+                print("Would remove existing file {}".format(finalXmlFile)) 
+            else:
+                if verbose:
+                    print("Removing existing file {}".format(finalXmlFile))
+                os.chmod(finalXmlFile,644)
+                os.remove(finalXmlFile)
+
     if dummy:
         print("Would make", finalXmlFile)
-    elif os.path.exists(finalXmlFile) and noOverwrite:
-        if verbose:
-            print("XML already exists {}".format(finalXmlFile))
     else:
         if verbose:
             print("Creating", finalXmlFile)
@@ -294,7 +305,7 @@ def createSentinel1Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, no
         
         f.write("</AUSCOPHUB_SAFE_FILEDESCRIPTION>\n")
         f.close()
-
+        os.chmod(finalXmlFile,444)
 
 def createSentinel2Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, noOverwrite,
         md5esa):
@@ -307,11 +318,22 @@ def createSentinel2Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, no
     xmlFilename = os.path.basename(zipfilename).replace('.zip', '.xml')
     finalXmlFile = os.path.join(finalOutputDir, xmlFilename)
     
+    if os.path.exists(finalXmlFile):
+        if noOverwrite:
+            if verbose or dummy:
+                print("XML already exists {}".format(finalXmlFile))
+            return
+        else:
+            if dummy:
+                print("Would remove existing file {}".format(finalXmlFile)) 
+            else:
+                if verbose:
+                    print("Removing existing file {}".format(finalXmlFile))
+                os.chmod(finalXmlFile,644)
+                os.remove(finalXmlFile)
+
     if dummy:
         print("Would make", finalXmlFile)
-    elif os.path.exists(finalXmlFile) and noOverwrite:
-        if verbose:
-            print("XML already exists {}".format(finalXmlFile))
     else:
         if verbose:
             print("Creating", finalXmlFile)
@@ -352,7 +374,7 @@ def createSentinel2Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, no
             f.write("  </MGRSTILES>\n")
         f.write("</AUSCOPHUB_SAFE_FILEDESCRIPTION>\n")
         f.close()
-
+        os.chmod(finalXmlFile,444)
 
 def createSentinel3Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, noOverwrite,
         md5esa):
@@ -365,11 +387,22 @@ def createSentinel3Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, no
     xmlFilename = os.path.basename(zipfilename).replace('.zip', '.xml')
     finalXmlFile = os.path.join(finalOutputDir, xmlFilename)
     
+    if os.path.exists(finalXmlFile):
+        if noOverwrite:
+            if verbose or dummy:
+                print("XML already exists {}".format(finalXmlFile))
+            return
+        else:
+            if dummy:
+                print("Would remove existing file {}".format(finalXmlFile)) 
+            else:
+                if verbose:
+                    print("Removing existing file {}".format(finalXmlFile))
+                os.chmod(finalXmlFile,644)
+                os.remove(finalXmlFile)
+
     if dummy:
         print("Would make", finalXmlFile)
-    elif os.path.exists(finalXmlFile) and noOverwrite:
-        if verbose:
-            print("XML already exists {}".format(finalXmlFile))
     else:
         if verbose:
             print("Creating", finalXmlFile)
@@ -408,7 +441,7 @@ def createSentinel3Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, no
         
         f.write("</AUSCOPHUB_SAFE_FILEDESCRIPTION>\n")
         f.close()
-
+        os.chmod(finalXmlFile,444)
 
 def createPreviewImg(zipfilename, finalOutputDir, metainfo, dummy, verbose, noOverwrite):
     """
@@ -420,10 +453,22 @@ def createPreviewImg(zipfilename, finalOutputDir, metainfo, dummy, verbose, noOv
     if metainfo.previewImgBin is None:
         if verbose or dummy:
             print("No preview image provided in", zipfilename)
-    elif os.path.exists(finalPngFile) and noOverwrite:
-        if verbose or dummy:
-            print("Preview image already exists {}".format(finalPngFile))
-    elif dummy:
+        return
+    elif os.path.exists(finalPngFile):
+        if noOverwrite:
+            if verbose or dummy:
+                print("Preview image already exists {}".format(finalPngFile))
+            return
+        else:
+            if dummy:
+                print("Would remove existing file {}".format(finalPngFile)) 
+            else:
+                if verbose:
+                    print("Removing existing file {}".format(finalPngFile))
+                os.chmod(finalPngFile,644)
+                os.remove(finalPngFile) 
+
+    if dummy:
         print("Would make", finalPngFile)
     else:
         if verbose:
@@ -434,7 +479,7 @@ def createPreviewImg(zipfilename, finalOutputDir, metainfo, dummy, verbose, noOv
         im = Image.open(qldata)
         im.thumbnail((512,512), Image.ANTIALIAS)
         im.save(finalPngFile, "PNG")
-
+        os.chmod(finalPngFile,444)
             
 class ZipfileSysInfo(object):
     """
