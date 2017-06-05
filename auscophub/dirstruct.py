@@ -274,7 +274,7 @@ def createSentinel1Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, no
         fileInfo = ZipfileSysInfo(zipfilename)
 
         f = open(finalXmlFile, 'w')
-        f.write("<?xml version='1.1'?>\n")
+        f.write("<?xml version='1.0'?>\n")
         f.write("<AUSCOPHUB_SAFE_FILEDESCRIPTION>\n")
         f.write("  <SATELLITE name='{}' />\n".format(metainfo.satId))
         if metainfo.centroidXY is not None:
@@ -340,7 +340,7 @@ def createSentinel2Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, no
         fileInfo = ZipfileSysInfo(zipfilename)
         
         f = open(finalXmlFile, 'w')
-        f.write("<?xml version='1.1'?>\n")
+        f.write("<?xml version='1.0'?>\n")
         f.write("<AUSCOPHUB_SAFE_FILEDESCRIPTION>\n")
         f.write("  <SATELLITE name='{}' />\n".format(metainfo.satId))
         (longitude, latitude) = tuple(metainfo.centroidXY)
@@ -409,7 +409,7 @@ def createSentinel3Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, no
         fileInfo = ZipfileSysInfo(zipfilename)
         
         f = open(finalXmlFile, 'w')
-        f.write("<?xml version='1.1'?>\n")
+        f.write("<?xml version='1.0'?>\n")
         f.write("<AUSCOPHUB_SAFE_FILEDESCRIPTION>\n")
         f.write("  <SATELLITE name='{}' />\n".format(metainfo.satId))
         if metainfo.centroidXY is not None:
