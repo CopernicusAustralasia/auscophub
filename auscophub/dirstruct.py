@@ -171,7 +171,19 @@ def makeProductDir(metainfo):
         product = None
     return product
 
-
+def processingLevel(metainfo):
+    """
+    Return processing Level based on satellite and productType.
+    """
+    if metainfo.satId.startswith('S1'):
+        if metainfo.productType in ['RAW']: return 'LEVEL-0'
+        elif metainfo.productType in ['OCN']: return 'LEVEL-2'
+        else: return 'LEVEL-1'
+    elif metainfo.satId.startswith('S2'): return 'LEVEL-1'
+    elif metainfo.satId.startswith('S3'): return 'LEVEL-{}'.format(metainfo.processingLevel)
+    else:
+        return 'LEVEL-1'
+    
 def checkFinalDir(finalOutputDir, dummy, verbose):
     """
     Check that the final output dir exists, and has write permission. If it does not exist,
@@ -276,7 +288,12 @@ def createSentinel1Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, no
         f = open(finalXmlFile, 'w')
         f.write("<?xml version='1.0'?>\n")
         f.write("<AUSCOPHUB_SAFE_FILEDESCRIPTION>\n")
+        f.write("  <IDENTIFIER>{}</IDENTIFIER>\n".format(os.path.basename(zipfilename).split('.')[0]))
+        f.write("  <PATH>{}</PATH>\n".format(finalOutputDir.split(makeSatelliteDir(metainfo))[1]))
         f.write("  <SATELLITE name='{}' />\n".format(metainfo.satId))
+        f.write("  <INSTRUMENT>{}</INSTRUMENT>\n".format("C-SAR"))
+        f.write("  <PRODUCT_TYPE>{}</PRODUCT_TYPE>\n".format(metainfo.productType))  
+        f.write("  <PROCESSING_LEVEL>{}</PROCESSING_LEVEL>\n".format(processingLevel(metainfo)))
         if metainfo.centroidXY is not None:
             (longitude, latitude) = tuple(metainfo.centroidXY)
             f.write("  <CENTROID longitude='{}' latitude='{}' />\n".format(longitude, latitude))
@@ -342,7 +359,12 @@ def createSentinel2Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, no
         f = open(finalXmlFile, 'w')
         f.write("<?xml version='1.0'?>\n")
         f.write("<AUSCOPHUB_SAFE_FILEDESCRIPTION>\n")
+        f.write("  <IDENTIFIER>{}</IDENTIFIER>\n".format(os.path.basename(zipfilename).split('.')[0]))
+        f.write("  <PATH>{}</PATH>\n".format(finalOutputDir.split(makeSatelliteDir(metainfo))[1]))
         f.write("  <SATELLITE name='{}' />\n".format(metainfo.satId))
+        f.write("  <INSTRUMENT>{}</INSTRUMENT>\n".format("MSI"))
+        f.write("  <PRODUCT_TYPE>{}</PRODUCT_TYPE>\n".format("L" + metainfo.processingLevel[-2:]))
+        f.write("  <PROCESSING_LEVEL>{}</PROCESSING_LEVEL>\n".format(processingLevel(metainfo)))
         (longitude, latitude) = tuple(metainfo.centroidXY)
         f.write("  <CENTROID longitude='{}' latitude='{}' />\n".format(longitude, latitude))
         f.write("  <ESA_CLOUD_COVER percentage='{}' />\n".format(int(round(metainfo.cloudPcnt))))
@@ -411,7 +433,12 @@ def createSentinel3Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, no
         f = open(finalXmlFile, 'w')
         f.write("<?xml version='1.0'?>\n")
         f.write("<AUSCOPHUB_SAFE_FILEDESCRIPTION>\n")
+        f.write("  <IDENTIFIER>{}</IDENTIFIER>\n".format(os.path.basename(zipfilename).split('.')[0]))
+        f.write("  <PATH>{}</PATH>\n".format(finalOutputDir.split(makeSatelliteDir(metainfo))[1]))
         f.write("  <SATELLITE name='{}' />\n".format(metainfo.satId))
+        f.write("  <INSTRUMENT>{}</INSTRUMENT>\n".format(metainfo.instrument))
+        f.write("  <PRODUCT_TYPE>{}</PRODUCT_TYPE>\n".format(metainfo.productType))  
+        f.write("  <PROCESSING_LEVEL>{}</PROCESSING_LEVEL>\n".format(processingLevel(metainfo)))
         if metainfo.centroidXY is not None:
             (longitude, latitude) = tuple(metainfo.centroidXY)
             f.write("  <CENTROID longitude='{}' latitude='{}' />\n".format(longitude, latitude))
