@@ -76,7 +76,8 @@ def getCmdargs():
             "(Note that --proxy will automatically add a -x option for curl, so not required here)"))
     outputGroup.add_argument("--jsonfeaturesfile", 
         help=("Filename to save the JSON for all the features found, constructed from paged "+
-            "returns from the SARA server. Default does not write this. "))
+            "returns from the SARA server. This is a compliant GeoJSON file, and can be read "+
+            "by software like QGIS. Default does not write this. "))
     outputGroup.add_argument("--simplejsonfile", 
         help=("Filename to save the simple JSON for all the zipfiles found. The JSON for each "+
             "feature is the very simple dictionary constructed internally. Default does not "+
@@ -119,6 +120,7 @@ def mainRoutine():
         if esaid not in idSet:
             idSet.add(esaid)
             tmpResults.append(r)
+    results = tmpResults
     
     # Restrict further by additional search options
     results = [f for f in results 
@@ -183,7 +185,8 @@ def writeJsonFeatures(jsonfeaturesfile, results):
     Write a JSON file of the results. This is mostly just for testing purposes, I think....
     """
     f = open(jsonfeaturesfile, 'w')
-    json.dump(results, f, indent=2)
+    geoJsonObj = {"type":"FeatureCollection", "properties":{}, "features":results}
+    json.dump(geoJsonObj, f, indent=2)
 
 
 def writeSimpleJsonFile(simplejsonfile, results):
