@@ -179,7 +179,7 @@ def processingLevel(metainfo):
         if metainfo.productType in ['RAW']: return 'LEVEL-0'
         elif metainfo.productType in ['OCN']: return 'LEVEL-2'
         else: return 'LEVEL-1'
-    elif metainfo.satId.startswith('S2'): return 'LEVEL-1'
+    elif metainfo.satId.startswith('S2'): return 'L1C'
     elif metainfo.satId.startswith('S3'): return 'LEVEL-{}'.format(metainfo.processingLevel)
     else:
         return 'LEVEL-1'
@@ -363,7 +363,7 @@ def createSentinel2Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, no
         f.write("  <PATH>{}</PATH>\n".format(finalOutputDir.split(makeSatelliteDir(metainfo))[1]))
         f.write("  <SATELLITE name='{}' />\n".format(metainfo.satId))
         f.write("  <INSTRUMENT>{}</INSTRUMENT>\n".format("MSI"))
-        f.write("  <PRODUCT_TYPE>{}</PRODUCT_TYPE>\n".format("L" + metainfo.processingLevel[-2:]))
+        f.write("  <PRODUCT_TYPE>{}</PRODUCT_TYPE>\n".format("S2MSIL" + metainfo.processingLevel[-2:]))
         f.write("  <PROCESSING_LEVEL>{}</PROCESSING_LEVEL>\n".format(processingLevel(metainfo)))
         (longitude, latitude) = tuple(metainfo.centroidXY)
         f.write("  <CENTROID longitude='{}' latitude='{}' />\n".format(longitude, latitude))
