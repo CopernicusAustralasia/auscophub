@@ -39,7 +39,11 @@ def makeRelativeOutputDir(metainfo, gridCellSize, productDirGiven=False):
     productDir = makeProductDir(metainfo)
     yearMonthDir = makeYearMonthDir(metainfo)
     dateDir = makeDateDir(metainfo)
-    if metainfo.satId[1] == "3":
+    isOCN = False
+    # use year/month/date for OCN product
+    if hasattr(metainfo, 'productType'):
+        if metainfo.productType == 'OCN': isOCN = True
+    if metainfo.satId[1] == "3" or isOCN:
         # For all S-3 products we do not split spatially at all. 
         outDir = os.path.join(yearMonthDir, dateDir)
     elif metainfo.centroidXY is not None:
