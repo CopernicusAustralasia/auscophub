@@ -16,6 +16,8 @@ import sys
 import os
 import argparse
 import zipfile
+import requests
+from urlparse import urljoin
 
 from auscophub import sen1meta
 from auscophub import sen2meta
@@ -70,6 +72,10 @@ def getCmdargs():
         help="Test each zipfile, and exit on finding one which reports internal errors (default will not test)")
     p.add_argument("--mountpath", default=".",
         help="Basepath for archivemount a Sentinel-3 zipfile when generating its quicklook thumbnail.")
+    p.add_argument("--saraurl", default="http://copernicus.nci.org.au/sara.server/1.0/collections/",
+        help="Url to post the resource to the SARA API (default='%(default)s').")
+    p.add_argument("--sarauser", default="",
+        help="Username:password to post the resource to the SARA API. Required to enable posting.")
 
     cmdargs = p.parse_args()
     
@@ -137,13 +143,13 @@ def mainRoutine():
             dirstruct.checkFinalDir(finalOutputDir, cmdargs.dummy, cmdargs.verbose)
             
             if sentinelNumber == 1:
-                dirstruct.createSentinel1Xml(zipfilename, finalOutputDir, metainfo, 
+                finalXmlFile = dirstruct.createSentinel1Xml(zipfilename, finalOutputDir, metainfo, 
                     cmdargs.dummy, cmdargs.verbose, cmdargs.nooverwrite, cmdargs.md5esa)
             elif sentinelNumber == 2:
-                dirstruct.createSentinel2Xml(zipfilename, finalOutputDir, metainfo, 
+                finalXmlFile = dirstruct.createSentinel2Xml(zipfilename, finalOutputDir, metainfo, 
                     cmdargs.dummy, cmdargs.verbose, cmdargs.nooverwrite, cmdargs.md5esa)
             elif sentinelNumber == 3:
-                dirstruct.createSentinel3Xml(zipfilename, finalOutputDir, metainfo, 
+                finalXmlFile = dirstruct.createSentinel3Xml(zipfilename, finalOutputDir, metainfo, 
                     cmdargs.dummy, cmdargs.verbose, cmdargs.nooverwrite, cmdargs.md5esa)
             
             if not cmdargs.xmlonly and not cmdargs.xmlandpreview:
@@ -157,7 +163,20 @@ def mainRoutine():
                 else:
                     sen3thumb(zipfilename, finalOutputDir,
                               cmdargs.dummy, cmdargs.verbose, cmdargs.nooverwrite, mountpath=cmdargs.mountpath)
-                    
+            # Post to SARA if there's a xmlfile and user credential is provided
+            if ':' in cmdargs.sarauser and finalXmlFile:
+                username,password = cmdargs.sarauser.split(':')
+                if username and password:
+                    saraurl=urljoin(cmdargs.saraurl,'S{}'.format(sentinelNumber))
+                    if cmdargs.dummy:
+                        print("Would post to SARA at {}".format(saraurl))
+                    else:
+                        with open(finalXmlFile) as mf:
+                            xmlStr = mf.read()
+                        response = requests.post(saraurl, data=xmlStr, auth=(username, password))
+                        if cmdargs.verbose:
+                            print("Posted to SARA at {}:{}".format(saraurl,response.text))       
+
         if not ok:
             filesWithErrors.append(msg)
     

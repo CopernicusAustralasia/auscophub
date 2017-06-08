@@ -268,7 +268,7 @@ def createSentinel1Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, no
         if noOverwrite:
             if verbose or dummy:
                 print("XML already exists {}".format(finalXmlFile))
-            return
+            return finalXmlFile
         else:
             if dummy:
                 print("Would remove existing file {}".format(finalXmlFile)) 
@@ -279,7 +279,7 @@ def createSentinel1Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, no
                 os.remove(finalXmlFile)
 
     if dummy:
-        print("Would make", finalXmlFile)
+        print("Would make", finalXmlFile)        
     else:
         if verbose:
             print("Creating", finalXmlFile)
@@ -297,9 +297,9 @@ def createSentinel1Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, no
         if metainfo.centroidXY is not None:
             (longitude, latitude) = tuple(metainfo.centroidXY)
             f.write("  <CENTROID longitude='{}' latitude='{}' />\n".format(longitude, latitude))
-            f.write("  <ESA_TILEOUTLINE_FOOTPRINT_WKT>\n")
-            f.write("    {}\n".format(metainfo.outlineWKT))
-            f.write("  </ESA_TILEOUTLINE_FOOTPRINT_WKT>\n")
+        f.write("  <ESA_TILEOUTLINE_FOOTPRINT_WKT>\n")
+        f.write("    {}\n".format(metainfo.outlineWKT))
+        f.write("  </ESA_TILEOUTLINE_FOOTPRINT_WKT>\n")
         startTimestampStr = metainfo.startTime.strftime("%Y-%m-%d %H:%M:%S.%f")
         stopTimestampStr = metainfo.stopTime.strftime("%Y-%m-%d %H:%M:%S.%f")
         f.write("  <ACQUISITION_TIME start_datetime_utc='{}' stop_datetime_utc='{}' />\n".format(
@@ -323,6 +323,7 @@ def createSentinel1Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, no
         f.write("</AUSCOPHUB_SAFE_FILEDESCRIPTION>\n")
         f.close()
         os.chmod(finalXmlFile,0444)
+    return finalXmlFile
 
 def createSentinel2Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, noOverwrite,
         md5esa):
@@ -339,7 +340,7 @@ def createSentinel2Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, no
         if noOverwrite:
             if verbose or dummy:
                 print("XML already exists {}".format(finalXmlFile))
-            return
+            return finalXmlFile
         else:
             if dummy:
                 print("Would remove existing file {}".format(finalXmlFile)) 
@@ -397,6 +398,7 @@ def createSentinel2Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, no
         f.write("</AUSCOPHUB_SAFE_FILEDESCRIPTION>\n")
         f.close()
         os.chmod(finalXmlFile,0444)
+    return finalXmlFile
 
 def createSentinel3Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, noOverwrite,
         md5esa):
@@ -413,7 +415,7 @@ def createSentinel3Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, no
         if noOverwrite:
             if verbose or dummy:
                 print("XML already exists {}".format(finalXmlFile))
-            return
+            return finalXmlFile
         else:
             if dummy:
                 print("Would remove existing file {}".format(finalXmlFile)) 
@@ -469,6 +471,7 @@ def createSentinel3Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, no
         f.write("</AUSCOPHUB_SAFE_FILEDESCRIPTION>\n")
         f.close()
         os.chmod(finalXmlFile,0444)
+    return finalXmlFile
 
 def createPreviewImg(zipfilename, finalOutputDir, metainfo, dummy, verbose, noOverwrite):
     """
