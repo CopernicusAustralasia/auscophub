@@ -8,11 +8,12 @@ The most obvious way to use these routines is as follows::
 
     urlOpener = saraclient.makeUrlOpener()
     sentinel = 2
-    paramList = ['startDate=2017-05-01']
+    paramList = ['startDate=2017-05-01', 'completionDate=2017-05-31']
     results = saraclient.searchSara(urlOpener, sentinel, paramList)
 
 This would return a list of multi-level dictionary objects created from the JSON output 
-of the server, one for each matching zipfile. 
+of the server, one for each matching zipfile. The paramList can be any of the parameters which
+the SARA API accepts, these are passed straight through to the API. 
 
 """
 from __future__ import print_function, division
@@ -74,7 +75,7 @@ def searchSara(urlOpener, sentinelNumber, paramList):
     Args:
         urlOpener:  Object as created by the makeUrlOpener() function
         sentinelNumber (int): an integer (i.e. 1, 2 or 3), identifying which Sentinel family
-        paramList (list): List of name=value strings, correspnoding to the query parameters
+        paramList (list): List of name=value strings, corresponding to the query parameters
                 defined by the SARA API. 
     
     Returns:
@@ -91,19 +92,29 @@ def searchSara(urlOpener, sentinelNumber, paramList):
         raise SaraClientError(httpErrorStr)
     
     properties = results['properties']
-    totalResults = properties['totalResults']
-    itemsPerPage = properties['itemsPerPage']
-    numPages = int(math.ceil(totalResults / itemsPerPage))
     
+    # Start with the first page of results. 
     allFeatures = results['features']
     
-    for p in range(1, numPages):
+    # The API only gives us a page of results at a time. So, we have to do repeated queries,
+    # with increasing page numbers, to get all pages. We can't use the totalResults field to work
+    # out how many pages there ought to be, because Resto does something crazy with that, 
+    # so instead we have to just keep going until we don't get any more results. All a bit
+    # unsatisfactory, but this is what we have. 
+    finished = False
+    page = 2
+    while not finished:
         tmpParamList = copy.copy(paramList)
-        tmpParamList.append('page={}'.format(p))
+        tmpParamList.append('page={}'.format(page))
         url = makeQueryUrl(sentinelNumber, tmpParamList)
         (results, httpErrorStr) = readJsonUrl(urlOpener, url)
         features = results['features']
-        allFeatures.extend(features)
+        
+        if len(features) > 0:
+            allFeatures.extend(features)
+            page += 1
+        else:
+            finished = True
     
     return allFeatures
 
