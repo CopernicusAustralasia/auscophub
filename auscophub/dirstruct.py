@@ -512,6 +512,15 @@ def createPreviewImg(zipfilename, finalOutputDir, metainfo, dummy, verbose, noOv
         qldata = StringIO(metainfo.previewImgBin)
         im = Image.open(qldata)
         im.thumbnail((512,512), Image.ANTIALIAS)
+        if os.path.basename(zipfilename).startswith('S1'):
+            # preview always has top-left as first sensing pixel. 
+            # flip according to orbit direction.
+            if metainfo.passDirection.lower().startswith('asc'):
+                if verbose: print("Flipping preview top-bottom")
+                im = im.transpose(Image.FLIP_TOP_BOTTOM)
+            else:
+                if verbose: print("Flipping preview left-right")
+                im = im.transpose(Image.FLIP_LEFT_RIGHT)
         im.save(finalPngFile, "PNG")
         os.chmod(finalPngFile,0444)
             
