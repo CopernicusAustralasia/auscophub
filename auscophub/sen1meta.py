@@ -8,17 +8,16 @@ import zipfile
 import datetime
 from xml.dom import minidom
 
-from osgeo import ogr
-
 from auscophub import geomutils
 
 
 class Sen1ZipfileMeta(object):
     """
     This class is designed to operate on the whole zipfile of a Sentinel-1 SAFE dataset. 
-    The metadata for Sentinel-1 is scattered through various files within the SAFE archive,
-    and this class just gathers up some bits which might be useful. 
     
+    This version uses the top level manifest.safe file.
+
+    Additional metadata can be found within the SAFE archive.    
     Someone who knows more about radar than me should work on classes to handle the individual
     files, when more detail is required. 
     
@@ -35,81 +34,97 @@ class Sen1ZipfileMeta(object):
         safeDirName = [fn for fn in filenames if fn.endswith('.SAFE/')][0]
         bn = safeDirName.replace('.SAFE/', '')
         
-        annotationDir = os.path.join(safeDirName, "annotation")
-        annotationXmlFiles = [fn for fn in filenames if os.path.dirname(fn) == annotationDir and
-            fn.endswith('.xml')]
+        #use manifest.safe
+        metafilename = 'manifest.safe'
+        fullmetafilename = safeDirName + metafilename
+        mf = zf.open(fullmetafilename)
+        xmlStr = mf.read()
+        del mf
+
+        doc = minidom.parseString(xmlStr)
+        xfduNode = doc.getElementsByTagName('xfdu:XFDU')[0]
+        metadataSectionNode = xfduNode.getElementsByTagName('metadataSection')[0]
+        metadataNodeList = metadataSectionNode.getElementsByTagName('metadataObject')
+
+        # Product information
+        generalProductInformation = self.findMetadataNodeByIdName(metadataNodeList, 'generalProductInformation')
+        productInformation = self.getElementsContainTagName(generalProductInformation,'standAloneProductInformation')[0]
         
-        if len(annotationXmlFiles) > 0:
-            # Use the first one of these as representative, and get some useful information out 
-            # of it
-            xmlf = zf.open(annotationXmlFiles[0])
-            xmlStr = xmlf.read()
-            xmlf.close()
+        productTypeNodes=self.getElementsContainTagName(productInformation,'productType')
+        if len(productTypeNodes)>0:
+            self.productType= productTypeNodes[0].firstChild.data.strip()
+        else:
+            #this may happen if product type is RAW
+            self.productType= os.path.basename(zipfilename).split("_")[2]
             
-            doc = minidom.parseString(xmlStr)
+        self.polarisation = sorted([node.firstChild.data.strip() for node in self.getElementsContainTagName(productInformation,'transmitterReceiverPolarisation')])
+
+        #productInformation = generalProductInformation.getElementsByTagName('s1sarl1:standAloneProductInformation')[0]
+        #self.productType = productInformation.getElementsByTagName('s1sarl1:productType')[0].firstChild.data.strip()
+        #self.polarisation = sorted([node.firstChild.data.strip() for node in productInformation.getElementsByTagName('s1sarl1:transmitterReceiverPolarisation')])
+        
+        # Acquisition times
+        acquisitionPeriodNode = self.findMetadataNodeByIdName(metadataNodeList, 'acquisitionPeriod')
+        startTimeNode = self.getElementsContainTagName(acquisitionPeriodNode,'startTime')[0]
+        startTimeStr = startTimeNode.firstChild.data.strip()
+        if 'Z' in startTimeStr[-1]:
+            self.startTime = datetime.datetime.strptime(startTimeStr, "%Y-%m-%dT%H:%M:%S.%fZ")
+        else:
+            self.startTime = datetime.datetime.strptime(startTimeStr, "%Y-%m-%dT%H:%M:%S.%f")
+        stopTimeNode = self.getElementsContainTagName(acquisitionPeriodNode,'stopTime')[0]
+        stopTimeStr = stopTimeNode.firstChild.data.strip()
+        if 'Z' in startTimeStr[-1]:
+            self.stopTime = datetime.datetime.strptime(stopTimeStr, "%Y-%m-%dT%H:%M:%S.%fZ")
+        else: 
+            self.stopTime = datetime.datetime.strptime(stopTimeStr, "%Y-%m-%dT%H:%M:%S.%f")
+
+        # platform
+        platform = self.findMetadataNodeByIdName(metadataNodeList, 'platform')
+        platformNode = self.getElementsContainTagName(platform,'platform')[0]
+        familyName = self.getElementsContainTagName(platformNode,'familyName')[0].firstChild.data.strip()
+        # to be consistent with other metadata, this has to be "S1" not "Sentinel-1"
+        self.satId = familyName[0]+ familyName[-1]+self.getElementsContainTagName(platformNode,'number')[0].firstChild.data.strip()
+        
+        instrumentMode = self.getElementsContainTagName(platform,'instrumentMode')[0]
+        self.mode = self.getElementsContainTagName(instrumentMode,'mode')[0].firstChild.data.strip()
+        self.swath = sorted([node.firstChild.data.strip() for node in self.getElementsContainTagName(instrumentMode,'swath')])
+        
+        # orbit
+        measurementOrbitReference = self.findMetadataNodeByIdName(metadataNodeList, 'measurementOrbitReference')
+        orbitReference = self.getElementsContainTagName(measurementOrbitReference,'orbitReference')[0]
+        self.absoluteOrbitNumber = self.getElementsContainTagName(orbitReference,'orbitNumber')[0].firstChild.data.strip()
+        self.relativeOrbitNumber = self.getElementsContainTagName(orbitReference,'relativeOrbitNumber')[0].firstChild.data.strip()
+        self.passDirection = measurementOrbitReference.getElementsByTagName('s1:orbitProperties')[0].getElementsByTagName('s1:pass')[0].firstChild.data.strip().title()
+
+
+        # footprint
+        measurementFrameSet = self.findMetadataNodeByIdName(metadataNodeList, 'measurementFrameSet')      
+        posSet = self.getElementsContainTagName(measurementFrameSet,'coordinates')
+        # first footprint
+        posListStr =  posSet[0].firstChild.data.strip()
+        # This list has pairs in order [lat,long lat,long....], different from S1 and S3
+        posListPairs= posListStr.split()
+        posListVals = [[float(y), float(x)] for (x, y) in [pair.split(',') for pair in posListPairs]]
+        footprintGeom = geomutils.geomFromOutlineCoords(posListVals)
+        footprintGeom.CloseRings()
+        
+        # there are more than one polygons for OCN products
+        if len(posSet)>1:
+            for pos in posSet[1:]:
+                posListPairs= pos.firstChild.data.strip().split()
+                posListVals = [[float(y), float(x)] for (x, y) in [pair.split(',') for pair in posListPairs]]
+                footprint = geomutils.geomFromOutlineCoords(posListVals)
+                footprint.CloseRings()
+                footprintGeom=footprintGeom.Union(footprint)
+            footprintGeom=footprintGeom.ConvexHull()
             
-            productNode = doc.getElementsByTagName('product')[0]
-            adsHeaderNode = productNode.getElementsByTagName('adsHeader')[0]
-            geolocGridNode = productNode.getElementsByTagName('geolocationGrid')[0]
-            geoLocGridListNode = geolocGridNode.getElementsByTagName('geolocationGridPointList')[0]
-            geoLocPointList = geoLocGridListNode.getElementsByTagName('geolocationGridPoint')
-            
-            self.satellite = adsHeaderNode.getElementsByTagName('missionId')[0].firstChild.data.strip()
-            # Copy the value of satellite into satId, to be compatible with the sen2meta and sen3meta classes. 
-            # I should have made these completely consistent from the start, but somehow managed not to. 
-            self.satId = self.satellite
-            self.productType = adsHeaderNode.getElementsByTagName('productType')[0].firstChild.data.strip()
-            self.mode = adsHeaderNode.getElementsByTagName('mode')[0].firstChild.data.strip()
-            self.absoluteOrbitNumber = int(adsHeaderNode.getElementsByTagName('absoluteOrbitNumber')[0].firstChild.data.strip())
-            self.relativeOrbitNumber()
-            
-            gnrlAnnotationNode = doc.getElementsByTagName('generalAnnotation')[0]
-            productInfoNode = gnrlAnnotationNode.getElementsByTagName('productInformation')[0]
-            self.passDirection = productInfoNode.getElementsByTagName('pass')[0].firstChild.data.strip()
-            
-            # Create a list of the geolocation grid point lat/long values, so we can use them to
-            # create a rough footprint. We make a convex hull around the points, and assume
-            # that this is roughly the outline of the footprint (by no means guaranteed). 
-            longLatList = []
-            for geolocGridPointNode in geoLocPointList:
-                longitude = float(geolocGridPointNode.getElementsByTagName('longitude')[0].firstChild.data.strip())
-                latitude = float(geolocGridPointNode.getElementsByTagName('latitude')[0].firstChild.data.strip())
-                longLatList.append([longitude, latitude])
-            pointsGeom = geomutils.geomFromInteriorPoints(longLatList)
-            prefEpsg = geomutils.findSensibleProjection(pointsGeom)
-            footprintGeom = geomutils.polygonFromInteriorPoints(pointsGeom, prefEpsg)
+        prefEpsg = geomutils.findSensibleProjection(footprintGeom)
+        if prefEpsg is not None:
             self.centroidXY = geomutils.findCentroid(footprintGeom, prefEpsg)
-            self.outlineWKT = footprintGeom.ExportToWkt()
-
-            # Now loop over all the annotation XML files, getting all possible combinations of
-            # a couple of parameters, so we can make a complete list of them. Not at all sure 
-            # if this is useful, but it seemed like it would be. 
-            polarisationSet = set()
-            swathSet = set()
-            startTimeList = []
-            stopTimeList = []
-            for xmlFile in annotationXmlFiles:
-                xmlf = zf.open(xmlFile)
-                xmlStr = xmlf.read()
-                xmlf.close()
-                doc = minidom.parseString(xmlStr)
-                productNode = doc.getElementsByTagName('product')[0]
-                adsHeaderNode = productNode.getElementsByTagName('adsHeader')[0]
-                polarisation = adsHeaderNode.getElementsByTagName('polarisation')[0].firstChild.data.strip()
-                polarisationSet.add(polarisation)
-                swath = adsHeaderNode.getElementsByTagName('swath')[0].firstChild.data.strip()
-                swathSet.add(swath)
-
-                startTimeStr = adsHeaderNode.getElementsByTagName('startTime')[0].firstChild.data.strip()
-                startTimeList.append(datetime.datetime.strptime(startTimeStr, "%Y-%m-%dT%H:%M:%S.%f"))
-                stopTimeStr = adsHeaderNode.getElementsByTagName('stopTime')[0].firstChild.data.strip()
-                stopTimeList.append(datetime.datetime.strptime(stopTimeStr, "%Y-%m-%dT%H:%M:%S.%f"))
-
-            self.startTime = min(startTimeList)
-            self.stopTime = max(stopTimeList)
-            self.polarisation = sorted(list(polarisationSet))
-            self.swath = sorted(list(swathSet))
-        
+        else:
+            self.centroidXY = None
+        self.outlineWKT = footprintGeom.ExportToWkt()
+                
         # Grab preview data if available, for making a quick-look
         previewDir = os.path.join(safeDirName, "preview")
         previewImgFiles = [fn for fn in filenames if os.path.dirname(fn) == previewDir and
@@ -129,13 +144,38 @@ class Sen1ZipfileMeta(object):
             # Assume we could not find anything from inside the zipfile, so
             # fall back to things we can deduce from the filename
             self.fallbackMetadataFromFilename(zipfilename)
-
-    def relativeOrbitNumber(self):
-        """
-        Relative orbit formula supplied by Sarah Lawrie from Geoscience Australia
-        """
-        self.relativeOrbitNumber = ((self.absoluteOrbitNumber - 73) % 175) + 1
     
+    
+    @staticmethod
+    def findMetadataNodeByIdName(metadataNodeList, idName):
+        """
+        Search the given list of metadataNode objects, and find the first one with the
+        given ID=idName. If no such object found, return None.
+
+        """
+        metadataObj = None
+        matchingNodes = [node for node in metadataNodeList if node.getAttribute('ID') == idName]
+        if len(matchingNodes) > 0:
+            metadataObj = matchingNodes[0]
+
+        return metadataObj
+    
+            
+    @staticmethod
+    def getElementsContainTagName(node, tagname):
+        """
+        Search in a node based on partial tagname. This has to do with the inconsistent naming for different product levels.
+        """
+        elementList=[]
+        for child in node.childNodes:
+            if hasattr(child,'tagName'):
+                if tagname in child.tagName:
+                    elementList.append(child)
+                else:
+                    elementList.extend(Sen1ZipfileMeta.getElementsContainTagName(child,tagname))
+        return elementList
+            
+
     def fallbackMetadataFromFilename(self, zipfilename):
         """
         This is called for the product types which we do not really know how to handle, e.g.
