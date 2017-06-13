@@ -8,9 +8,10 @@ from __future__ import print_function, division
 import sys
 import os
 import shutil
-import tempfile
 import hashlib
 import subprocess
+from cStringIO import StringIO
+from PIL import Image
 
 # Size of lat/long grid cells in which we store the files (in degrees). This is 
 # potentially a function of which Sentinel we are dealing with, hence the dictionary,
@@ -38,7 +39,11 @@ def makeRelativeOutputDir(metainfo, gridCellSize, productDirGiven=False):
     productDir = makeProductDir(metainfo)
     yearMonthDir = makeYearMonthDir(metainfo)
     dateDir = makeDateDir(metainfo)
-    if metainfo.satId[1] == "3":
+    isOCN = False
+    # use year/month/date for OCN product
+    if hasattr(metainfo, 'productType'):
+        if metainfo.productType == 'OCN': isOCN = True
+    if metainfo.satId[1] == "3" or isOCN:
         # For all S-3 products we do not split spatially at all. 
         outDir = os.path.join(yearMonthDir, dateDir)
     elif metainfo.centroidXY is not None:
@@ -170,7 +175,19 @@ def makeProductDir(metainfo):
         product = None
     return product
 
-
+def processingLevel(metainfo):
+    """
+    Return processing Level based on satellite and productType.
+    """
+    if metainfo.satId.startswith('S1'):
+        if metainfo.productType in ['RAW']: return 'LEVEL-0'
+        elif metainfo.productType in ['OCN']: return 'LEVEL-2'
+        else: return 'LEVEL-1'
+    elif metainfo.satId.startswith('S2'): return 'L1C'
+    elif metainfo.satId.startswith('S3'): return 'LEVEL-{}'.format(metainfo.processingLevel)
+    else:
+        return 'LEVEL-1'
+    
 def checkFinalDir(finalOutputDir, dummy, verbose):
     """
     Check that the final output dir exists, and has write permission. If it does not exist,
@@ -251,11 +268,22 @@ def createSentinel1Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, no
     xmlFilename = os.path.basename(zipfilename).replace('.zip', '.xml')
     finalXmlFile = os.path.join(finalOutputDir, xmlFilename)
     
+    if os.path.exists(finalXmlFile):
+        if noOverwrite:
+            if verbose or dummy:
+                print("XML already exists {}".format(finalXmlFile))
+            return finalXmlFile
+        else:
+            if dummy:
+                print("Would remove existing file {}".format(finalXmlFile)) 
+            else:
+                if verbose:
+                    print("Removing existing file {}".format(finalXmlFile))
+                os.chmod(finalXmlFile,0644)
+                os.remove(finalXmlFile)
+
     if dummy:
-        print("Would make", finalXmlFile)
-    elif os.path.exists(finalXmlFile) and noOverwrite:
-        if verbose:
-            print("XML already exists {}".format(finalXmlFile))
+        print("Would make", finalXmlFile)        
     else:
         if verbose:
             print("Creating", finalXmlFile)
@@ -264,13 +292,18 @@ def createSentinel1Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, no
         f = open(finalXmlFile, 'w')
         f.write("<?xml version='1.0'?>\n")
         f.write("<AUSCOPHUB_SAFE_FILEDESCRIPTION>\n")
-        f.write("  <SATELLITE name='{}' />\n".format(metainfo.satellite))
+        f.write("  <IDENTIFIER>{}</IDENTIFIER>\n".format(os.path.basename(zipfilename).split('.')[0]))
+        f.write("  <PATH>{}</PATH>\n".format(finalOutputDir.split(makeSatelliteDir(metainfo))[1]))
+        f.write("  <SATELLITE name='{}' />\n".format(metainfo.satId))
+        f.write("  <INSTRUMENT>{}</INSTRUMENT>\n".format("C-SAR"))
+        f.write("  <PRODUCT_TYPE>{}</PRODUCT_TYPE>\n".format(metainfo.productType))  
+        f.write("  <PROCESSING_LEVEL>{}</PROCESSING_LEVEL>\n".format(processingLevel(metainfo)))
         if metainfo.centroidXY is not None:
             (longitude, latitude) = tuple(metainfo.centroidXY)
             f.write("  <CENTROID longitude='{}' latitude='{}' />\n".format(longitude, latitude))
-            f.write("  <ESA_TILEOUTLINE_FOOTPRINT_WKT>\n")
-            f.write("    {}\n".format(metainfo.outlineWKT))
-            f.write("  </ESA_TILEOUTLINE_FOOTPRINT_WKT>\n")
+        f.write("  <ESA_TILEOUTLINE_FOOTPRINT_WKT>\n")
+        f.write("    {}\n".format(metainfo.outlineWKT))
+        f.write("  </ESA_TILEOUTLINE_FOOTPRINT_WKT>\n")
         startTimestampStr = metainfo.startTime.strftime("%Y-%m-%d %H:%M:%S.%f")
         stopTimestampStr = metainfo.stopTime.strftime("%Y-%m-%d %H:%M:%S.%f")
         f.write("  <ACQUISITION_TIME start_datetime_utc='{}' stop_datetime_utc='{}' />\n".format(
@@ -293,7 +326,8 @@ def createSentinel1Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, no
         
         f.write("</AUSCOPHUB_SAFE_FILEDESCRIPTION>\n")
         f.close()
-
+        os.chmod(finalXmlFile,0444)
+    return finalXmlFile
 
 def createSentinel2Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, noOverwrite,
         md5esa):
@@ -306,11 +340,22 @@ def createSentinel2Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, no
     xmlFilename = os.path.basename(zipfilename).replace('.zip', '.xml')
     finalXmlFile = os.path.join(finalOutputDir, xmlFilename)
     
+    if os.path.exists(finalXmlFile):
+        if noOverwrite:
+            if verbose or dummy:
+                print("XML already exists {}".format(finalXmlFile))
+            return finalXmlFile
+        else:
+            if dummy:
+                print("Would remove existing file {}".format(finalXmlFile)) 
+            else:
+                if verbose:
+                    print("Removing existing file {}".format(finalXmlFile))
+                os.chmod(finalXmlFile,0644)
+                os.remove(finalXmlFile)
+
     if dummy:
         print("Would make", finalXmlFile)
-    elif os.path.exists(finalXmlFile) and noOverwrite:
-        if verbose:
-            print("XML already exists {}".format(finalXmlFile))
     else:
         if verbose:
             print("Creating", finalXmlFile)
@@ -319,7 +364,12 @@ def createSentinel2Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, no
         f = open(finalXmlFile, 'w')
         f.write("<?xml version='1.0'?>\n")
         f.write("<AUSCOPHUB_SAFE_FILEDESCRIPTION>\n")
+        f.write("  <IDENTIFIER>{}</IDENTIFIER>\n".format(os.path.basename(zipfilename).split('.')[0]))
+        f.write("  <PATH>{}</PATH>\n".format(finalOutputDir.split(makeSatelliteDir(metainfo))[1]))
         f.write("  <SATELLITE name='{}' />\n".format(metainfo.satId))
+        f.write("  <INSTRUMENT>{}</INSTRUMENT>\n".format("MSI"))
+        f.write("  <PRODUCT_TYPE>{}</PRODUCT_TYPE>\n".format("S2MSIL" + metainfo.processingLevel[-2:]))
+        f.write("  <PROCESSING_LEVEL>{}</PROCESSING_LEVEL>\n".format(processingLevel(metainfo)))
         (longitude, latitude) = tuple(metainfo.centroidXY)
         f.write("  <CENTROID longitude='{}' latitude='{}' />\n".format(longitude, latitude))
         f.write("  <ESA_CLOUD_COVER percentage='{}' />\n".format(int(round(metainfo.cloudPcnt))))
@@ -351,7 +401,8 @@ def createSentinel2Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, no
             f.write("  </MGRSTILES>\n")
         f.write("</AUSCOPHUB_SAFE_FILEDESCRIPTION>\n")
         f.close()
-
+        os.chmod(finalXmlFile,0444)
+    return finalXmlFile
 
 def createSentinel3Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, noOverwrite,
         md5esa):
@@ -364,11 +415,22 @@ def createSentinel3Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, no
     xmlFilename = os.path.basename(zipfilename).replace('.zip', '.xml')
     finalXmlFile = os.path.join(finalOutputDir, xmlFilename)
     
+    if os.path.exists(finalXmlFile):
+        if noOverwrite:
+            if verbose or dummy:
+                print("XML already exists {}".format(finalXmlFile))
+            return finalXmlFile
+        else:
+            if dummy:
+                print("Would remove existing file {}".format(finalXmlFile)) 
+            else:
+                if verbose:
+                    print("Removing existing file {}".format(finalXmlFile))
+                os.chmod(finalXmlFile,0644)
+                os.remove(finalXmlFile)
+
     if dummy:
         print("Would make", finalXmlFile)
-    elif os.path.exists(finalXmlFile) and noOverwrite:
-        if verbose:
-            print("XML already exists {}".format(finalXmlFile))
     else:
         if verbose:
             print("Creating", finalXmlFile)
@@ -377,7 +439,12 @@ def createSentinel3Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, no
         f = open(finalXmlFile, 'w')
         f.write("<?xml version='1.0'?>\n")
         f.write("<AUSCOPHUB_SAFE_FILEDESCRIPTION>\n")
+        f.write("  <IDENTIFIER>{}</IDENTIFIER>\n".format(os.path.basename(zipfilename).split('.')[0]))
+        f.write("  <PATH>{}</PATH>\n".format(finalOutputDir.split(makeSatelliteDir(metainfo))[1]))
         f.write("  <SATELLITE name='{}' />\n".format(metainfo.satId))
+        f.write("  <INSTRUMENT>{}</INSTRUMENT>\n".format(metainfo.instrument))
+        f.write("  <PRODUCT_TYPE>{}</PRODUCT_TYPE>\n".format(metainfo.productType))  
+        f.write("  <PROCESSING_LEVEL>{}</PROCESSING_LEVEL>\n".format(processingLevel(metainfo)))
         if metainfo.centroidXY is not None:
             (longitude, latitude) = tuple(metainfo.centroidXY)
             f.write("  <CENTROID longitude='{}' latitude='{}' />\n".format(longitude, latitude))
@@ -407,7 +474,8 @@ def createSentinel3Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, no
         
         f.write("</AUSCOPHUB_SAFE_FILEDESCRIPTION>\n")
         f.close()
-
+        os.chmod(finalXmlFile,0444)
+    return finalXmlFile
 
 def createPreviewImg(zipfilename, finalOutputDir, metainfo, dummy, verbose, noOverwrite):
     """
@@ -416,37 +484,46 @@ def createPreviewImg(zipfilename, finalOutputDir, metainfo, dummy, verbose, noOv
     pngFilename = os.path.basename(zipfilename).replace('.zip', '.png')
     finalPngFile = os.path.join(finalOutputDir, pngFilename)
     
+    if metainfo.previewImgBin is None:
+        if verbose or dummy:
+            print("No preview image provided in", zipfilename)
+        return
+    elif os.path.exists(finalPngFile):
+        if noOverwrite:
+            if verbose or dummy:
+                print("Preview image already exists {}".format(finalPngFile))
+            return
+        else:
+            if dummy:
+                print("Would remove existing file {}".format(finalPngFile)) 
+            else:
+                if verbose:
+                    print("Removing existing file {}".format(finalPngFile))
+                os.chmod(finalPngFile,0644)
+                os.remove(finalPngFile) 
+
     if dummy:
         print("Would make", finalPngFile)
-    elif metainfo.previewImgBin is None:
-        if verbose:
-            print("No preview image provided in", zipfilename)
-    elif os.path.exists(finalPngFile) and noOverwrite:
-        if verbose:
-            print("Preview image already exists {}".format(finalPngFile))
     else:
         if verbose:
             print("Creating", finalPngFile)
-        (fd, tmpImg) = tempfile.mkstemp(prefix='tmpCopHub_', suffix='.png', dir=finalOutputDir)
-        os.close(fd)
-        
-        open(tmpImg, 'w').write(metainfo.previewImgBin)
-        cmdList = ["gdal_translate", "-q", "-of", "PNG", "-outsize", "30%", "30%",
-            tmpImg, finalPngFile]
-        if verbose:
-            print(' '.join(cmdList))
-        proc = subprocess.Popen(cmdList, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        (stdout, stderr) = proc.communicate()
-        returncode = proc.returncode
-        
-        if returncode != 0 or len(stderr) > 0:
-            print("Error: gdal_translate filed with error. Return code = {}. \nstderr='{}'".format(
-                returncode, stderr), file=sys.stderr)
-        
-        if os.path.exists(tmpImg):
-            os.remove(tmpImg)
-    
 
+        #resize the image
+        qldata = StringIO(metainfo.previewImgBin)
+        im = Image.open(qldata)
+        im.thumbnail((512,512), Image.ANTIALIAS)
+        if os.path.basename(zipfilename).startswith('S1'):
+            # preview always has top-left as first sensing pixel. 
+            # flip according to orbit direction.
+            if metainfo.passDirection.lower().startswith('asc'):
+                if verbose: print("Flipping preview top-bottom")
+                im = im.transpose(Image.FLIP_TOP_BOTTOM)
+            else:
+                if verbose: print("Flipping preview left-right")
+                im = im.transpose(Image.FLIP_LEFT_RIGHT)
+        im.save(finalPngFile, "PNG")
+        os.chmod(finalPngFile,0444)
+            
 class ZipfileSysInfo(object):
     """
     Information about the zipfile which can be obtained at operating system level,

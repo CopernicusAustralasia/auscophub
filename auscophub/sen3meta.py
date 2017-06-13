@@ -116,6 +116,16 @@ class Sen3ZipfileMeta(object):
         cycleNode = orbitRefNode.getElementsByTagName('sentinel-safe:cycleNumber')[0]
         self.cycleNumber = int(cycleNode.firstChild.data.strip())
         
+        # MD5 checksum for .nc files
+        dataSectionNode = xfduNode.getElementsByTagName('dataObjectSection')[0]
+        dataList = dataSectionNode.getElementsByTagName('dataObject')
+        md5={}
+        for dataObject in dataList:
+            key=dataObject.getElementsByTagName('fileLocation')[0].getAttribute('href')
+            value=dataObject.getElementsByTagName('checksum')[0].firstChild.data.strip()
+            md5[key]=value
+        self.md5=md5
+
         # Currently have no mechanism for a preview image
         self.previewImgBin = None
         

@@ -16,12 +16,14 @@ import sys
 import os
 import argparse
 import zipfile
+import requests
+from urlparse import urljoin
 
 from auscophub import sen1meta
 from auscophub import sen2meta
 from auscophub import sen3meta
 from auscophub import dirstruct
-
+from auscophub.sen3thumb import sen3thumb 
 
 def getCmdargs():
     """
@@ -40,6 +42,10 @@ def getCmdargs():
     p.add_argument("--xmlonly", default=False, action="store_true",
         help=("Only generate the XML files. Do not move/copy/symlink the zipfiles, and "+
             "do not generate preview images. Useful for updating the XML contents on all files. "))
+    p.add_argument("--xmlandpreview", default=False, action="store_true",
+        help=("Generate the XML files and the preview images. Do not move/copy/symlink the zipfiles."))
+    p.add_argument("--nopreview", default=False, action="store_true",
+        help=("Do not generate the preview images."))
     p.add_argument("--nooverwrite", default=False, action="store_true",
         help=("Do not overwrite existing ZIP, XML and PNG files. Default will always write them, "+
             "whether they exist or not. "))
@@ -66,6 +72,12 @@ def getCmdargs():
             "be generated too"))
     p.add_argument("--exitonziperror", default=False, action="store_true",
         help="Test each zipfile, and exit on finding one which reports internal errors (default will not test)")
+    p.add_argument("--mountpath", default=".",
+        help="Basepath for archivemount a Sentinel-3 zipfile when generating its quicklook thumbnail.")
+    p.add_argument("--saraurl", default="http://copernicus.nci.org.au/sara.server/1.0/collections/",
+        help="Url to post the resource to the SARA API (default='%(default)s').")
+    p.add_argument("--sarauser", default="",
+        help="Username:password to post the resource to the SARA API. Required to enable posting.")
 
     cmdargs = p.parse_args()
     
@@ -100,11 +112,14 @@ def mainRoutine():
         (ok, msg) = checkZipfileName(zipfilename)
         
         if cmdargs.exitonziperror:
-            zf = zipfile.ZipFile(zipfilename)
-            zipcheck = zf.testzip()
-            if zipcheck is not None:
-                raise zipfile.BadZipfile("Zipfile {} failed internal checks".format(zipfilename))
-            
+            try:
+                zf = zipfile.ZipFile(zipfilename)
+                zipcheck = zf.testzip()
+                if zipcheck is not None:
+                    raise zipfile.BadZipfile("Zipfile {} failed internal checks".format(zipfilename))
+            except zipfile.BadZipfile as e:
+                raise zipfile.BadZipfile("Zipfile {} failed internal checks; {}".format(zipfilename,e))
+
         sentinelNumber = int(os.path.basename(zipfilename)[1])
         if sentinelNumber not in (1, 2, 3):
             msg = "Unknown Sentinel number '{}': {}".format(sentinelNumber, zipfilename)
@@ -130,22 +145,39 @@ def mainRoutine():
             dirstruct.checkFinalDir(finalOutputDir, cmdargs.dummy, cmdargs.verbose)
             
             if sentinelNumber == 1:
-                dirstruct.createSentinel1Xml(zipfilename, finalOutputDir, metainfo, 
+                finalXmlFile = dirstruct.createSentinel1Xml(zipfilename, finalOutputDir, metainfo, 
                     cmdargs.dummy, cmdargs.verbose, cmdargs.nooverwrite, cmdargs.md5esa)
             elif sentinelNumber == 2:
-                dirstruct.createSentinel2Xml(zipfilename, finalOutputDir, metainfo, 
+                finalXmlFile = dirstruct.createSentinel2Xml(zipfilename, finalOutputDir, metainfo, 
                     cmdargs.dummy, cmdargs.verbose, cmdargs.nooverwrite, cmdargs.md5esa)
             elif sentinelNumber == 3:
-                dirstruct.createSentinel3Xml(zipfilename, finalOutputDir, metainfo, 
+                finalXmlFile = dirstruct.createSentinel3Xml(zipfilename, finalOutputDir, metainfo, 
                     cmdargs.dummy, cmdargs.verbose, cmdargs.nooverwrite, cmdargs.md5esa)
             
-            if not cmdargs.xmlonly:
+            if not cmdargs.xmlonly and not cmdargs.xmlandpreview:
                 dirstruct.moveZipfile(zipfilename, finalOutputDir, cmdargs.dummy, cmdargs.verbose, 
                     cmdargs.copy, cmdargs.symlink, cmdargs.nooverwrite, cmdargs.moveandsymlink)
                     
-            if not cmdargs.xmlonly:
-                dirstruct.createPreviewImg(zipfilename, finalOutputDir, metainfo, 
-                    cmdargs.dummy, cmdargs.verbose, cmdargs.nooverwrite)
+            if not cmdargs.xmlonly and not cmdargs.nopreview:
+                if sentinelNumber != 3:
+                    dirstruct.createPreviewImg(zipfilename, finalOutputDir, metainfo, 
+                                               cmdargs.dummy, cmdargs.verbose, cmdargs.nooverwrite)
+                else:
+                    sen3thumb(zipfilename, finalOutputDir,
+                              cmdargs.dummy, cmdargs.verbose, cmdargs.nooverwrite, mountpath=cmdargs.mountpath)
+            # Post to SARA if there's a xmlfile and user credential is provided
+            if ':' in cmdargs.sarauser and finalXmlFile:
+                username,password = cmdargs.sarauser.split(':')
+                if username and password:
+                    saraurl=urljoin(cmdargs.saraurl,'S{}'.format(sentinelNumber))
+                    if cmdargs.dummy:
+                        print("Would post to SARA at {}".format(saraurl))
+                    else:
+                        with open(finalXmlFile) as mf:
+                            xmlStr = mf.read()
+                        response = requests.post(saraurl, data=xmlStr, auth=(username, password))
+                        if cmdargs.verbose:
+                            print("Posted to SARA at {}:{}".format(saraurl,response.text))       
 
         if not ok:
             filesWithErrors.append(msg)
