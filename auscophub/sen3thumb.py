@@ -88,10 +88,8 @@ def sen3thumb(zipfilename, finalOutputDir,
         proc = subprocess.Popen(fullcmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout, stderr= proc.communicate()
         if proc.returncode != 0:
-            logging.error(stdout)
-            logging.error(stderr)
-            umount(mountpoint)
-            raise thumbError("Failed to run pconvert cmd {}.".format(cmd))
+            if mount: umount(mountpoint)
+            raise thumbError("Failed to run pconvert cmd {}; {}; {}".format(cmd, stdout, stderr))
     
         # unmount
         if mount:
