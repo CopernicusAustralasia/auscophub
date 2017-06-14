@@ -16,7 +16,6 @@ import sys
 import os
 import argparse
 import zipfile
-import requests
 from urlparse import urljoin
 
 from auscophub import sen1meta
@@ -24,6 +23,7 @@ from auscophub import sen2meta
 from auscophub import sen3meta
 from auscophub import dirstruct
 from auscophub.sen3thumb import sen3thumb 
+from auscophub.saraadmin import postToSara
 
 def getCmdargs():
     """
@@ -78,6 +78,8 @@ def getCmdargs():
         help="Url to post the resource to the SARA API (default='%(default)s').")
     p.add_argument("--sarauser", default="",
         help="Username:password to post the resource to the SARA API. Required to enable posting.")
+    p.add_argument("--updatesara", default=False, action="store_true",
+        help="If the product is already in SARA, delete and re-post.")
 
     cmdargs = p.parse_args()
     
@@ -173,11 +175,8 @@ def mainRoutine():
                     if cmdargs.dummy:
                         print("Would post to SARA at {}".format(saraurl))
                     else:
-                        with open(finalXmlFile) as mf:
-                            xmlStr = mf.read()
-                        response = requests.post(saraurl, data=xmlStr, auth=(username, password))
-                        if cmdargs.verbose:
-                            print("Posted to SARA at {}:{}".format(saraurl,response.text))       
+                        postToSara(finalXmlFile, saraurl, username, password, 
+                                   verbose=cmdargs.verbose, update = cmdargs.updatesara)
 
         if not ok:
             filesWithErrors.append(msg)
@@ -216,7 +215,6 @@ def checkZipfileName(zipfilename):
         msg = "Zipfile name non-standard, cannot identify Sentinel: {}".format(zipfilename)
         ok = False
     return (ok, msg)
-
 
 if __name__ == "__main__":
     mainRoutine()
