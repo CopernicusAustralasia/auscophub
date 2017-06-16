@@ -216,7 +216,7 @@ def checkFinalDir(finalOutputDir, dummy, verbose):
 
 
 def moveZipfile(zipfilename, finalOutputDir, dummy, verbose, makeCopy, makeSymlink, nooverwrite,
-        moveandsymlink):
+        moveandsymlink, makereadonly=False):
     """
     Move the given zipfile to the final output directory
     """
@@ -244,6 +244,7 @@ def moveZipfile(zipfilename, finalOutputDir, dummy, verbose, makeCopy, makeSymli
                     print("Copy to", finalFile)
                 shutil.copyfile(zipfilename, finalFile)
                 shutil.copystat(zipfilename, finalFile)
+                if makereadonly: os.chmod(finalFile, 0444)
             elif makeSymlink:
                 if verbose:
                     print("Symlink to", finalFile)
@@ -253,12 +254,13 @@ def moveZipfile(zipfilename, finalOutputDir, dummy, verbose, makeCopy, makeSymli
                 if verbose:
                     print("Move to", finalFile)
                 shutil.move(zipfilename, finalFile)
+                if makereadonly: os.chmod(finalFile, 0444)
                 if moveandsymlink:
                     os.symlink(os.path.abspath(finalFile), os.path.abspath(zipfilename))
 
 
 def createSentinel1Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, noOverwrite,
-        md5esa):
+        md5esa, makereadonly=False):
     """
     Create the XML file in the final output directory, for Sentinel-1 zipfiles. 
     This is a locally-designed XML file intended to include only the sort of 
@@ -326,11 +328,11 @@ def createSentinel1Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, no
         
         f.write("</AUSCOPHUB_SAFE_FILEDESCRIPTION>\n")
         f.close()
-        os.chmod(finalXmlFile,0444)
+        if makereadonly: os.chmod(finalXmlFile,0444)
     return finalXmlFile
 
 def createSentinel2Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, noOverwrite,
-        md5esa):
+        md5esa, makereadonly=False):
     """
     Create the XML file in the final output directory, for Sentinel-2 zipfiles. 
     This is a locally-designed XML file intended to include only the sort of 
@@ -401,11 +403,11 @@ def createSentinel2Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, no
             f.write("  </MGRSTILES>\n")
         f.write("</AUSCOPHUB_SAFE_FILEDESCRIPTION>\n")
         f.close()
-        os.chmod(finalXmlFile,0444)
+        if makereadonly: os.chmod(finalXmlFile,0444)
     return finalXmlFile
 
 def createSentinel3Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, noOverwrite,
-        md5esa):
+        md5esa, makereadonly=False):
     """
     Create the XML file in the final output directory, for Sentinel-3 zipfiles. 
     This is a locally-designed XML file intended to include only the sort of 
@@ -474,10 +476,10 @@ def createSentinel3Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, no
         
         f.write("</AUSCOPHUB_SAFE_FILEDESCRIPTION>\n")
         f.close()
-        os.chmod(finalXmlFile,0444)
+        if makereadonly: os.chmod(finalXmlFile,0444)
     return finalXmlFile
 
-def createPreviewImg(zipfilename, finalOutputDir, metainfo, dummy, verbose, noOverwrite):
+def createPreviewImg(zipfilename, finalOutputDir, metainfo, dummy, verbose, noOverwrite, makereadonly=False):
     """
     Create the preview image, in the final output directory
     """
@@ -522,7 +524,7 @@ def createPreviewImg(zipfilename, finalOutputDir, metainfo, dummy, verbose, noOv
                 if verbose: print("Flipping preview left-right")
                 im = im.transpose(Image.FLIP_LEFT_RIGHT)
         im.save(finalPngFile, "PNG")
-        os.chmod(finalPngFile,0444)
+        if makereadonly: os.chmod(finalPngFile,0444)
             
 class ZipfileSysInfo(object):
     """

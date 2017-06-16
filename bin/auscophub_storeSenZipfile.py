@@ -60,6 +60,8 @@ def getCmdargs():
     p.add_argument("--moveandsymlink", default=False, action="store_true",
         help=("Move the file, as per the default, and then create a symlink from the old "+
             "location pointing to the new location (default will use move)"))
+    p.add_argument("--makereadonly", default=False, action="store_true",
+        help="Make the files (zip, xml and preview) read-only after creation, copying or moving (default='%(default)s').")
     p.add_argument("--errorlog", 
         help="Any zipfiles with errors will be logged in this file")
     p.add_argument("--md5esa", help=("Value of MD5 hash for a single zipfile, as given by ESA. "+
@@ -148,22 +150,22 @@ def mainRoutine():
             
             if sentinelNumber == 1:
                 finalXmlFile = dirstruct.createSentinel1Xml(zipfilename, finalOutputDir, metainfo, 
-                    cmdargs.dummy, cmdargs.verbose, cmdargs.nooverwrite, cmdargs.md5esa)
+                    cmdargs.dummy, cmdargs.verbose, cmdargs.nooverwrite, cmdargs.md5esa, cmdargs.makereadonly)
             elif sentinelNumber == 2:
                 finalXmlFile = dirstruct.createSentinel2Xml(zipfilename, finalOutputDir, metainfo, 
-                    cmdargs.dummy, cmdargs.verbose, cmdargs.nooverwrite, cmdargs.md5esa)
+                    cmdargs.dummy, cmdargs.verbose, cmdargs.nooverwrite, cmdargs.md5esa, cmdargs.makereadonly)
             elif sentinelNumber == 3:
                 finalXmlFile = dirstruct.createSentinel3Xml(zipfilename, finalOutputDir, metainfo, 
-                    cmdargs.dummy, cmdargs.verbose, cmdargs.nooverwrite, cmdargs.md5esa)
+                    cmdargs.dummy, cmdargs.verbose, cmdargs.nooverwrite, cmdargs.md5esa, cmdargs.makereadonly)
             
             if not cmdargs.xmlonly and not cmdargs.xmlandpreview:
                 dirstruct.moveZipfile(zipfilename, finalOutputDir, cmdargs.dummy, cmdargs.verbose, 
-                    cmdargs.copy, cmdargs.symlink, cmdargs.nooverwrite, cmdargs.moveandsymlink)
+                    cmdargs.copy, cmdargs.symlink, cmdargs.nooverwrite, cmdargs.moveandsymlink, cmdargs.makereadonly)
                     
             if not cmdargs.xmlonly and not cmdargs.nopreview:
                 if sentinelNumber != 3:
                     dirstruct.createPreviewImg(zipfilename, finalOutputDir, metainfo, 
-                                               cmdargs.dummy, cmdargs.verbose, cmdargs.nooverwrite)
+                                               cmdargs.dummy, cmdargs.verbose, cmdargs.nooverwrite, cmdargs.makereadonly)
                 else:
                     sen3thumb(zipfilename, finalOutputDir,
                               cmdargs.dummy, cmdargs.verbose, cmdargs.nooverwrite, mountpath=cmdargs.mountpath)
