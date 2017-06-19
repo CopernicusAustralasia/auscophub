@@ -143,6 +143,9 @@ def readJsonUrl(urlOpener, url):
     try:
         reader = urlOpener.open(url)
         jsonStr = reader.read()
+        # Ensure that we have a str object, but in a robust way. Mainly required in Python-3. 
+        if hasattr(jsonStr, 'decode'):
+            jsonStr = jsonStr.decode('utf-8')
         results = json.loads(jsonStr)
         httpErrorStr = None
     except HTTPError as e:
