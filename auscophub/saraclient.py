@@ -125,7 +125,7 @@ def makeQueryUrl(sentinelNumber, paramList):
     """
     queryStr = '&'.join(paramList)
     if 'maxRecords' not in queryStr:
-        queryStr += "&maxRecords=500"
+        queryStr += "&maxRecords=100"
     
     if sentinelNumber is None:
         url = "{}/search.json?{}".format(SARA_SEARCHSERVER, queryStr)
