@@ -223,7 +223,11 @@ def moveZipfile(zipfilename, finalOutputDir, dummy, verbose, makeCopy, makeSymli
     preExisting = False
     finalFile = os.path.join(finalOutputDir, os.path.basename(zipfilename))
     if os.path.exists(finalFile):
-        if nooverwrite:
+        if os.path.abspath(zipfilename)== os.path.abspath(finalFile):
+            if verbose:
+                print ("Zipfile", zipfilename, "already in final location. No move is required. ")
+            preExisting = True
+        elif nooverwrite:
             if verbose:
                 print("Zipfile", zipfilename, "already in final location. Not moved. ")
             preExisting = True
