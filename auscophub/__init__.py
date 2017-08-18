@@ -2,4 +2,4 @@
 Package of utility modules for AusCopernicusHub
 """
 
-__version__ = "1.1.3"
+__version__ = "1.1.4"
