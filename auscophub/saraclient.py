@@ -46,7 +46,7 @@ def makeUrlOpener(proxy=None):
     if proxy is None:
         opener = build_opener()
     else:
-        proxyHandler = ProxyHandler({'http':proxy})
+        proxyHandler = ProxyHandler({'http':proxy, 'https':proxy})
         opener = build_opener(proxyHandler)
     return opener
 
