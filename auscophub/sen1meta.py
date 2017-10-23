@@ -108,21 +108,22 @@ class Sen1ZipfileMeta(object):
         footprintGeom = geomutils.geomFromOutlineCoords(posListVals)
         footprintGeom.CloseRings()
         
-        # there are more than one polygons for OCN products
+        # there are more than one polygons for WV products
         if len(posSet)>1:
+            footprintGeom = geomutils.ogr.ForceToMultiPolygon(footprintGeom)
             for pos in posSet[1:]:
                 posListPairs= pos.firstChild.data.strip().split()
                 posListVals = [[float(y), float(x)] for (x, y) in [pair.split(',') for pair in posListPairs]]
                 footprint = geomutils.geomFromOutlineCoords(posListVals)
                 footprint.CloseRings()
-                footprintGeom=footprintGeom.Union(footprint)
-            footprintGeom=footprintGeom.ConvexHull()
-            
-        prefEpsg = geomutils.findSensibleProjection(footprintGeom)
-        if prefEpsg is not None:
-            self.centroidXY = geomutils.findCentroid(footprintGeom, prefEpsg)
-        else:
-            self.centroidXY = None
+                footprintGeom.AddGeometry(footprint)
+            #footprintGeom=footprintGeom.ConvexHull()
+        
+        self.centroidXY = None
+        if footprintGeom.GetGeometryName == 'Polygon':
+            prefEpsg = geomutils.findSensibleProjection(footprintGeom)
+            if prefEpsg is not None:
+                self.centroidXY = geomutils.findCentroid(footprintGeom, prefEpsg)
         self.outlineWKT = footprintGeom.ExportToWkt()
                 
         # Grab preview data if available, for making a quick-look
