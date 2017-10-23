@@ -40,12 +40,17 @@ def makeRelativeOutputDir(metainfo, gridCellSize, productDirGiven=False):
     yearMonthDir = makeYearMonthDir(metainfo)
     dateDir = makeDateDir(metainfo)
     isOCN = False
+    isWV = False # WV mode is shaped like OCN products
     # use year/month/date for OCN product
     if hasattr(metainfo, 'productType'):
         if metainfo.productType == 'OCN': isOCN = True
+    if hasattr(metainfo, 'mode'):
+        if metainfo.mode == 'WV': isWV = True
     if metainfo.satId[1] == "3" or isOCN:
         # For all S-3 products we do not split spatially at all. 
         outDir = os.path.join(yearMonthDir, dateDir)
+    elif isWV:
+        outDir = os.path.join(yearMonthDir, 'WV')
     elif metainfo.centroidXY is not None:
         gridSquareDir = makeGridSquareDir(metainfo, gridCellSize)
         outDir = os.path.join(yearMonthDir, gridSquareDir)
