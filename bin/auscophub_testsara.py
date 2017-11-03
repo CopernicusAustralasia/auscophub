@@ -33,8 +33,6 @@ def mainRoutine():
     cmdargs = getCmdargs()
     
     urlOpener = saraclient.makeUrlOpener(proxy=cmdargs.proxy)
-    # Tiny square in the centre of Canberra, so only one thing will ever overlap it. 
-    canberraRoi = makeCanberraRoi()
     
     numTests = 0
     countPassed = 0
@@ -61,15 +59,17 @@ def mainRoutine():
 
 
 
-def testSearch(urlOpener, roi, sentinel, date):
+def testSearch(urlOpener, sentinel, date):
     """
     Test a search query and briefly report the results. 
     """
     ok = True
+    # Tiny square in the centre of Canberra, so only one thing will ever overlap it. 
+    canberraRoi = makeCanberraRoi()
     
     paramList = ['startDate={}T00:00:00'.format(date), 
         'completionDate={}T23:59:59'.format(date), 
-        'geometry={}'.format(roi)]
+        'geometry={}'.format(canberraRoi)]
     try:
         results = saraclient.searchSara(urlOpener, sentinel, paramList)
         print("Found {} results for Sentinel-{} over Canberra for date {}".format(
