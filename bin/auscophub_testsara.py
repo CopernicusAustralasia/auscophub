@@ -38,19 +38,19 @@ def mainRoutine():
     countPassed = 0
     
     # test Sentinel-1
-    ok = testSearch(urlOpener, canberraRoi, 1, "2017-01-08")
+    ok = testSearch(urlOpener, 1, "2017-01-08")
     numTests += 1
     if ok:
         countPassed += 1
 
     # test Sentinel-2
-    ok = testSearch(urlOpener, canberraRoi, 2, "2017-01-05")
+    ok = testSearch(urlOpener, 2, "2017-01-05")
     numTests += 1
     if ok:
         countPassed += 1
 
     # test Sentinel-3
-    ok = testSearch(urlOpener, canberraRoi, 3, "2017-01-08")
+    ok = testSearch(urlOpener, 3, "2017-01-08")
     numTests += 1
     if ok:
         countPassed += 1
