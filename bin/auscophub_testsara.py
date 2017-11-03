@@ -40,19 +40,19 @@ def mainRoutine():
     countPassed = 0
     
     # test Sentinel-1
-    ok = testSearch(urlOpener, canberraRoi, 1, "2017-01-08", "2017-01-09")
+    ok = testSearch(urlOpener, canberraRoi, 1, "2017-01-08")
     numTests += 1
     if ok:
         countPassed += 1
 
     # test Sentinel-2
-    ok = testSearch(urlOpener, canberraRoi, 2, "2017-01-05", "2017-01-06")
+    ok = testSearch(urlOpener, canberraRoi, 2, "2017-01-05")
     numTests += 1
     if ok:
         countPassed += 1
 
     # test Sentinel-3
-    ok = testSearch(urlOpener, canberraRoi, 3, "2017-01-08", "2017-01-09")
+    ok = testSearch(urlOpener, canberraRoi, 3, "2017-01-08")
     numTests += 1
     if ok:
         countPassed += 1
@@ -61,18 +61,19 @@ def mainRoutine():
 
 
 
-def testSearch(urlOpener, roi, sentinel, startdate, enddate):
+def testSearch(urlOpener, roi, sentinel, date):
     """
     Test a search query and briefly report the results. 
     """
     ok = True
     
-    paramList = ['startDate={}'.format(startdate), 'completionDate={}'.format(enddate), 
+    paramList = ['startDate={}T00:00:00'.format(date), 
+        'completionDate={}T23:59:59'.format(date), 
         'geometry={}'.format(roi)]
     try:
         results = saraclient.searchSara(urlOpener, sentinel, paramList)
-        print("Found {} results for Sentinel-{} over Canberra for date range ({}, {})".format(
-            len(results), sentinel, startdate, enddate))
+        print("Found {} results for Sentinel-{} over Canberra for date {}".format(
+            len(results), sentinel, date))
         for r in results:
             print("  ", saraclient.getFeatAttr(r, saraclient.FEATUREATTR_ESAID))
     except Exception as e:
