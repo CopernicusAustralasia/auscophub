@@ -4,7 +4,9 @@ Client Side Access
 Simple Server Searching (SARA API)
 ----------------------------------
 A Python wrapper has been written to interface to the SARA API which is now available
-on the server. 
+on the server. (WARNING: The SARA server is currently still in test mode. Note the doco
+in :mod:`auscophub.saraclient` on the $AUSCOPHUB_SARA_PROTOCOL and $AUSCOPHUB_SARA_SERVERHOST 
+environment variables to get this to work.)
 
 The simple search program is :command:`auscophub_searchSara.py`. It takes a 
 :command:`--help` option, which details the command line options available. Briefly,
