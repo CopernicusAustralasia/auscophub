@@ -15,10 +15,16 @@ This would return a list of multi-level dictionary objects created from the JSON
 of the server, one for each matching zipfile. The paramList can be any of the parameters which
 the SARA API accepts, these are passed straight through to the API. 
 
+The default SARA server is hard-wired in this module. However, the server name, and the protocol
+to be used, can both be over-ridden using the following environment variables
+    | AUSCOPHUB_SARA_PROTOCOL (default https)
+    | AUSCOPHUB_SARA_SERVERHOST (default copernicus.nci.org.au)
+
 """
 from __future__ import print_function, division
 
 import sys
+import os
 import math
 import json
 import copy
@@ -33,7 +39,10 @@ else:
     from urllib import quote as urlquote
 
 
-SARA_SEARCHSERVER = "http://copernicus.nci.org.au/sara.server/1.0/api/collections"
+SARA_PROTOCOL = os.getenv("AUSCOPHUB_SARA_PROTOCOL", default="https")
+SARA_HOST = os.getenv("AUSCOPHUB_SARA_SERVERHOST", default="copernicus.nci.org.au")
+
+SARA_SEARCHSERVER = "{}://{}/sara.server/1.0/api/collections".format(SARA_PROTOCOL, SARA_HOST)
 
 
 def makeUrlOpener(proxy=None):
@@ -86,12 +95,11 @@ def searchSara(urlOpener, sentinelNumber, paramList):
     
     """
     url = makeQueryUrl(sentinelNumber, paramList)
+    
     (results, httpErrorStr) = readJsonUrl(urlOpener, url)
     if httpErrorStr is not None:
         print("Error querying URL:", url, file=sys.stderr)
         raise SaraClientError(httpErrorStr)
-    
-    properties = results['properties']
     
     # Start with the first page of results. 
     allFeatures = results['features']
@@ -123,9 +131,9 @@ def makeQueryUrl(sentinelNumber, paramList):
     """
     Return a full URL for the query defined by the given parameters
     """
-    queryStr = '&'.join(paramList)
-    if 'maxRecords' not in queryStr:
-        queryStr += "&maxRecords=100"
+    # No URL encoding for these characters
+    noURLencode = "=:/(),"
+    queryStr = '&'.join([urlquote(p, safe=noURLencode) for p in paramList])
     
     if sentinelNumber is None:
         url = "{}/search.json?{}".format(SARA_SEARCHSERVER, queryStr)
