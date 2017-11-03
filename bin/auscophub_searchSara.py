@@ -53,7 +53,7 @@ def getCmdargs():
     filterGroup.add_argument("--excludelist", help=("File listing zipfile names to exclude from "+
         "search results. Useful for excluding files you already have, or ones with known problems. "+
         "Each line should contain one zipfile name, with no path or URL details. "))
-    filterGroup.add_argument("--queryparam", action="append", default=[], 
+    filterGroup.add_argument("-q", "--queryparam", action="append", default=[], 
         help=("A SARA query parameter, given as a single string 'name=value'. This will "+
             "be passed straight through to the SARA API as part of the query URL. Can be given "+
             "multiple times, each extra parameter further restricts the search. The SARA API "+
