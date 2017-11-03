@@ -56,7 +56,8 @@ def getCmdargs():
         help=("A SARA query parameter, given as a single string 'name=value'. This will "+
             "be passed straight through to the SARA API as part of the query URL. Can be given "+
             "multiple times, each extra parameter further restricts the search. The SARA API "+
-            "does not provide a mechanism to combine multiple terms with OR, only AND. "))
+            "does not provide a mechanism to combine multiple terms with OR, only AND. "+
+            "Please see the SARA API documentation for allowable query parameters. "))
 
     spatialGroup = p.add_argument_group(title="Searching by location")
     spatialGroup.add_argument("--polygonfile", 
