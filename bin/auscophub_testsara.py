@@ -21,7 +21,9 @@ def getCmdargs():
     """
     Get commandline arguments
     """
-    p = argparse.ArgumentParser()
+    p = argparse.ArgumentParser(description="""
+        Run some simple search tests on the SARA server, and report the results. 
+    """)
     p.add_argument("--proxy", help="URL of proxy server, if required")
     return p.parse_args()
 
