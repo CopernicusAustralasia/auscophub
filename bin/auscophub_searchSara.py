@@ -43,8 +43,9 @@ def getCmdargs():
         URLs; a JSON file of simple attributes for matching zipfiles; or a JSON file of the full
         features as returned by the SARA API. 
     """)
-    p.add_argument("--sentinel", type=int, default=2, choices=[1, 2, 3], 
-        help="Number of Sentinel satellite family to search on (default=%(default)s)")
+    p.add_argument("--sentinel", type=int, default=None, choices=[1, 2, 3], 
+        help=("Number of Sentinel satellite family to search on "+
+            "(default will search over all Sentinels)"))
     p.add_argument("--proxy", help=("URL of proxy server. Default uses no proxy, "+
         "assuming direct connection to the internet. Currently only supports non-authenticating proxies. "))
     
