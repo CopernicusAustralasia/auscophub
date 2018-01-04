@@ -120,7 +120,7 @@ class Sen1ZipfileMeta(object):
             #footprintGeom=footprintGeom.ConvexHull()
         
         self.centroidXY = None
-        if footprintGeom.GetGeometryName == 'Polygon':
+        if footprintGeom.GetGeometryName().upper() == 'POLYGON':
             prefEpsg = geomutils.findSensibleProjection(footprintGeom)
             if prefEpsg is not None:
                 self.centroidXY = geomutils.findCentroid(footprintGeom, prefEpsg)
