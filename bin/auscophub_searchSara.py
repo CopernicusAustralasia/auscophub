@@ -166,7 +166,7 @@ def writeCurlScript(cmdargs, results):
         proxyOpt = ""
         if cmdargs.proxy is not None:
             proxyOpt = "-x {}".format(cmdargs.proxy)
-        curlCmd = "curl -O -J {} {} {}".format(cmdargs.curloptions, proxyOpt, url)
+        curlCmd = "curl -n -L -O -J {} {} {}".format(cmdargs.curloptions, proxyOpt, url)
         f.write(curlCmd+'\n')
     f.close()
 
