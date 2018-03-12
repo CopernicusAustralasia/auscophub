@@ -25,9 +25,10 @@ from __future__ import print_function, division
 
 import sys
 import os
-import math
 import json
 import copy
+import shlex
+import subprocess
 
 isPython3 = (sys.version_info.major == 3)
 if isPython3:
@@ -217,6 +218,44 @@ def getFeatAttr(feature, localName):
         value = properties['cloudCover']
 
     return value
+
+
+def getRemoteFilename(downloadUrl, proxy):
+    """
+    Given the SARA download URL, ask the server what the actual filename is. 
+    
+    At the moment, this uses "curl -I" to do the work, but I would much prefer to do
+    this directly in Python. In theory this should be possible, but I can't get 
+    the authentication to work. When I do, I will change this code, and thus may 
+    require extra arguments. I also suspect that the re-directs which the SARA server
+    does will cause me trouble, but I have yet to get to that point. 
+    
+    In the meantime, this is slow, but at least it works. 
+    
+    I am a bit unsure about this approach......
+    
+    """
+    cmdWords = ["curl", "--silent", "-n", "-L", "-I", downloadUrl]
+    if proxy is not None:
+        cmdWords.extend(["-x", proxy])
+    
+    proc = subprocess.Popen(cmdWords, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    (stdout, stderr) = proc.communicate()
+    
+    # I should really parse this with the standard library tools for doing so. However, 
+    # because of the redirections the server does, this is actually several sets of HTTP headers
+    # kind of tacked together, which means there are extra traps. So, given that I have
+    # to handle at least part of it myself, I decided to just handle the whole lot. 
+    stdoutLines = stdout.strip().split('\n')
+    filename = None
+    for line in stdoutLines:
+        if line.startswith('Content-Disposition: '):
+            words = shlex.split(line)
+            for word in words:
+                if word.startswith("filename="):
+                    fields = word.split('=')
+                    filename = fields[1]
+    return filename
 
 
 class SaraClientError(Exception): pass
