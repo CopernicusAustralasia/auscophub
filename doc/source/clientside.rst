@@ -29,7 +29,7 @@ could also be used to create more customised server access programs.
 
 Simple Server Searching (THREDDS service)
 -----------------------------------------
-This should now be regarded as obsolete, and th reader is directed to the SARA API described above. 
+This should now be regarded as obsolete, and the reader is directed to the SARA API described above. 
 
 A Python script has been written to allow a very rudimentary search facility. It
 works by accessing the XML fragments which are created on the server for each zipfile,
