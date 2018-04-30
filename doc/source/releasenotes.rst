@@ -1,6 +1,16 @@
 Release Notes
 =============
 
+Version 1.1.7  (2018-04-30)
+---------------------------
+Enhancements
+    * Added saraclient.getRemoteFilename() function. 
+
+Version 1.1.0 - 1.1.6
+---------------------
+No idea what happened in these versions, as apparently those responsible did 
+not update the release notes. Sigh.....
+
 Version 1.0.11 (2017-02-09)
 --------------------------
 Enhancements
