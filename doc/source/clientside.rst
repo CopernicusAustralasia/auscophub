@@ -37,7 +37,7 @@ and by making use of the temporal and spatial divisions created by the directory
 structure on the server. 
 
 It is anticipated that this simple mechanism will eventually be replaced with a 
-more flexible database search facility (from June 2017, see SARA API above). 
+more flexible database search facility (from April 2018, see SARA API above). 
 
 The simple search program is :command:`auscophub_searchServer.py`. It takes a 
 :command:`--help` option, which details the command line options available. Briefly,
