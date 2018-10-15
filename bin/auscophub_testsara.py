@@ -2,7 +2,7 @@
 """
 A basic test script to query the SARA server and report the results. 
 
-Note gthat it is too difficult to assume we will know the correct result of 
+Note that it is too difficult to assume we will know the correct result of 
 any query, because as data gets reprocessed, other things willl appear in the database. 
 For this reason, we just report errors which occur, and if no errors, a very 
 brief summary of the search results. 
