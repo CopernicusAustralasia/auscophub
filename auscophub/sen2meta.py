@@ -259,6 +259,9 @@ class Sen2ZipfileMeta(object):
                 if fullmetafilename not in filenames:
                     # We have a new format package, in which the meta filename is constant. 
                     fullmetafilename = safeDirName + 'MTD_MSIL1C.xml'
+                if fullmetafilename not in filenames:
+                    # We have a new format package, in which the meta filename is constant. 
+                    fullmetafilename = safeDirName + 'MTD_MSIL2A.xml'
                 mf = zf.open(fullmetafilename)
                 xmlStr = mf.read()
                 del mf
@@ -344,8 +347,21 @@ class Sen2ZipfileMeta(object):
         self.extPosWKT = footprintGeom.ExportToWkt()
 
         # Special values in imagery
-        scaleValNode = findElementByXPath(generalInfoNode, 'Product_Image_Characteristics/QUANTIFICATION_VALUE')[0]
-        self.scaleValue = float(scaleValNode.firstChild.data.strip())
+        scaleValNodeList = findElementByXPath(generalInfoNode, 'Product_Image_Characteristics/QUANTIFICATION_VALUE')
+        if len(scaleValNodeList) > 0:
+            scaleValNode = scaleValNodeList[0]
+            self.scaleValue = float(scaleValNode.firstChild.data.strip())
+        else:
+            # We might be in a L2A file, in which case there are several scale values for different products
+            scaleValNodeList = findElementByXPath(generalInfoNode, 'Product_Image_Characteristics/QUANTIFICATION_VALUES_LIST')
+            if len(scaleValNodeList) > 0:
+                scaleValNode = scaleValNodeList[0]
+                refScaleNode = findElementByXPath(scaleValNode, 'BOA_QUANTIFICATION_VALUE')[0]
+                self.scaleValue = float(refScaleNode.firstChild.data.strip())
+                aotScaleNode = findElementByXPath(scaleValNode, 'AOT_QUANTIFICATION_VALUE')[0]
+                self.aotScaleValue = float(aotScaleNode.firstChild.data.strip())
+                wvpScaleNode = findElementByXPath(scaleValNode, 'WVP_QUANTIFICATION_VALUE')[0]
+                self.wvpScaleValue = float(wvpScaleNode.firstChild.data.strip())
         specialValuesNodeList = findElementByXPath(generalInfoNode, 'Product_Image_Characteristics/Special_Values')
         # These guys have no idea how to use XML properly. Sigh......
         for node in specialValuesNodeList:
