@@ -4,9 +4,15 @@ Functions for admin access to the SARA API.
 
 from __future__ import print_function, division
 
-import requests
-from urlparse import urljoin
+import sys
 import re
+import requests
+isPython3 = (sys.version_info.major == 3)
+if isPython3:
+    from urllib.parse import urljoin
+else:
+    from urlparse import urljoin
+
 
 def postToSara(finalXmlFile,saraurl,username, password, verbose=False, update=False):
     """
