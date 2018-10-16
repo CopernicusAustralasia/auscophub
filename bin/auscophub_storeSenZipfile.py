@@ -16,7 +16,11 @@ import sys
 import os
 import argparse
 import zipfile
-from urlparse import urljoin
+isPython3 = (sys.version_info.major == 3)
+if isPython3:
+    from urllib.parse import urljoin
+else:
+    from urlparse import urljoin
 
 from auscophub import sen1meta
 from auscophub import sen2meta
@@ -76,7 +80,7 @@ def getCmdargs():
         help="Test each zipfile, and exit on finding one which reports internal errors (default will not test)")
     p.add_argument("--mountpath", default=".",
         help="Basepath for archivemount a Sentinel-3 zipfile when generating its quicklook thumbnail.")
-    p.add_argument("--saraurl", default="http://copernicus.nci.org.au/sara.server/1.0/collections/",
+    p.add_argument("--saraurl", default="https://copernicus.nci.org.au/sara.server/1.0/collections/",
         help="Url to post the resource to the SARA API (default='%(default)s').")
     p.add_argument("--sarauser", default="",
         help="Username:password to post the resource to the SARA API. Required to enable posting.")
