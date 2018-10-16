@@ -151,6 +151,8 @@ def makeInstrumentDir(metainfo):
         instrument = "MSI"
     elif metainfo.satId.startswith('S3'):
         instrument = metainfo.instrument
+    elif metainfo.satId.startswith('S5'):
+        instrument = metainfo.instrument
     else:
         instrument = None
     return instrument
@@ -176,6 +178,8 @@ def makeProductDir(metainfo):
         product = "L" + metainfo.processingLevel[-2:]
     elif metainfo.satId.startswith('S3'):
         product = metainfo.productType
+    elif metainfo.satId.startswith('S5'):
+        product = metainfo.productType
     else:
         product = None
     return product
@@ -188,8 +192,9 @@ def processingLevel(metainfo):
         if metainfo.productType in ['RAW']: return 'LEVEL-0'
         elif metainfo.productType in ['OCN']: return 'LEVEL-2'
         else: return 'LEVEL-1'
-    elif metainfo.satId.startswith('S2'): return 'L1C'
+    elif metainfo.satId.startswith('S2'): return "L" + metainfo.processingLevel[-2:]
     elif metainfo.satId.startswith('S3'): return 'LEVEL-{}'.format(metainfo.processingLevel)
+    elif metainfo.satId.startswith('S5'): return 'LEVEL-{}'.format(metainfo.processingLevel)
     else:
         return 'LEVEL-1'
     
@@ -488,6 +493,80 @@ def createSentinel3Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, no
         if makereadonly: os.chmod(finalXmlFile,0444)
     return finalXmlFile
 
+
+def createSentinel5Xml(ncfilename, finalOutputDir, metainfo, dummy, verbose, noOverwrite,
+        md5esa, makereadonly=False):
+    """
+    Create the XML file in the final output directory, for Sentinel-5 netCDF files. 
+    This is a locally-designed XML file intended to include only the sort of 
+    information users would need in order to select ncfiles for download. 
+    
+    Note that I have left the top-level XML tag as <AUSCOPHUB_SAFE_FILEDESCRIPTION>,
+    even though technically this is not a SAFE format file, because there is a lot of 
+    other stuff which assumes this down the track, and it was not worth changing it. I 
+    should have used a more generic tag name in the first place (with hindsight). 
+    
+    """
+    xmlFilename = os.path.basename(ncfilename).replace('.nc', '.xml')
+    finalXmlFile = os.path.join(finalOutputDir, xmlFilename)
+    
+    if os.path.exists(finalXmlFile):
+        if noOverwrite:
+            if verbose or dummy:
+                print("XML already exists {}".format(finalXmlFile))
+            return finalXmlFile
+        else:
+            if dummy:
+                print("Would remove existing file {}".format(finalXmlFile)) 
+            else:
+                if verbose:
+                    print("Removing existing file {}".format(finalXmlFile))
+                os.chmod(finalXmlFile,0644)
+                os.remove(finalXmlFile)
+
+    if dummy:
+        print("Would make", finalXmlFile)
+    else:
+        if verbose:
+            print("Creating", finalXmlFile)
+        fileInfo = ZipfileSysInfo(ncfilename)
+        
+        f = open(finalXmlFile, 'w')
+        f.write("<?xml version='1.0'?>\n")
+        f.write("<AUSCOPHUB_SAFE_FILEDESCRIPTION>\n")
+        f.write("  <IDENTIFIER>{}</IDENTIFIER>\n".format(os.path.basename(ncfilename).split('.')[0]))
+        f.write("  <PATH>{}</PATH>\n".format(finalOutputDir.split(makeSatelliteDir(metainfo))[1]))
+        f.write("  <SATELLITE name='{}' />\n".format(metainfo.satId))
+        f.write("  <INSTRUMENT>{}</INSTRUMENT>\n".format(metainfo.instrument))
+        f.write("  <PRODUCT_TYPE>{}</PRODUCT_TYPE>\n".format(metainfo.productType))  
+        f.write("  <PROCESSING_LEVEL>{}</PROCESSING_LEVEL>\n".format(processingLevel(metainfo)))
+        if metainfo.centroidXY is not None:
+            (longitude, latitude) = tuple(metainfo.centroidXY)
+            f.write("  <CENTROID longitude='{}' latitude='{}' />\n".format(longitude, latitude))
+        f.write("  <ESA_TILEOUTLINE_FOOTPRINT_WKT>\n")
+        f.write("    {}\n".format(metainfo.outlineWKT))
+        f.write("  </ESA_TILEOUTLINE_FOOTPRINT_WKT>\n")
+        startTimestampStr = metainfo.startTime.strftime("%Y-%m-%d %H:%M:%S.%f")
+        stopTimestampStr = metainfo.stopTime.strftime("%Y-%m-%d %H:%M:%S.%f")
+        f.write("  <ACQUISITION_TIME start_datetime_utc='{}' stop_datetime_utc='{}' />\n".format(
+            startTimestampStr, stopTimestampStr))
+        f.write("  <ESA_PROCESSING processingtime_utc='{}' software_version='{}'/>\n".format(
+            metainfo.generationTime, metainfo.processingSoftwareVersion))
+        f.write("  <ORBIT_NUMBERS absolute='{}' ".format(metainfo.absoluteOrbitNumber))
+        f.write("/>\n")
+        
+        f.write("  <ZIPFILE size_bytes='{}' md5_local='{}' ".format(fileInfo.sizeBytes, 
+            fileInfo.md5))
+        if md5esa is not None:
+            f.write("md5_esa='{}' ".format(md5esa.upper()))
+        f.write("/>\n")
+        
+        f.write("</AUSCOPHUB_SAFE_FILEDESCRIPTION>\n")
+        f.close()
+        if makereadonly: os.chmod(finalXmlFile,0444)
+    return finalXmlFile
+
+
 def createPreviewImg(zipfilename, finalOutputDir, metainfo, dummy, verbose, noOverwrite, makereadonly=False):
     """
     Create the preview image, in the final output directory
@@ -534,7 +613,8 @@ def createPreviewImg(zipfilename, finalOutputDir, metainfo, dummy, verbose, noOv
                 im = im.transpose(Image.FLIP_LEFT_RIGHT)
         im.save(finalPngFile, "PNG")
         if makereadonly: os.chmod(finalPngFile,0444)
-            
+
+
 class ZipfileSysInfo(object):
     """
     Information about the zipfile which can be obtained at operating system level,
