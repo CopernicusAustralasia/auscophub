@@ -634,7 +634,7 @@ class ZipfileSysInfo(object):
         """
         hashObj = hashlib.md5()
         blocksize = 65536
-        f = open(zipfilename)
+        f = open(zipfilename, 'rb')
         buf = f.read(blocksize)
         while len(buf) > 0:
             hashObj.update(buf)
