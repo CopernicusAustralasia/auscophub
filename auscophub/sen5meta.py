@@ -32,7 +32,7 @@ class Sen5Meta(object):
         self.stopTime = datetime.datetime.strptime(stopTimeStr, "%Y-%m-%dT%H:%M:%SZ")
         # And the generic time stamp, halfway between start and stop
         duration = self.stopTime - self.startTime
-        self.datetime = self.startTime + duration / 2
+        self.datetime = self.startTime + datetime.timedelta(duration.days / 2)
         
         self.instrument = metaDict['sensor']
         self.satId = metaDict['platform']
@@ -42,7 +42,7 @@ class Sen5Meta(object):
         self.processingSoftwareVersion = metaDict['processor_version']
         # Leaving this as a string, in case they assume it later. It is a string in 
         # sen2meta. 
-        self.procLevel = metaDict['METADATA_GRANULE_DESCRIPTION_ProcessLevel']
+        self.processingLevel = metaDict['METADATA_GRANULE_DESCRIPTION_ProcessLevel']
         
         self.absoluteOrbitNumber = int(metaDict['orbit'])
 
