@@ -295,7 +295,7 @@ def createSentinel1Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, no
             else:
                 if verbose:
                     print("Removing existing file {}".format(finalXmlFile))
-                os.chmod(finalXmlFile,0644)
+                os.chmod(finalXmlFile, 0o644)
                 os.remove(finalXmlFile)
 
     if dummy:
@@ -342,7 +342,7 @@ def createSentinel1Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, no
         
         f.write("</AUSCOPHUB_SAFE_FILEDESCRIPTION>\n")
         f.close()
-        if makereadonly: os.chmod(finalXmlFile,0444)
+        if makereadonly: os.chmod(finalXmlFile, 0o444)
     return finalXmlFile
 
 def createSentinel2Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, noOverwrite,
@@ -367,7 +367,7 @@ def createSentinel2Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, no
             else:
                 if verbose:
                     print("Removing existing file {}".format(finalXmlFile))
-                os.chmod(finalXmlFile,0644)
+                os.chmod(finalXmlFile, 0o644)
                 os.remove(finalXmlFile)
 
     if dummy:
@@ -417,7 +417,7 @@ def createSentinel2Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, no
             f.write("  </MGRSTILES>\n")
         f.write("</AUSCOPHUB_SAFE_FILEDESCRIPTION>\n")
         f.close()
-        if makereadonly: os.chmod(finalXmlFile,0444)
+        if makereadonly: os.chmod(finalXmlFile, 0o444)
     return finalXmlFile
 
 def createSentinel3Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, noOverwrite,
@@ -442,7 +442,7 @@ def createSentinel3Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, no
             else:
                 if verbose:
                     print("Removing existing file {}".format(finalXmlFile))
-                os.chmod(finalXmlFile,0644)
+                os.chmod(finalXmlFile, 0o644)
                 os.remove(finalXmlFile)
 
     if dummy:
@@ -490,7 +490,7 @@ def createSentinel3Xml(zipfilename, finalOutputDir, metainfo, dummy, verbose, no
         
         f.write("</AUSCOPHUB_SAFE_FILEDESCRIPTION>\n")
         f.close()
-        if makereadonly: os.chmod(finalXmlFile,0444)
+        if makereadonly: os.chmod(finalXmlFile, 0o444)
     return finalXmlFile
 
 
@@ -521,7 +521,7 @@ def createSentinel5Xml(ncfilename, finalOutputDir, metainfo, dummy, verbose, noO
             else:
                 if verbose:
                     print("Removing existing file {}".format(finalXmlFile))
-                os.chmod(finalXmlFile,0644)
+                os.chmod(finalXmlFile, 0o644)
                 os.remove(finalXmlFile)
 
     if dummy:
@@ -563,7 +563,7 @@ def createSentinel5Xml(ncfilename, finalOutputDir, metainfo, dummy, verbose, noO
         
         f.write("</AUSCOPHUB_SAFE_FILEDESCRIPTION>\n")
         f.close()
-        if makereadonly: os.chmod(finalXmlFile,0444)
+        if makereadonly: os.chmod(finalXmlFile, 0o444)
     return finalXmlFile
 
 
@@ -589,7 +589,7 @@ def createPreviewImg(zipfilename, finalOutputDir, metainfo, dummy, verbose, noOv
             else:
                 if verbose:
                     print("Removing existing file {}".format(finalPngFile))
-                os.chmod(finalPngFile,0644)
+                os.chmod(finalPngFile, 0o644)
                 os.remove(finalPngFile) 
 
     if dummy:
@@ -612,7 +612,7 @@ def createPreviewImg(zipfilename, finalOutputDir, metainfo, dummy, verbose, noOv
                 if verbose: print("Flipping preview left-right")
                 im = im.transpose(Image.FLIP_LEFT_RIGHT)
         im.save(finalPngFile, "PNG")
-        if makereadonly: os.chmod(finalPngFile,0444)
+        if makereadonly: os.chmod(finalPngFile, 0o444)
 
 
 class ZipfileSysInfo(object):
