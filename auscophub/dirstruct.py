@@ -10,8 +10,13 @@ import os
 import shutil
 import hashlib
 import subprocess
-from cStringIO import StringIO
 from PIL import Image
+isPython3 = (sys.version_info.major == 3)
+if isPython3:
+    from io import BytesIO
+else:
+    # Note that we are using the Python-3 name for a Python-2 class. 
+    from cStringIO import StringIO as BytesIO
 
 # Size of lat/long grid cells in which we store the files (in degrees). This is 
 # potentially a function of which Sentinel we are dealing with, hence the dictionary,
@@ -599,7 +604,7 @@ def createPreviewImg(zipfilename, finalOutputDir, metainfo, dummy, verbose, noOv
             print("Creating", finalPngFile)
 
         #resize the image
-        qldata = StringIO(metainfo.previewImgBin)
+        qldata = BytesIO(metainfo.previewImgBin)
         im = Image.open(qldata)
         im.thumbnail((512,512), Image.ANTIALIAS)
         if os.path.basename(zipfilename).startswith('S1'):
