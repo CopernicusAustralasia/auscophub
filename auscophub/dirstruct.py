@@ -211,7 +211,7 @@ def checkFinalDir(finalOutputDir, dummy, verbose):
             if verbose:
                 print("Creating dir", finalOutputDir)
             try:
-                os.makedirs(finalOutputDir, 0775)   # Should the permissions come from the command line?
+                os.makedirs(finalOutputDir, 0o775)   # Should the permissions come from the command line?
             except OSError as e:
                 # If the error was just "File exists", then just move along, as it just means that
                 # the directory was created by another process after we checked. If it was anything 
@@ -258,7 +258,7 @@ def moveZipfile(zipfilename, finalOutputDir, dummy, verbose, makeCopy, makeSymli
                     print("Copy to", finalFile)
                 shutil.copyfile(zipfilename, finalFile)
                 shutil.copystat(zipfilename, finalFile)
-                if makereadonly: os.chmod(finalFile, 0444)
+                if makereadonly: os.chmod(finalFile, 0o444)
             elif makeSymlink:
                 if verbose:
                     print("Symlink to", finalFile)
@@ -268,7 +268,7 @@ def moveZipfile(zipfilename, finalOutputDir, dummy, verbose, makeCopy, makeSymli
                 if verbose:
                     print("Move to", finalFile)
                 shutil.move(zipfilename, finalFile)
-                if makereadonly: os.chmod(finalFile, 0444)
+                if makereadonly: os.chmod(finalFile, 0o444)
                 if moveandsymlink:
                     os.symlink(os.path.abspath(finalFile), os.path.abspath(zipfilename))
 
