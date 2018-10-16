@@ -46,8 +46,8 @@ def makeRelativeOutputDir(metainfo, gridCellSize, productDirGiven=False):
         if metainfo.productType == 'OCN': isOCN = True
     if hasattr(metainfo, 'mode'):
         if metainfo.mode == 'WV': isWV = True
-    if metainfo.satId[1] == "3" or isOCN:
-        # For all S-3 products we do not split spatially at all. 
+    if metainfo.satId[1] in ("3", "5") or isOCN:
+        # For all S-3 and S-5 products we do not split spatially at all. 
         outDir = os.path.join(yearMonthDir, dateDir)
     elif isWV:
         outDir = os.path.join(yearMonthDir, 'WV')
