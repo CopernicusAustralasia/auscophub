@@ -219,6 +219,7 @@ def readPolygonFile(polygonfile):
         geom = feat.GetGeometryRef()
         # Copy the geometry
         geom2 = ogr.Geometry(wkt=geom.ExportToWkt())
+        geom2.AssignSpatialReference(geom.GetSpatialReference())
         geom2.TransformTo(srLL)
         geomList.append(geom2)
         feat = lyr.GetNextFeature()
