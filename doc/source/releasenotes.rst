@@ -1,6 +1,18 @@
 Release Notes
 =============
 
+Version 1.1.8  (2019-01-22)
+---------------------------
+Bug Fixes
+    * Fixed a (mostly harmless) warning coming from client code with more recent versions of OGR
+    * Added some guards for Python-3 compatability on server-side code (thanks to Matt Nethery for 
+      pointing these out). 
+
+Enhancements
+    * Added server-side support for Sentinel-2 Level 2A source data
+    * Added server-side support for Sentinel-5P (possibly not yet complete, 
+      as limited test data available)
+
 Version 1.1.7  (2018-04-30)
 ---------------------------
 Enhancements
