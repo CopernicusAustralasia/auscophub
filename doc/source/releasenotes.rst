@@ -1,6 +1,11 @@
 Release Notes
 =============
 
+Version 1.1.9  (2019-06-03)
+---------------------------
+Bug Fixes
+    * Use universal_newlines=True on all Popen() calls, for better Python-3 compatibility
+
 Version 1.1.8  (2019-01-22)
 ---------------------------
 Bug Fixes
