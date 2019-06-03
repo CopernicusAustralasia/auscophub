@@ -85,7 +85,8 @@ def sen3thumb(zipfilename, finalOutputDir,
 
         # run conversion
         if verbose: print("Creating", finalPngFile)
-        proc = subprocess.Popen(fullcmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        proc = subprocess.Popen(fullcmd, shell=True, stdout=subprocess.PIPE, 
+            stderr=subprocess.PIPE, universal_newlines=True)
         stdout, stderr= proc.communicate()
         if proc.returncode != 0:
             if mount: umount(mountpoint)

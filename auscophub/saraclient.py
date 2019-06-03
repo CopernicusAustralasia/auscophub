@@ -239,7 +239,8 @@ def getRemoteFilename(downloadUrl, proxy):
     if proxy is not None:
         cmdWords.extend(["-x", proxy])
     
-    proc = subprocess.Popen(cmdWords, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    proc = subprocess.Popen(cmdWords, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        universal_newlines=True)
     (stdout, stderr) = proc.communicate()
     
     # I should really parse this with the standard library tools for doing so. However, 
