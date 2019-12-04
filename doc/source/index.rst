@@ -15,7 +15,7 @@ interested parties.
 Downloads
 ---------
 The code is available as a tarball from 
-`BitBucket <https://bitbucket.org/chchrsc/auscophub/downloads>`_. The source code 
+`BitBucket <https://github.com/CopernicusAustralasia/auscophub/releases>`_. The source code 
 repository is also hosted there. 
 
 Release notes for each version are available at :doc:`releasenotes`. 
