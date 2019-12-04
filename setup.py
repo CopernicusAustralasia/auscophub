@@ -12,8 +12,8 @@ import auscophub
 setup(name='auscophub',
       version=auscophub.__version__,
       author='Neil Flood', 
-      author_email='neil.flood@dsiti.qld.gov.au',
-      url='http://bitbucket.org/chchrsc/auscophub',
+      author_email='neil.flood@des.qld.gov.au',
+      url='http://github.com/CopernicusAustralasia/auscophub',
       description='Scripts for managing the GeoscienceAustralia/NCI Copernicus Hub server',
       scripts=glob.glob(os.path.join("bin", "*.py")) + glob.glob(os.path.join("bin", "*.sh")),
       packages=['auscophub']
