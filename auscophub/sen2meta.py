@@ -134,6 +134,21 @@ class Sen2TileMeta(object):
         self.viewZenithDict = self.buildViewAngleArr(viewingAngleNodeList, 'Zenith')
         self.viewAzimuthDict = self.buildViewAngleArr(viewingAngleNodeList, 'Azimuth')
         
+        # Mean sun and satellite angles, as calculated by ESA. 
+        self.meanSunZenith = float(findElementByXPath(tileAnglesNode, 'Mean_Sun_Angle/ZENITH_ANGLE')[0].firstChild.data.strip())
+        self.meanSunAzimuth = float(findElementByXPath(tileAnglesNode, 'Mean_Sun_Angle/AZIMUTH_ANGLE')[0].firstChild.data.strip())
+        meanViewAngles = findElementByXPath(tileAnglesNode, 'Mean_Viewing_Incidence_Angle_List/Mean_Viewing_Incidence_Angle')
+        self.meanViewZenithByBand = {}
+        self.meanViewAzimuthByBand = {}
+        for node in meanViewAngles:
+            bandId = node.getAttribute('bandId')
+            viewZenNode = findElementByXPath(node, 'ZENITH_ANGLE')[0]
+            viewAzNode = findElementByXPath(node, 'AZIMUTH_ANGLE')[0]
+            self.meanViewZenithByBand[bandId] = float(viewZenNode.firstChild.data.strip())
+            self.meanViewAzimuthByBand[bandId] = float(viewAzNode.firstChild.data.strip())
+        self.meanViewZenith = numpy.array([val for (key, val) in self.meanViewZenithByBand.items()]).mean()
+        self.meanViewAzimuth = numpy.array([val for (key, val) in self.meanViewAzimuthByBand.items()]).mean()
+        
         # Make a guess at the coordinates of the angle grids. These are not given 
         # explicitly in the XML, and don't line up exactly with the other grids, so I am 
         # making a rough estimate. Because the angles don't change rapidly across these 
