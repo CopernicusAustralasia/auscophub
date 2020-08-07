@@ -259,6 +259,10 @@ class Sen2ZipfileMeta(object):
     that XML file. The constructor can take either the XML as a string or the name of
     an XML file, or the name of a zipped SAFE file. 
     
+    There are three field names which are aliases for other fields. These are provided 
+    for compatibility with JRSRP/RSC code, which used an earlier version of this class. 
+    They are datetime, relOrbit, absOrbit. These names should not be used in new code. 
+    
     """
     def __init__(self, xmlStr=None, xmlfilename=None, zipfilename=None):
         """
@@ -350,6 +354,15 @@ class Sen2ZipfileMeta(object):
         self.generationTime = datetime.datetime.strptime(generationTimeStr, "%Y-%m-%dT%H:%M:%S.%fZ")
         relOrbitStr = findElementByXPath(generalInfoNode, 'Product_Info/SENSING_ORBIT_NUMBER')[0].firstChild.data.strip()
         self.relativeOrbitNumber = int(relOrbitStr)
+        dataTakeIdentifierNode = findElementByXPath(generalInfoNode, 'Product_Info/Datatake')[0]
+        datatakeIdentifier = dataTakeIdentifierNode.getAttribute('datatakeIdentifier')
+        self.absoluteOrbitNumber = int(datatakeIdentifier.split('_')[-2])
+
+        # These three fields are aliases, for backward compatibility with older JRSRP/RSC code. 
+        # They should not be used in new code.
+        self.relOrbit = self.relativeOrbitNumber
+        self.absOrbit = self.absoluteOrbitNumber
+        self.datetime = self.startTime
         
         # The cloud indicator
         cloudPcntNode = findElementByXPath(qualInfoNode, 'Cloud_Coverage_Assessment')[0]
