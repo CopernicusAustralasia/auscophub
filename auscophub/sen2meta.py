@@ -4,6 +4,7 @@ Classes for handling the various metadata files which come with Sentinel-2
 """
 from __future__ import print_function, division
 
+import os
 import datetime
 from xml.dom import minidom
 import zipfile
@@ -371,6 +372,38 @@ class Sen2ZipfileMeta(object):
                 self.nullVal = int(value)
             elif name == "SATURATED":
                 self.saturatedVal = int(value)
+
+
+class Sen2ZipfileSubstrings(object):
+    """
+    Decompose a Sentinel-2 zipfile into a set of substrings for the different fields in
+    the file name. Copes with both the old and new naming formats, populating
+    the same fields, wherever possible. 
+    
+    Note that the resulting substrings are only strings, mostly the substrings as 
+    separated by the '_'. 
+    
+    """
+    def __init__(self, zipfilename):
+        """
+        Deconstruct the given zipfile name. 
+        """
+        esaId = os.path.basename(zipfilename).split('.')[0]
+        
+        if len(esaId) == 60:
+            # New format
+            self.relOrbit = esaId[33:37]
+            self.processingTime = esaId[45:60]
+            self.acquisitionTime = esaId[11:26]
+            self.tile = esaId[38:44]
+        elif len(esaId) == 78:
+            # Old format
+            self.relOrbit = esaId[41:45]
+            self.processingTime = esaId[25:40]
+            self.acquisitionTime = esaId[47:62]
+            self.tile = None
+        else:
+            raise Sen2MetaError("String '{}' does not seem to be a Sentinel-2 zip file name".format(esaId))
 
 
 def findElementByXPath(node, xpath):
