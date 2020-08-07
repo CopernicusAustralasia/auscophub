@@ -94,6 +94,11 @@ class Sen2TileMeta(object):
             if mgrsStr[-1] != self.tileId[-1]:
                 if mgrsStr[:-1] == self.tileId[:-1]:
                     self.tileId = mgrsStr
+
+        # Image quality info
+        qualInfoNode = doc.getElementsByTagName('n1:Quality_Indicators_Info')[0]
+        cloudStr = findElementByXPath(qualInfoNode, 'Image_Content_QI/CLOUDY_PIXEL_PERCENTAGE')[0].firstChild.data.strip()
+        self.cloudPcnt = float(cloudStr)
         
         # Sun and satellite angles. 
         tileAnglesNode = findElementByXPath(geomInfoNode, 'Tile_Angles')[0]
