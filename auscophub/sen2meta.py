@@ -412,6 +412,7 @@ class Sen2ZipfileMeta(object):
                 self.aotScaleValue = float(aotScaleNode.firstChild.data.strip())
                 wvpScaleNode = findElementByXPath(scaleValNode, 'WVP_QUANTIFICATION_VALUE')[0]
                 self.wvpScaleValue = float(wvpScaleNode.firstChild.data.strip())
+
         specialValuesNodeList = findElementByXPath(generalInfoNode, 'Product_Image_Characteristics/Special_Values')
         # These guys have no idea how to use XML properly. Sigh......
         for node in specialValuesNodeList:
