@@ -26,7 +26,7 @@ class Sen2TileMeta(object):
     """
     Metadata for a single 100km tile
     """
-    def __init__(self, filename=None, fileobj=None):
+    def __init__(self, filename=None, fileobj=None, zipfilename=None):
         """
         Constructor takes either a filename or a fileobj which points
         to an already opened file. The latter allows us to read from 
@@ -37,8 +37,24 @@ class Sen2TileMeta(object):
             f = open(filename)
         elif fileobj is not None:
             f = fileobj
+        elif zipfilename is not None:
+            zf = zipfile.ZipFile(zipfilename, 'r')
+            filenames = [zi.filename for zi in zf.infolist()]
+            safeDirName = [fn for fn in filenames if fn.endswith('.SAFE/')][0]
+            granuleSubdirlist = [fn for fn in filenames if os.path.dirname(fn[:-1]) == (safeDirName+"GRANULE")]
+            if len(granuleSubdirlist) > 1:
+                raise Sen2MetaError("Zip file appears to be old multi-tile format. Cannot directly load a single tile meta")
+            granuleSubdir = granuleSubdirlist[0]
+            fullmetafilenamelist = [fn for fn in filenames
+                if os.path.dirname(fn) == granuleSubdir[:-1] and fn.endswith("MTD_TL.xml")]
+            if len(fullmetafilenamelist) == 0:
+                # ESA's old format, with non-generic filename. Only works if single-tile packaging
+                fullmetafilenamelist = [fn for fn in filenames
+                    if os.path.dirname(fn) == granuleSubdir[:-1] and fn.endswith(".xml")]
+            fullmetafilename = fullmetafilenamelist[0]
+            f = zf.open(fullmetafilename)
         else:
-            raise Sen2MetaError("Must give either filename or fileobj")
+            raise Sen2MetaError("Must give either filename, fileobj or zipfilename")
         
         xmlStr = f.read()
         doc = minidom.parseString(xmlStr)
