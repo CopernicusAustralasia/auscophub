@@ -266,7 +266,7 @@ class Sen2ZipfileMeta(object):
                     # We have a new format package, in which the meta filename is constant. 
                     fullmetafilename = safeDirName + 'MTD_MSIL1C.xml'
                 if fullmetafilename not in filenames:
-                    # We have a new format package, in which the meta filename is constant. 
+                    # Perhaps we have a Level-2A file 
                     fullmetafilename = safeDirName + 'MTD_MSIL2A.xml'
                 mf = zf.open(fullmetafilename)
                 xmlStr = mf.read()
