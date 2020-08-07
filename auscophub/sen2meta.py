@@ -378,6 +378,19 @@ class Sen2ZipfileMeta(object):
             elif name == "SATURATED":
                 self.saturatedVal = int(value)
 
+        # ESA use stoopid index numbers in the XML, known as bandId. This list turns them
+        # into a band name.         
+        nameFromBandId = ['B01', 'B02', 'B03', 'B04', 'B05', 'B06', 'B07', 'B08', 'B08A', 
+            'B09', 'B10', 'B11', 'B12']
+        # Solar Irradiance Values
+        sollIrrNodeList = findElementByXPath(generalInfoNode, 'Solar_Irradiance_List/SOLAR_IRRADIANCE')
+        self.EsunDict = {}
+        for node in sollIrrNodeList:
+            bandId = int(node.getAttribute('bandId'))
+            eSunVal = float(node.firstChild.data.strip())
+            bandName = nameFromBandId[bandId]
+            self.EsunDict[bandName] = eSunVal
+
 
 class Sen2ZipfileSubstrings(object):
     """
