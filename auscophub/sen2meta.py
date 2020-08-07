@@ -211,7 +211,7 @@ class Sen2TileMeta(object):
         if utmZone >= 50 and utmZone < 60:
             zoneCode = "m{}".format(utmZone-50)
         else:
-            zoneCode = "m{:02}".format(zoneCode)
+            zoneCode = "m{:02}".format(utmZone)
 
         what = sat+instr+prod
         where = self.tileId.lower()
