@@ -22,6 +22,12 @@ try:
 except ImportError:
     qvf = None
 
+# ESA use stoopid index numbers in the XML, known as bandId. This list turns them
+# into a band name.         
+nameFromBandId = ['B01', 'B02', 'B03', 'B04', 'B05', 'B06', 'B07', 'B08', 'B08A', 
+    'B09', 'B10', 'B11', 'B12']
+
+
 class Sen2TileMeta(object):
     """
     Metadata for a single 100km tile
@@ -142,10 +148,11 @@ class Sen2TileMeta(object):
         self.meanViewAzimuthByBand = {}
         for node in meanViewAngles:
             bandId = node.getAttribute('bandId')
+            bandName = nameFromBandId[int(bandId)]
             viewZenNode = findElementByXPath(node, 'ZENITH_ANGLE')[0]
             viewAzNode = findElementByXPath(node, 'AZIMUTH_ANGLE')[0]
-            self.meanViewZenithByBand[bandId] = float(viewZenNode.firstChild.data.strip())
-            self.meanViewAzimuthByBand[bandId] = float(viewAzNode.firstChild.data.strip())
+            self.meanViewZenithByBand[bandName] = float(viewZenNode.firstChild.data.strip())
+            self.meanViewAzimuthByBand[bandName] = float(viewAzNode.firstChild.data.strip())
         self.meanViewZenith = numpy.array([val for (key, val) in self.meanViewZenithByBand.items()]).mean()
         self.meanViewAzimuth = numpy.array([val for (key, val) in self.meanViewAzimuthByBand.items()]).mean()
         
@@ -423,10 +430,6 @@ class Sen2ZipfileMeta(object):
             elif name == "SATURATED":
                 self.saturatedVal = int(value)
 
-        # ESA use stoopid index numbers in the XML, known as bandId. This list turns them
-        # into a band name.         
-        nameFromBandId = ['B01', 'B02', 'B03', 'B04', 'B05', 'B06', 'B07', 'B08', 'B08A', 
-            'B09', 'B10', 'B11', 'B12']
         # Solar Irradiance Values
         sollIrrNodeList = findElementByXPath(generalInfoNode, 'Solar_Irradiance_List/SOLAR_IRRADIANCE')
         self.EsunDict = {}
