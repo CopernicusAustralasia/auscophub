@@ -25,6 +25,7 @@ else:
 from auscophub import sen1meta
 from auscophub import sen2meta
 from auscophub import sen3meta
+from auscophub import sen5meta
 from auscophub import dirstruct
 from auscophub.sen3thumb import sen3thumb 
 from auscophub.saraadmin import postToSara
@@ -129,7 +130,7 @@ def mainRoutine():
                 raise zipfile.BadZipfile("Zipfile {} failed internal checks; {}".format(zipfilename,e))
 
         sentinelNumber = int(os.path.basename(zipfilename)[1])
-        if sentinelNumber not in (1, 2, 3):
+        if sentinelNumber not in (1, 2, 3, 5):
             msg = "Unknown Sentinel number '{}': {}".format(sentinelNumber, zipfilename)
             ok = False
 
@@ -141,6 +142,8 @@ def mainRoutine():
                     metainfo = sen2meta.Sen2ZipfileMeta(zipfilename=zipfilename)
                 elif sentinelNumber == 3:
                     metainfo = sen3meta.Sen3ZipfileMeta(zipfilename=zipfilename)
+                elif sentinelNumber == 5:
+                    metainfo = sen5meta.Sen5Meta(ncfile=zipfilename)
             except Exception as e:
                 msg = "Exception '{}' raised reading: {}".format(str(e), zipfilename)
                 ok = False
@@ -161,7 +164,10 @@ def mainRoutine():
             elif sentinelNumber == 3:
                 finalXmlFile = dirstruct.createSentinel3Xml(zipfilename, finalOutputDir, metainfo, 
                     cmdargs.dummy, cmdargs.verbose, cmdargs.nooverwrite, cmdargs.md5esa, cmdargs.makereadonly)
-            
+            elif sentinelNumber == 5:
+                finalXmlFile = dirstruct.createSentinel5Xml(zipfilename, finalOutputDir, metainfo, 
+                    cmdargs.dummy, cmdargs.verbose, cmdargs.nooverwrite, cmdargs.md5esa, cmdargs.makereadonly)
+
             if not cmdargs.xmlonly and not cmdargs.xmlandpreview:
                 dirstruct.moveZipfile(zipfilename, finalOutputDir, cmdargs.dummy, cmdargs.verbose, 
                     cmdargs.copy, cmdargs.symlink, cmdargs.nooverwrite, cmdargs.moveandsymlink, cmdargs.makereadonly)
@@ -213,7 +219,7 @@ def checkZipfileName(zipfilename):
     elif not os.access(zipfilename, os.R_OK):
         msg = "No read permission: {}".format(zipfilename)
         ok = False
-    elif not zipfile.is_zipfile(zipfilename):
+    elif zipfilename.endswith('.zip') and not zipfile.is_zipfile(zipfilename):
         msg = "Is not a zipfile: {}".format(zipfilename)
         ok = False
     elif not (zipfileBasename.startswith("S") and len(zipfileBasename) > 2 and 

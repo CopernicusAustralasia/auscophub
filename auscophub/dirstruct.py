@@ -24,7 +24,8 @@ else:
 stdGridCellSize = {
     1: 5,
     2: 5, 
-    3: 40
+    3: 40,
+    5: None
 }
 
 
