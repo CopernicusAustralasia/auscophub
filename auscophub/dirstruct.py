@@ -561,8 +561,9 @@ def createSentinel5Xml(ncfilename, finalOutputDir, metainfo, dummy, verbose, noO
         stopTimestampStr = metainfo.stopTime.strftime("%Y-%m-%d %H:%M:%S.%f")
         f.write("  <ACQUISITION_TIME start_datetime_utc='{}' stop_datetime_utc='{}' />\n".format(
             startTimestampStr, stopTimestampStr))
-        f.write("  <ESA_PROCESSING processingtime_utc='{}' software_version='{}'/>\n".format(
-            metainfo.generationTime, metainfo.processingSoftwareVersion))
+        f.write("  <ESA_PROCESSING processingtime_utc='{}' software_version='{}' mode='{}' />\n".format(
+            metainfo.generationTime, metainfo.processingSoftwareVersion, 
+            metainfo.processingMode))
         f.write("  <ORBIT_NUMBERS absolute='{}' ".format(metainfo.absoluteOrbitNumber))
         f.write("/>\n")
         

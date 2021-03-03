@@ -59,6 +59,8 @@ class Sen5Meta(object):
         # Leaving this as a string, in case they assume it later. It is a string in 
         # sen2meta. 
         self.processingLevel = metaDict['/METADATA/GRANULE_DESCRIPTION/NC_GLOBAL#ProcessLevel']
+        # Not sure if this is useful, but just in case
+        self.processingMode = metaDict['/METADATA/EOP_METADATA/eop:metaDataProperty/eop:processing/NC_GLOBAL#eop:processingMode']
         
         self.absoluteOrbitNumber = int(metaDict['NC_GLOBAL#orbit'])
 
