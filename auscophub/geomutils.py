@@ -23,6 +23,18 @@ import numpy
 from osgeo import ogr, osr
 
 
+def preventGdal3axisSwap(sr):
+    """
+    Guard the given spatial reference object against axis swapping, when
+    running with GDAL 3. Does nothing if GDAL < 3. Modifies the
+    object in place.
+    See https://gdal.org/tutorials/osr_api_tut.html#crs-and-axis-order
+    for details of this issue. 
+    """
+    if hasattr(sr, 'SetAxisMappingStrategy'):
+        sr.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
+
+
 def findSensibleProjection(geom):
     """
     Given a polygon Geometry object in lat/long, work out what would be a suitable projection
@@ -78,8 +90,10 @@ def makeTransformations(epsg1, epsg2):
     """
     sr1 = osr.SpatialReference()
     sr1.ImportFromEPSG(epsg1)
+    preventGdal3axisSwap(sr1)
     sr2 = osr.SpatialReference()
     sr2.ImportFromEPSG(epsg2)
+    preventGdal3axisSwap(sr2)
     tr1to2 = osr.CoordinateTransformation(sr1, sr2)
     tr2to1 = osr.CoordinateTransformation(sr2, sr1)
     return (tr1to2, tr2to1)

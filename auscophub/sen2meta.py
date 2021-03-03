@@ -224,8 +224,10 @@ class Sen2TileMeta(object):
         (ctrX, ctrY) = self.getCtrXY()
         srUTM = osr.SpatialReference()
         srUTM.ImportFromEPSG(int(self.epsg))
+        geomutils.preventGdal3axisSwap(srUTM)
         srLL = osr.SpatialReference()
         srLL.ImportFromEPSG(4326)
+        geomutils.preventGdal3axisSwap(srLL)
         tr = osr.CoordinateTransformation(srUTM, srLL)
         (longitude, latitude, z) = tr.TransformPoint(ctrX, ctrY)
         return (longitude, latitude)
@@ -534,8 +536,10 @@ def calcMGRSnameFromCoords(epsg, easting, northing):
     # Find lat/long for easting/northing
     srUTM = osr.SpatialReference()
     srUTM.ImportFromEPSG(int(epsg))
+    geomutils.preventGdal3axisSwap(srUTM)
     srLL = osr.SpatialReference()
     srLL.ImportFromEPSG(4326)
+    geomutils.preventGdal3axisSwap(srLL)
     tr = osr.CoordinateTransformation(srUTM, srLL)
     (longitude, latitude, z) = tr.TransformPoint(easting, northing)
     # We need these to do the latitude band in a way that matches ESA's approach.
