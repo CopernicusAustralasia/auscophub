@@ -78,6 +78,28 @@ class Sen1ZipfileMeta(object):
         else: 
             self.stopTime = datetime.datetime.strptime(stopTimeStr, "%Y-%m-%dT%H:%M:%S.%f")
 
+        # ESA processing time
+        processingNodeList = findElementByXPath(xfduNode, 
+            "metadataObject/metadataWrap/xmlData/safe:processing")
+        if len(processingNodeList) == 0:
+            # The RAW product has a slightly different tag name - sigh.....
+            processingNodeList = findElementByXPath(xfduNode, 
+                "metadataObject/metadataWrap/xmlData/processing")
+        self.generationTime = None
+        self.processingSoftwareVersion = None
+        if len(processingNodeList) > 0:
+            processingNode = processingNodeList[0]
+            processingStartTimeStr = processingNode.getAttribute('start')
+            self.generationTime = datetime.datetime.strptime(processingStartTimeStr, 
+                "%Y-%m-%dT%H:%M:%S.%f")
+            softwareNodeList = findElementByXPath(processingNode, "safe:software")
+            if len(softwareNodeList) == 0:
+                # This seems to be an old name for the software tag
+                softwareNodeList = findElementByXPath(processingNode, "software")
+            # The RAW product does not seem to have this under either name. Sigh.....
+            if len(softwareNodeList) > 0:
+                self.processingSoftwareVersion = softwareNodeList[0].getAttribute('version')
+
         # platform
         platform = self.findMetadataNodeByIdName(metadataNodeList, 'platform')
         platformNode = self.getElementsContainTagName(platform,'platform')[0]
@@ -207,5 +229,27 @@ class Sen1ZipfileMeta(object):
             self.absoluteOrbitNumber = int(filenamePieces[7])
             self.relativeOrbitNumber()
         
+
+def findElementByXPath(node, xpath):
+    """
+    Find a sub-node under the given XML minidom node, by traversing the given XPATH notation. 
+    Searches all possible values, and returns a list of whatever it finds which matches. 
+    
+    It would be better if minidom understood XPATH, but it does not seem to. I could use
+    some of the other libraries, but ElementTree seems to have obscure bugs, and I did 
+    not want to introduce any other dependencies. Sigh.....
+    
+    """
+    nodeNameList = xpath.split('/')
+    if len(nodeNameList) > 1:
+        nextNodeList = node.getElementsByTagName(nodeNameList[0])
+        nodeList = []
+        for n in nextNodeList:
+            nodeList.extend(findElementByXPath(n, '/'.join(nodeNameList[1:])))
+    else:
+        nodeList = node.getElementsByTagName(nodeNameList[0])
+
+    return nodeList
+
 
 class Sen1MetaError(Exception): pass
