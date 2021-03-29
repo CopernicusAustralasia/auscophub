@@ -1,6 +1,16 @@
 Release Notes
 =============
 
+Version 1.2.0 (2021-03-29)
+--------------------------
+Bug Fixes
+    * Prevent 'axis swapping' behaviour when reprojecting with GDAL >= 3.0
+
+New Features
+    * Extend functionality to include Sentinel-5P data
+    * Improved compatibility with JRSRP's older sen1meta and sen2meta,
+      so that this version can be a drop-in replacement for their versions. 
+
 Version 1.1.9  (2019-06-03)
 ---------------------------
 Bug Fixes
