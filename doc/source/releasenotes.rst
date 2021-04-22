@@ -1,6 +1,11 @@
 Release Notes
 =============
 
+Version 1.2.1 (2021-04-22)
+--------------------------
+Bug Fixes
+    * Cope with zip file format changes in Sentinel-2 processing baseline 03.00
+
 Version 1.2.0 (2021-03-29)
 --------------------------
 Bug Fixes
