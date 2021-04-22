@@ -300,7 +300,14 @@ class Sen2ZipfileMeta(object):
             elif zipfilename is not None:
                 zf = zipfile.ZipFile(zipfilename, 'r')
                 filenames = [zi.filename for zi in zf.infolist()]
-                safeDirName = [fn for fn in filenames if fn.endswith('.SAFE/')][0]
+                # The older format version (before baseline 03.00) included 
+                # the SAFE directory name as a separate entry. The newer version 
+                # of the format does not, so we re-construct it from the 
+                # filenames themselves, including the trailing '/' which was 
+                # there in the older form. 
+                topDirList = [fn.split('/')[0] for fn in filenames]
+                safeDirName = [fn for fn in topDirList if fn.endswith('.SAFE')][0]
+                safeDirName = safeDirName + '/'
                 bn = safeDirName.replace('.SAFE/', '')
                 # The meta filename is, rather ridiculously, named something slightly different 
                 # inside the SAFE directory, so we have to construct that name. 
