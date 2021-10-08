@@ -50,6 +50,8 @@ a range of XML files. They are arranged in modules for each Sentinel number.
 
     auscophub_sen1meta
     auscophub_sen2meta
+    auscophub_sen3meta
+    auscophub_sen5meta
 
 
 Indices and tables
