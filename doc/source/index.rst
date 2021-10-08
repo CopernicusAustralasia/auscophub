@@ -43,12 +43,14 @@ Imagery Metadata Classes
 ------------------------
 
 A number of Python classes have been written to access ESA's metadata, as supplied by
-a range of XML files. They are arranged in modules for each Sentinel number. e.g. :mod:`auscophub.sen1meta`
+a range of XML files. They are arranged in modules for each Sentinel number. 
 
 * :mod:`auscophub.sen1meta`
 * :mod:`auscophub.sen2meta`
 * :mod:`auscophub.sen3meta`
 * :mod:`auscophub.sen4meta`
+
+(Why won't these come out as links???? )
 
 
 Indices and tables
