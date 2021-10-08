@@ -56,3 +56,5 @@ This main program makes use of functions supplied in the :mod:`auscophub.client`
 could also be used to create more customised server access programs. The per-zipfile XML 
 fragments can be decoded using the code in the :mod:`auscophub.auscophubmeta` module. 
 
+Stoopid test :mod:`auscophub.sen2meta`
+
