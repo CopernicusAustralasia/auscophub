@@ -429,6 +429,23 @@ class Sen2ZipfileMeta(object):
                 wvpScaleNode = findElementByXPath(scaleValNode, 'WVP_QUANTIFICATION_VALUE')[0]
                 self.wvpScaleValue = float(wvpScaleNode.firstChild.data.strip())
 
+        # Check for radiometric offsets, which did not exist until processing
+        # baseline 04.00. In L1C they are called RADIO_ADD_OFFSET, 
+        # while in L2A they are called BOA_ADD_OFFSET
+        self.offsetValDict = None
+        offsetNodeList = findElementByXPath(generalInfoNode, 
+            'Product_Image_Characteristics/Radiometric_Offset_List/RADIO_ADD_OFFSET')
+        if len(offsetNodeList) == 0:
+            offsetNodeList = findElementByXPath(generalInfoNode, 
+                'Product_Image_Characteristics/BOA_ADD_OFFSET_VALUES_LIST/BOA_ADD_OFFSET')
+        if len(offsetNodeList) > 0:
+            self.offsetValDict = {}
+            for node in offsetNodeList:
+                bandId = int(node.getAttribute('band_id'))
+                val = float(node.firstChild.data.strip())
+                bandName = nameFromBandId[bandId]
+                self.offsetValDict[bandName] = val
+
         specialValuesNodeList = findElementByXPath(generalInfoNode, 'Product_Image_Characteristics/Special_Values')
         # These guys have no idea how to use XML properly. Sigh......
         for node in specialValuesNodeList:
