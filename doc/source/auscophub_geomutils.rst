@@ -1,5 +1,5 @@
 auscophub.geomutils
-=======================
+===================
 .. automodule:: auscophub.geomutils
    :members:
    :undoc-members:
