@@ -30,7 +30,34 @@ nameFromBandId = ['B01', 'B02', 'B03', 'B04', 'B05', 'B06', 'B07', 'B08', 'B08A'
 
 class Sen2TileMeta(object):
     """
-    Metadata for a single 100km tile
+    Metadata for a single granule (i.e. 100km tile) within the SAFE file.
+
+    Attributes:
+        satId:              Short string for which Sentinel-2 satellite
+        tileId:             ID string of 100km tile (i.e. MGRS ID with "T" prefix)
+        cloudPcnt:          ESA's estimate of percentage cloud cover
+        datetime:           datetime object of image acquisition
+        procLevel:          Processing level string (e.g. "L1C")
+        processingSoftwareVersion: ESA's processing baseline version number string
+        dimsByRes:          Image dimensions (numRows, numCols) as dictionary, keyed by image resolution
+        epsg:               EPSG number of image projection
+        angleGridXres:      X resolution of angles grids (usually 5000m)
+        angleGridYres:      Y resolution of angles grids
+        anglesGridShape:    dimensions of angles grids
+        anglesULXY:         (X, Y) coordinates of top-left corner of angles grids (not necessarily aligned with imagery)
+        meanSunAzimuth:     Whole-image mean of sun azimuth angle (degrees)
+        meanSunZenith:      Whole-image mean of sun zenith angle (degrees)
+        sunAzimuthGrid:     Coarse grid of sun azimuth angles
+        sunZenithGrid:      Coarse grid of sun zenith angles
+        meanViewAzimuth:    Whole-image/all-band mean of satellite azimuth angle
+        meanViewAzimuthByBand:  Whole-image/per-band means of satellite azimuth angles
+        meanViewZenith:     Whole-image/all-band mean of satellite azimuth angle
+        meanViewZenithByBand:   Whole-image/per-band means of satellite zenith angles
+        viewAzimuthDict:    Per-band coarse grids of satellite azimuth angles (keyed by band id number string)
+        viewZenithDict:     Per-band coarse grids of satellite zenith angles (keyed by band id number string)
+        ulxyByRes:          (X, Y) coordinates of top-left corner of angles grids, keyed by pixel size
+
+
     """
     def __init__(self, filename=None, fileobj=None, zipfilename=None):
         """
@@ -280,12 +307,34 @@ class Sen2ZipfileMeta(object):
     The metadata associated with the SAFE format file, which is a collection of 
     multiple tiles. At the top of the SAFE hierarchy is a single XML file with metadata
     which applies to the whole collection, and this class carries information from 
-    that XML file. The constructor can take either the XML as a string or the name of
-    an XML file, or the name of a zipped SAFE file. 
+    that XML file.
     
     There are three field names which are aliases for other fields. These are provided 
     for compatibility with JRSRP/RSC code, which used an earlier version of this class. 
     They are datetime, relOrbit, absOrbit. These names should not be used in new code. 
+
+    Attributes:
+        spacecraftName:     Long string for which Sentinel-2 satellite
+        satId:              Short string for which Sentinel-2 satellite
+        startTime:          datetime object for start of image acquisition
+        stopTime:           datetime object for end of image acquisition (usually equal to startTime, I have no idea why)
+        relativeOrbitNumber: Permanent number for this swathe (like Landsat path)
+        absoluteOrbitNumber: Unique number for this specific orbit
+        nullVal:            Pixel value for 'No Data', same for all bands
+        saturatedVal:       Pixel value indicating radiometric saturation
+        scaleValue:         Factor to convert pixel values to reflectance units (N.B. see offsetValDict)
+        offsetValDict:      Dictionary of pixel value offsets (per band). Only relevant after ESA version 04.00, None if not. See ESA doc for usage.
+        processingLevel:    e.g. "Level-1C"
+        processingSoftwareVersion: ESA's "Processing Baseline" version number
+        generationTime:     A datetime object for when the image was processed by ESA
+        cloudPcnt:          ESA's estimate of percentage cloud cover
+        EsunDict:           Dictionary of solar irradiance values, keyed by band name.
+        zipfileMetaXML:     String of input XML
+        centroidXY:         [x, y] location of image centre
+        extPosWKT:          WKT of polygon outline of non-null image
+        previewImgBin:      Binary data of preview image (or None if not available)
+        aotScaleValue:      Scale factor for aerosol raster (L2A only)
+        wvpScaleValue:      Scale factor for water vapour raster (L2A only)
     
     """
     def __init__(self, xmlStr=None, xmlfilename=None, zipfilename=None):
