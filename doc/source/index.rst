@@ -39,6 +39,17 @@ Hub Management
 A number of code components have been contributed for management of the server itself.
 See :doc:`hubmgmnt`. 
 
+Imagery Metadata Classes
+------------------------
+
+A number of Python classes have been written to access ESA's metadata, as supplied by
+a range of XML files. They are arranged by Sentinel number. 
+
+* :mod:`auscophub.sen1meta`
+* :mod:`auscophub.sen2meta`
+* :mod:`auscophub.sen3meta`
+* :mod:`auscophub.sen4meta`
+
 
 Indices and tables
 ==================
