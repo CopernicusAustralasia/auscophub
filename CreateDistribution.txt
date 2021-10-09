@@ -12,7 +12,7 @@ How to create a distribution of AusCopHub.
    and cd into it. 
 5. Create a distribution tarball, using
      python setup.py sdist --formats=gztar,zip
-   This createsw a tar.gz and a zip file in the dist/ subdirectory
+   This creates a tar.gz and a zip file in the dist/ subdirectory
 6. Go to https://github.com/CopernicusAustralasia/auscophub/releases
    and create a new release by pressing "Draft a new release".
    You should fill in the following:
