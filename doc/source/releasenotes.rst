@@ -1,6 +1,16 @@
 Release Notes
 =============
 
+Version 1.2.2 (2021-10-09)
+--------------------------
+Minor Enhancements
+    * ESA's updated Sentinel-2 data distribution now includes radiometric
+      offsets (see https://inthub.copernicus.eu/news/News00539).
+      Read these values and make available in the sen2meta.Sen2ZipfileMeta
+      class. 
+    * Improved the docstrings for the two classes in sen2meta, to properly
+      detail all attributes. 
+
 Version 1.2.1 (2021-04-22)
 --------------------------
 Bug Fixes
