@@ -334,6 +334,7 @@ def getVectorMultipolygon(polygonfile):
     
     srLL = osr.SpatialReference()
     srLL.ImportFromEPSG(4326)
+    geomutils.preventGdal3axisSwap(srLL)
     wholeGeom.TransformTo(srLL)
     
     return wholeGeom

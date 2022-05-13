@@ -15,7 +15,7 @@ import copy
 
 from osgeo import ogr, osr
 
-from auscophub import saraclient
+from auscophub import saraclient, geomutils
 
 def getCmdargs():
     """
@@ -210,6 +210,7 @@ def readPolygonFile(polygonfile):
     """
     srLL = osr.SpatialReference()
     srLL.ImportFromEPSG(4326)
+    geomutils.preventGdal3axisSwap(srLL)
 
     ds = ogr.Open(polygonfile)
     lyr = ds.GetLayer()

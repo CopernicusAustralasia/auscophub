@@ -28,6 +28,8 @@ except ImportError:
     
 from osgeo import ogr, osr
 
+from auscophub import geomutils
+
 # Dictionary of region names, giving lat/long bounding boxes
 # Bounding box is given as a tuple (minlong, maxlong, minlat, maxlat)
 regionDict = {
@@ -162,6 +164,7 @@ def makeRoiWkt(cmdargs):
         geom = feat.GetGeometryRef()
         srLL = osr.SpatialReference()
         srLL.ImportFromEPSG(4326)
+        geomutils.preventGdal3axisSwap(srLL)
         srLyr = lyr.GetSpatialRef()
         tr = osr.CoordinateTransformation(srLyr, srLL)
         geom.Transform(tr)
