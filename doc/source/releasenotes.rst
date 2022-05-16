@@ -1,6 +1,17 @@
 Release Notes
 =============
 
+Version 1.2.3 (2022-05-17)
+--------------------------
+Bug Fixes
+    * Prevent GDAL 3.x 'axis swapping' behaviour in the commandline 
+      search tools (e.g. auscophub_searchSara.py). 
+
+Minor Enhancements
+    * Formally attached MIT licence (LICENSE.txt), so the package now 
+      actually has a license. Previously we had been too lazy to bother, 
+      but this caused concern for some users. 
+
 Version 1.2.2 (2021-10-09)
 --------------------------
 Minor Enhancements
