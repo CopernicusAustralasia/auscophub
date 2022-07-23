@@ -12,6 +12,10 @@ the Australasian and South-East Asian region. The hub itself is homed at
 The contributed code here has come from members of the hub consortium, and other 
 interested parties. 
 
+The code is generally intended to support Linux. Some of it will also work
+on Windows and other systems, but not all. If there is interest in supporting
+anything other than Linux, please raise an Issue on the Github site. 
+
 Downloads
 ---------
 The code is available as a tarball from 
