@@ -34,17 +34,21 @@ Note the options for testing, and unusual cases:
 
 Client Side
 -----------
-One main program is provided, for simple searching of the server, based on date and region. 
-    auscophub_searchZipfiles.py
-It takes a --help option, to give full commandline help. 
+The main client-side commandline script is auscophub_searchSara.py. It takes
+a --help option which details the command line options available.
+There is also a now obsolete auscophub_searchServer.py, which searches
+the old THREDDS-based service.
 
-Two main Python modules are provided. The most important one is 
-    auscophub.client
-This contains routines useful routines to manage connecting to the server and searching
-the available files. The routines within this form the basis of auscophub_searchZipfiles.py. 
+Several Python modules are provided. The most important one is
+    auscophub.saraclient
+This contains routines to manage connecting to the SARA database, to search
+for available data. This forms the basis of auscophub_searchSara.py.
 
 The other is 
     auscophub.auscophubmeta
-and is a small class which reads the XML file provided for each zipfile, by AusCopHub. Each of 
-these contains simple metadata to assist in searching. This facility is used within the
-client code above. 
+and is a small class which reads the XML file provided for each zipfile,
+by AusCopHub. Each of these contains simple metadata to assist in searching.
+This facility is used within the client code above.
+
+The reader is directed to the readthedocs site for further detail.
+https://auscophub.readthedocs.io/
