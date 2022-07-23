@@ -5,8 +5,8 @@ Setup script for Aus Copernicus Hub code.
 import os
 import glob
 
-# Use numpy's setup, because Python >= 3.12 won't have one. 
-from numpy.distutils.core import setup
+# Use setuptools's setup, because Python >= 3.12 won't have one. 
+from setuptools import setup
 
 import auscophub
 
