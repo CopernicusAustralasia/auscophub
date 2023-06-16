@@ -18,6 +18,8 @@ import shlex
 sys.path.insert(0, os.path.abspath('../..'))
 
 import auscophub
+import sphinx
+print("Sphinx version", sphinx.__version__)
 
 # Set up 'mock' modules, needed to build docs if numpy, gdal etc., aren't installed
 import mock
