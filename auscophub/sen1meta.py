@@ -31,7 +31,11 @@ class Sen1ZipfileMeta(object):
         
         zf = zipfile.ZipFile(zipfilename, 'r')
         filenames = [zi.filename for zi in zf.infolist()]
-        safeDirName = [fn for fn in filenames if fn.endswith('.SAFE/')][0]
+        # Find the name of the .SAFE/ subdirectory. ESA now create zip files
+        # which do not include it explicitly. 
+        topDirList = [fn.split('/')[0] for fn in filenames]
+        safeDirName = [fn for fn in topDirList if fn.endswith('.SAFE')][0]
+        safeDirName = safeDirName + '/'
         bn = safeDirName.replace('.SAFE/', '')
         
         #use manifest.safe
