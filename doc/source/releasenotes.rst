@@ -1,6 +1,21 @@
 Release Notes
 =============
 
+
+Version 1.2.4 (2023-12-13)
+--------------------------
+Bug Fixes
+    * Cope with ESA's change to Sentinel-1 zip files, which now do not
+      have explicit subdirectory entries
+
+Minor Enhancements
+    * Use setuptools instead of distutils, as the latter is being
+      deprecated.
+    * Update installation instructions to suggest using pip to manage
+      installing, in accordance with current best practice. Calling
+      setup.py directly is now discouraged.
+    * Minor changes to match configuration changes at ReadTheDocs.
+
 Version 1.2.3 (2022-05-17)
 --------------------------
 Bug Fixes
